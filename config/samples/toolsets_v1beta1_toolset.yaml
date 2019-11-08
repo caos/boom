@@ -1,0 +1,7 @@
+apiVersion: toolsets.toolsop.caos.ch/v1beta1
+kind: Toolset
+metadata:
+  name: toolset-sample
+spec:
+  # Add fields here
+  foo: bar

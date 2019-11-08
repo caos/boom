@@ -1,0 +1,7 @@
+version: "2"
+domain: toolsop.caos.ch
+repo: github.com/caos/toolsop
+resources:
+- group: toolsets
+  version: v1beta1
+  kind: Toolset
