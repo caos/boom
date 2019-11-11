@@ -85,7 +85,7 @@ type ToolsetStatus struct {
 // Toolset is the Schema for the toolsets API
 type Toolset struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata.omitempty"`
 
 	Spec   *ToolsetSpec   `json:"spec,omitempty"`
 	Status *ToolsetStatus `json:"status,omitempty"`

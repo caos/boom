@@ -26,10 +26,10 @@ func New(toolsDirectoryPath string) *PrometheusOperator {
 	return lo
 }
 
-func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, logopspec *toolsetsv1beta1.PrometheusOperator) error {
+func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
 	resultFilePath := strings.Join([]string{l.ApplicationDirectoryPath, resultsFilename}, "/")
 
-	values, err := specToValues(helm.GetImageTags(applicationName), logopspec)
+	values, err := specToValues(helm.GetImageTags(applicationName), spec)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,16 @@ func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, logo
 		return nil
 	}
 
-	if err := helm.Template(applicationName, logopspec.Prefix, logopspec.Namespace, resultFilePath, writeValues); err != nil {
+	prefix := spec.Prefix
+	if prefix == "" {
+		prefix = overlay
+	}
+	namespace := spec.Namespace
+	if namespace == "" {
+		namespace = strings.Join([]string{overlay, "monitoring"}, "-")
+	}
+
+	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
 		return err
 	}
 

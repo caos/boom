@@ -15,6 +15,7 @@ var (
 	templatorDirectoryName = "templators"
 	templatorFileName      = "templator.yaml"
 	valuesFileName         = "values.yaml"
+	namespaceFileName      = "namespace.yaml"
 )
 
 type Helm struct {
@@ -90,6 +91,7 @@ func (h *Helm) GetImageTags(appName string) map[string]string {
 func (h *Helm) generateFetchers() error {
 	for name, application := range h.Applications {
 		fetcherDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay}, "/")
+		_ = os.RemoveAll(fetcherDirectoryPath)
 		_ = os.MkdirAll(fetcherDirectoryPath, os.ModePerm)
 
 		fetcherFilePath := strings.Join([]string{fetcherDirectoryPath, fetcherFileName}, "/")
@@ -100,7 +102,7 @@ func (h *Helm) generateFetchers() error {
 
 		kustomizationFilePath := strings.Join([]string{fetcherDirectoryPath, kustomizationFileName}, "/")
 		filePaths := []string{fetcherFileName}
-		if err := generateKustomization(kustomizationFilePath, filePaths); err != nil {
+		if err := generateKustomization(kustomizationFilePath, []string{}, filePaths); err != nil {
 			return err
 		}
 	}
@@ -131,7 +133,7 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 	cdCommand := strings.Join([]string{"cd", h.ToolsDirectoryPath}, " ")
 	overlay := strings.Join([]string{templatorDirectoryName, h.Overlay}, "/")
 	startCommand := strings.Join([]string{"./start.sh", appName, overlay}, " ")
-	startCommand = strings.Join([]string{startCommand, ">>", resultfilepath}, " ")
+	startCommand = strings.Join([]string{startCommand, ">", resultfilepath}, " ")
 	command := strings.Join([]string{cdCommand, startCommand}, " && ")
 
 	cmd := exec.Command("/bin/sh", "-c", command)
@@ -140,6 +142,7 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 
 func (h *Helm) generateTemplators(appName, releaseName, releaseNamespace string, writeValues func(path string) error) error {
 	templatorDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, appName, templatorDirectoryName, h.Overlay}, "/")
+	_ = os.RemoveAll(templatorDirectoryPath)
 	_ = os.MkdirAll(templatorDirectoryPath, os.ModePerm)
 
 	// values file
@@ -157,10 +160,17 @@ func (h *Helm) generateTemplators(appName, releaseName, releaseNamespace string,
 		return err
 	}
 
+	namespaceFilePath := strings.Join([]string{templatorDirectoryPath, namespaceFileName}, "/")
+	namespace := NewNamespace(releaseNamespace)
+	err = namespace.writeToYaml(namespaceFilePath)
+	if err != nil {
+		return err
+	}
 	//kustomization with templatorfilename
 	kustomizationFilePath := strings.Join([]string{templatorDirectoryPath, kustomizationFileName}, "/")
-	filePaths := []string{templatorFileName}
-	err = generateKustomization(kustomizationFilePath, filePaths)
+	recources := []string{namespaceFileName}
+	generators := []string{templatorFileName}
+	err = generateKustomization(kustomizationFilePath, recources, generators)
 	if err != nil {
 		return err
 	}

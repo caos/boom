@@ -38,11 +38,20 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 		return nil
 	}
 
-	if err := helm.Template(applicationName, spec.Prefix, spec.Namespace, resultFilePath, writeValues); err != nil {
+	prefix := spec.Prefix
+	if prefix == "" {
+		prefix = overlay
+	}
+	namespace := spec.Namespace
+	if namespace == "" {
+		namespace = strings.Join([]string{overlay, "monitoring"}, "-")
+	}
+
+	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 	if err := kubectlCmd.Run(); err != nil {
 		return err
 	}

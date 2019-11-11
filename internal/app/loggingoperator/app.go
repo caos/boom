@@ -26,11 +26,11 @@ func New(toolsDirectoryPath string) *LoggingOperator {
 	return lo
 }
 
-func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, logopspec *toolsetsv1beta1.LoggingOperator) error {
+func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.LoggingOperator) error {
 
 	resultFilePath := strings.Join([]string{l.ApplicationDirectoryPath, resultsFilename}, "/")
 
-	values := specToValues(helm.GetImageTags(applicationName), logopspec)
+	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
 		if err := helper.StructToYaml(values, path); err != nil {
 			return err
@@ -38,11 +38,20 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, logopsp
 		return nil
 	}
 
-	if err := helm.Template(applicationName, logopspec.Prefix, logopspec.Namespace, resultFilePath, writeValues); err != nil {
+	prefix := spec.Prefix
+	if prefix == "" {
+		prefix = overlay
+	}
+	namespace := spec.Namespace
+	if namespace == "" {
+		namespace = strings.Join([]string{overlay, "logging"}, "-")
+	}
+
+	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", logopspec.Namespace)
+	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 
 	if err := kubectlCmd.Run(); err != nil {
 		return err

@@ -16,8 +16,10 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
+	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -77,8 +79,11 @@ func main() {
 	// 	os.Exit(1)
 	// }
 
+	ctx := context.Background()
+
 	app, err := app.New(toolsDirectoryPath, toolsetsPath, toolsUrl, toolsSecret)
 	if err != nil {
+		setupLog.Error(err, "unable to start app")
 		os.Exit(1)
 	}
 	// if err = (&controllers.ToolsetReconciler{
@@ -92,10 +97,29 @@ func main() {
 	// }
 	// +kubebuilder:scaffold:builder
 
+	errChan := make(chan error)
 	if gitCrdPath != "" {
-		if err := app.MaintainGitCrd(gitCrdDirectoryPath, gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
+		if err := app.AddSupervisedCrd(gitCrdDirectoryPath, gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
+			setupLog.Error(err, "unable to start supervised crd")
 			os.Exit(1)
 		}
+
+		ctxChild, cancel := context.WithCancel(ctx)
+
+		go func() {
+			<-ctxChild.Done()
+			cancel()
+		}()
+
+		go func() {
+			for err == nil {
+				err = app.MaintainSupervisedCrd()
+				time.Sleep(10 * time.Second)
+			}
+
+			setupLog.Error(err, "unable to maintaining supervised crd")
+			errChan <- err
+		}()
 	}
 
 	setupLog.Info("starting manager")
@@ -103,31 +127,8 @@ func main() {
 	// 	setupLog.Error(err, "problem running manager")
 	// 	os.Exit(1)
 	// }
+
+	<-errChan
+	app.CleanUp()
+	setupLog.Info("stopped")
 }
-
-// func main() {
-// 	var metricsAddr string
-// 	var enableLeaderElection bool
-// 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-// 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-// 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
-// 	flag.Parse()
-
-// 	ToolsDirectoryPath := "/tmp/caostools"
-// 	CRDFilePath := strings.Join([]string{ToolsDirectoryPath, "crd", "example", "crd-1.0.1.yaml"}, "/")
-
-// 	app, err := app.New(ToolsDirectoryPath)
-// 	if err != nil {
-// 		os.Exit(1)
-// 	}
-
-// 	err = app.GenerateTemplateComponents("caos", toolsetCRD.Spec.Name, toolsetCRD.Spec.Version)
-// 	if err != nil {
-// 		os.Exit(1)
-// 	}
-
-// 	if err := app.Reconcile("caos", toolsetCRD.Spec); err != nil {
-// 		fmt.Println(err.Error())
-// 		os.Exit(1)
-// 	}
-// }

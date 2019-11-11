@@ -1,6 +1,7 @@
 package app
 
 import (
+	"os"
 	"strings"
 
 	"github.com/caos/toolsop/internal/app/loggingoperator"
@@ -8,6 +9,8 @@ import (
 	"github.com/caos/toolsop/internal/app/prometheusoperator"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
+
+	appcrd "github.com/caos/toolsop/internal/app/crd"
 	"github.com/caos/toolsop/internal/git"
 	"github.com/caos/toolsop/internal/template"
 	"github.com/caos/toolsop/internal/toolset"
@@ -16,6 +19,8 @@ import (
 type App struct {
 	Toolsets           *toolset.Toolsets
 	ToolsDirectoryPath string
+	ToolsGit           *git.Git
+	CrdGit             []*appcrd.Crd
 	Helms              map[string]*template.Helm
 }
 
@@ -25,9 +30,11 @@ func New(toolsDirectoryPath string, toolsetsPath string, toolsUrl string, toolsS
 		ToolsDirectoryPath: toolsDirectoryPath,
 	}
 
-	if _, err := git.CloneRepo(toolsDirectoryPath, toolsUrl, toolsSecret); err != nil {
+	g, err := git.New(toolsDirectoryPath, toolsUrl, toolsSecret)
+	if err != nil {
 		return nil, err
 	}
+	app.ToolsGit = g
 
 	toolsetsFilePath := strings.Join([]string{toolsDirectoryPath, toolsetsPath}, "/")
 	toolsets, err := toolset.NewToolsetsFromYaml(toolsetsFilePath)
@@ -39,6 +46,17 @@ func New(toolsDirectoryPath string, toolsetsPath string, toolsUrl string, toolsS
 	app.Helms = make(map[string]*template.Helm, 0)
 
 	return app, nil
+}
+
+func (a *App) CleanUp() error {
+	for _, g := range a.CrdGit {
+		err := g.CleanUp()
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.RemoveAll(a.ToolsDirectoryPath)
 }
 
 func (a *App) GenerateTemplateComponents(name, crdName, crdVersion string) error {
@@ -71,5 +89,26 @@ func (a *App) Reconcile(name string, crd *toolsetsv1beta1.ToolsetSpec) error {
 		return err
 	}
 
+	return nil
+}
+
+func (a *App) AddSupervisedCrd(directoryPath, url, secretPath, crdPath string) error {
+	c, err := appcrd.New(directoryPath, url, secretPath, crdPath, a.GenerateTemplateComponents, a.Reconcile)
+	if err != nil {
+		return err
+	}
+	a.CrdGit = append(a.CrdGit, c)
+
+	c.Apply()
+	return nil
+}
+
+func (a *App) MaintainSupervisedCrd() error {
+	for _, crdGit := range a.CrdGit {
+		err := crdGit.Maintain()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
