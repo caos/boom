@@ -32,46 +32,8 @@ type ToolsetSpec struct {
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
 	LoggingOperator        *LoggingOperator        `json:"logging-operator,omitempty" yaml:"logging-operator"`
 	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
-}
-
-type PrometheusOperator struct {
-	Prefix         string          `json:"prefix,omitempty"`
-	Namespace      string          `json:"namespace,omitempty"`
-	Prometheus     *Prometheus     `json:"prometheus,omitempty"`
-	ServiceMonitor *ServiceMonitor `json:"servicemonitor,omitempty"`
-}
-
-type ServiceMonitor struct {
-	Annotations map[string]string `json:"annotations,omitempty"`
-	Interval    string            `json:"interval,omitempty"`
-	Relabelings []*Relabeling     `json:"relabelings,omitempty"`
-}
-
-type Relabeling struct {
-	Action       string   `json:"action,omitempty"`
-	Regex        string   `json:"regex,omitempty"`
-	Replacement  string   `json:"replacement,omitempty"`
-	SourceLabels []string `json:"sourcelabels,omitempty"`
-	TargetLabel  string   `json:"targetlabel,omitempty"`
-}
-
-type Prometheus struct {
-	Annotations map[string]string `json:"annotations,omitempty"`
-	RemoteWrite []*RemoteWrite    `json:"remotewrite,omitempty"`
-}
-
-type RemoteWrite struct {
-	URL string `json:"url,omitempty"`
-}
-
-type LoggingOperator struct {
-	Prefix    string `json:"prefix,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
-}
-
-type PrometheusNodeExporter struct {
-	Prefix    string `json:"prefix,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
+	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
+	Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
 }
 
 // ToolsetStatus defines the observed state of Toolset
@@ -85,7 +47,7 @@ type ToolsetStatus struct {
 // Toolset is the Schema for the toolsets API
 type Toolset struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata.omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 
 	Spec   *ToolsetSpec   `json:"spec,omitempty"`
 	Status *ToolsetStatus `json:"status,omitempty"`

@@ -52,8 +52,10 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 	}
 
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-	if err := kubectlCmd.Run(); err != nil {
-		return err
+	if spec.Deploy {
+		if err := kubectlCmd.Run(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -97,6 +99,15 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusN
 			Effect:   "NoSchedule",
 			Operator: "Exists",
 		}},
+	}
+
+	if spec.Monitor != nil {
+		values.Prometheus = &Prometheus{
+			Monitor: &Monitor{
+				Enabled:   spec.Monitor.Enabled,
+				Namespace: spec.Monitor.Namespace,
+			},
+		}
 	}
 
 	return values

@@ -50,7 +50,7 @@ func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 	r.Log.Info("crd successfully loaded")
 
-	if err := r.App.Reconcile(instance.Name, instance.Spec); err != nil {
+	if err := r.App.ReconcileCrd(req.NamespacedName.String(), &instance); err != nil {
 		log.Error(err, "unable to reconcile Toolset")
 	}
 	r.Log.Info("Toolset sucessfully reconciled")

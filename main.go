@@ -56,7 +56,7 @@ func main() {
 	flag.StringVar(&gitCrdUrl, "git-crd-url", "git@github.com:caos/tools.git", "The url for the git-repo to clone for the CRD ")
 	flag.StringVar(&gitCrdSecret, "git-crd-secret", "./secretdata/ssh-keys/id_rsa-toolsop-tools-read", "Path to Secret to clone the git-repo for the CRD")
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
-	flag.StringVar(&gitCrdPath, "git-crd-path", "crd/example/crd-1.0.1.yaml", "The path to the CRD in the cloned git-repo ")
+	flag.StringVar(&gitCrdPath, "git-crd-path", "crd/example/crd.yaml", "The path to the CRD in the cloned git-repo ")
 
 	flag.StringVar(&toolsUrl, "tools-url", "git@github.com:caos/tools.git", "The URL from where the tools-repo should be cloned from")
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools-repo should be cloned to")
@@ -81,7 +81,7 @@ func main() {
 
 	ctx := context.Background()
 
-	app, err := app.New(toolsDirectoryPath, toolsetsPath, toolsUrl, toolsSecret)
+	app, err := app.New(toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath, toolsUrl, toolsSecret)
 	if err != nil {
 		setupLog.Error(err, "unable to start app")
 		os.Exit(1)
@@ -99,7 +99,7 @@ func main() {
 
 	errChan := make(chan error)
 	if gitCrdPath != "" {
-		if err := app.AddSupervisedCrd(gitCrdDirectoryPath, gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
+		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
 			setupLog.Error(err, "unable to start supervised crd")
 			os.Exit(1)
 		}
@@ -113,7 +113,7 @@ func main() {
 
 		go func() {
 			for err == nil {
-				err = app.MaintainSupervisedCrd()
+				err = app.ReconcileGitCrds()
 				time.Sleep(10 * time.Second)
 			}
 

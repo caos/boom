@@ -54,20 +54,17 @@ func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-	if err := kubectlCmd.Run(); err != nil {
-		return err
+	if spec.Deploy {
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		if err := kubectlCmd.Run(); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusOperator) (*Values, error) {
-
-	// var values Values
-	// if err := helper.YamlToStruct(defaultValuesPath, values); err != nil {
-	// 	return nil, err
-	// }
 
 	values := &Values{
 		DefaultRules: &DefaultRules{
@@ -153,9 +150,9 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusO
 			},
 			AdmissionWebhooks: &AdmissionWebhooks{
 				FailurePolicy: "Fail",
-				Enabled:       true,
+				Enabled:       false,
 				Patch: &Patch{
-					Enabled: true,
+					Enabled: false,
 					Image: &Image{
 						Repository: "jettech/kube-webhook-certgen",
 						Tag:        imageTags["jettech/kube-webhook-certgen"],
@@ -216,6 +213,5 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusO
 			Enabled: false,
 		},
 	}
-
 	return values, nil
 }

@@ -55,6 +55,16 @@ func NewHelm(toolsDirectoryPath string, toolsets *toolset.Toolsets, crdName, crd
 	return helm, nil
 }
 
+func (h *Helm) CleanUp() {
+	for name := range h.Applications {
+		fetcherDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay}, "/")
+		_ = os.RemoveAll(fetcherDirectoryPath)
+
+		templatorDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, templatorDirectoryName, h.Overlay}, "/")
+		_ = os.RemoveAll(templatorDirectoryPath)
+	}
+}
+
 func (h *Helm) collectApplications(crdName, crdVersion string) {
 	for _, toolset := range h.Toolsets.Toolsets {
 		if toolset.Name == crdName {
@@ -89,9 +99,10 @@ func (h *Helm) GetImageTags(appName string) map[string]string {
 }
 
 func (h *Helm) generateFetchers() error {
+	h.CleanUp()
+
 	for name, application := range h.Applications {
 		fetcherDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay}, "/")
-		_ = os.RemoveAll(fetcherDirectoryPath)
 		_ = os.MkdirAll(fetcherDirectoryPath, os.ModePerm)
 
 		fetcherFilePath := strings.Join([]string{fetcherDirectoryPath, fetcherFileName}, "/")

@@ -53,8 +53,10 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 
-	if err := kubectlCmd.Run(); err != nil {
-		return err
+	if spec.Deploy {
+		if err := kubectlCmd.Run(); err != nil {
+			return err
+		}
 	}
 
 	return nil

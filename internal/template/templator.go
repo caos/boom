@@ -24,7 +24,7 @@ func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace s
 		Metadata: &Metadata{
 			Name: name,
 		},
-		ChartName:        name,
+		ChartName:        chartName,
 		ChartVersion:     chartVersion,
 		ReleaseName:      releaseName,
 		ReleaseNamespace: releaseNamespace,

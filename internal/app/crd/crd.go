@@ -1,69 +1,122 @@
 package app
 
 import (
-	"os"
-	"strings"
-
-	"github.com/caos/toolsop/internal/git"
-	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/toolsop/internal/app/crd/grafana"
+	"github.com/caos/toolsop/internal/app/crd/loggingoperator"
+	"github.com/caos/toolsop/internal/app/crd/prometheus"
+	"github.com/caos/toolsop/internal/app/crd/prometheusnodeexporter"
+	"github.com/caos/toolsop/internal/app/crd/prometheusoperator"
 	"github.com/caos/toolsop/internal/template"
+	"github.com/caos/toolsop/internal/toolset"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 )
 
 type Crd struct {
-	git           *git.Git
-	crdPath       string
-	directoryPath string
-	generateFunc  func(string, string, string) error
-	reconcileFunc func(string, *toolsetsv1beta1.ToolsetSpec) error
-	helm          *template.Helm
+	helm   *template.Helm
+	oldCrd *toolsetsv1beta1.Toolset
 }
 
-func New(directoryPath, url, secretPath, crdPath string, generateFunc func(string, string, string) error, reconcileFunc func(string, *toolsetsv1beta1.ToolsetSpec) error) (*Crd, error) {
-	gitCrd := &Crd{
-		directoryPath: directoryPath,
-		crdPath:       crdPath,
-		generateFunc:  generateFunc,
-		reconcileFunc: reconcileFunc,
-	}
+func New(toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
+	crd := &Crd{}
 
-	g, err := git.New(directoryPath, url, secretPath)
-	if err != nil {
+	if err := crd.GenerateTemplateComponents(toolsDirectoryPath, toolsets, toolsetCRD); err != nil {
 		return nil, err
 	}
-	gitCrd.git = g
 
-	return gitCrd, nil
+	if err := crd.ReconcileApplications(toolsetCRD.Name, toolsDirectoryPath, toolsetCRD.Spec); err != nil {
+		return nil, err
+	}
+	crd.oldCrd = toolsetCRD
+
+	return crd, nil
 }
 
-func (c *Crd) CleanUp() error {
-	return os.RemoveAll(c.directoryPath)
+func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
+
+	fetcherGen, err := c.NewFetcherGeneration(new)
+	if err != nil {
+		return nil
+	}
+	if fetcherGen {
+		if err := c.GenerateTemplateComponents(toolsDirectoryPath, toolsets, new); err != nil {
+			return err
+		}
+	}
+
+	template, err := c.NewTemplate(new)
+	if err != nil {
+		return nil
+	}
+	if template {
+		if err := c.ReconcileApplications(new.Name, toolsDirectoryPath, new.Spec); err != nil {
+			return err
+		}
+	}
+
+	c.oldCrd = new
+	return nil
 }
 
-func (c *Crd) Maintain() error {
+func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *toolset.Toolsets, toolsetCRD *toolsetsv1beta1.Toolset) error {
+	if c.helm != nil {
+		c.helm.CleanUp()
+	}
 
-	changed, err := c.git.IsFileChanged(c.crdPath)
-	if err != nil || !changed {
+	helm, err := template.NewHelm(toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Spec.Version, toolsetCRD.Name)
+	if err != nil {
+		return err
+	}
+	c.helm = helm
+	return nil
+}
+
+func (c *Crd) NewFetcherGeneration(new *toolsetsv1beta1.Toolset) (bool, error) {
+	if new.Spec.Name != c.oldCrd.Spec.Name || new.Spec.Version != c.oldCrd.Spec.Version {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) (bool, error) {
+	fetcher, err := c.NewFetcherGeneration(new)
+	if err != nil {
+		return false, err
+	}
+
+	if fetcher ||
+		new.Spec.LoggingOperator != c.oldCrd.Spec.LoggingOperator ||
+		new.Spec.PrometheusOperator != c.oldCrd.Spec.PrometheusOperator ||
+		new.Spec.PrometheusNodeExporter != c.oldCrd.Spec.PrometheusNodeExporter ||
+		new.Spec.Grafana != c.oldCrd.Spec.Grafana {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
+	lo := loggingoperator.New(toolsDirectoryPath)
+	if err := lo.Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
 		return err
 	}
 
-	return c.Apply()
-}
-
-func (c *Crd) Apply() error {
-	crdFilePath := strings.Join([]string{c.directoryPath, c.crdPath}, "/")
-
-	toolsetCRD := &toolsetsv1beta1.Toolset{}
-	if err := helper.YamlToStruct(crdFilePath, toolsetCRD); err != nil {
+	po := prometheusoperator.New(toolsDirectoryPath)
+	if err := po.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
 		return err
 	}
 
-	if err := c.generateFunc("caos", toolsetCRD.Spec.Name, toolsetCRD.Spec.Version); err != nil {
+	pne := prometheusnodeexporter.New(toolsDirectoryPath)
+	if err := pne.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
 		return err
 	}
 
-	if err := c.reconcileFunc("caos", toolsetCRD.Spec); err != nil {
+	g := grafana.New(toolsDirectoryPath)
+	if err := g.Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
+		return err
+	}
+
+	p := prometheus.New(toolsDirectoryPath)
+	if err := p.Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
 		return err
 	}
 

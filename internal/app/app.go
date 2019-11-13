@@ -4,30 +4,27 @@ import (
 	"os"
 	"strings"
 
-	"github.com/caos/toolsop/internal/app/loggingoperator"
-	"github.com/caos/toolsop/internal/app/prometheusnodeexporter"
-	"github.com/caos/toolsop/internal/app/prometheusoperator"
-
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-
 	appcrd "github.com/caos/toolsop/internal/app/crd"
+	"github.com/caos/toolsop/internal/app/gitcrd"
 	"github.com/caos/toolsop/internal/git"
-	"github.com/caos/toolsop/internal/template"
 	"github.com/caos/toolsop/internal/toolset"
 )
 
 type App struct {
 	Toolsets           *toolset.Toolsets
 	ToolsDirectoryPath string
+	CrdDirectoryPath   string
 	ToolsGit           *git.Git
-	CrdGit             []*appcrd.Crd
-	Helms              map[string]*template.Helm
+	GitCrds            []*gitcrd.GitCrd
+	Crds               map[string]*appcrd.Crd
 }
 
-func New(toolsDirectoryPath string, toolsetsPath string, toolsUrl string, toolsSecret string) (*App, error) {
+func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath, toolsUrl, toolsSecret string) (*App, error) {
 
 	app := &App{
 		ToolsDirectoryPath: toolsDirectoryPath,
+		CrdDirectoryPath:   crdDirectoryPath,
 	}
 
 	g, err := git.New(toolsDirectoryPath, toolsUrl, toolsSecret)
@@ -36,20 +33,29 @@ func New(toolsDirectoryPath string, toolsetsPath string, toolsUrl string, toolsS
 	}
 	app.ToolsGit = g
 
-	toolsetsFilePath := strings.Join([]string{toolsDirectoryPath, toolsetsPath}, "/")
-	toolsets, err := toolset.NewToolsetsFromYaml(toolsetsFilePath)
+	app.Crds = make(map[string]*appcrd.Crd, 0)
+	app.GitCrds = make([]*gitcrd.GitCrd, 0)
+
+	err = app.ReloadCurrentToolsets(app.ToolsDirectoryPath, toolsetsPath)
 	if err != nil {
 		return nil, err
 	}
-	app.Toolsets = toolsets
-
-	app.Helms = make(map[string]*template.Helm, 0)
 
 	return app, nil
 }
 
+func (a *App) ReloadCurrentToolsets(toolsDirectoryPath string, toolsetsPath string) error {
+	toolsetsFilePath := strings.Join([]string{toolsDirectoryPath, toolsetsPath}, "/")
+	toolsets, err := toolset.NewToolsetsFromYaml(toolsetsFilePath)
+	if err != nil {
+		return err
+	}
+	a.Toolsets = toolsets
+	return nil
+}
+
 func (a *App) CleanUp() error {
-	for _, g := range a.CrdGit {
+	for _, g := range a.GitCrds {
 		err := g.CleanUp()
 		if err != nil {
 			return err
@@ -59,56 +65,46 @@ func (a *App) CleanUp() error {
 	return os.RemoveAll(a.ToolsDirectoryPath)
 }
 
-func (a *App) GenerateTemplateComponents(name, crdName, crdVersion string) error {
-	_, ok := a.Helms[name]
-	if !ok {
-		helm, err := template.NewHelm(a.ToolsDirectoryPath, a.Toolsets, crdName, crdVersion, name)
-		if err != nil {
-			return err
-		}
-		a.Helms[name] = helm
-	}
-	return nil
-}
-
-func (a *App) Reconcile(name string, crd *toolsetsv1beta1.ToolsetSpec) error {
-	helm := a.Helms[name]
-
-	lo := loggingoperator.New(a.ToolsDirectoryPath)
-	if err := lo.Reconcile(name, helm, crd.LoggingOperator); err != nil {
-		return err
-	}
-
-	po := prometheusoperator.New(a.ToolsDirectoryPath)
-	if err := po.Reconcile(name, helm, crd.PrometheusOperator); err != nil {
-		return err
-	}
-
-	pne := prometheusnodeexporter.New(a.ToolsDirectoryPath)
-	if err := pne.Reconcile(name, helm, crd.PrometheusNodeExporter); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *App) AddSupervisedCrd(directoryPath, url, secretPath, crdPath string) error {
-	c, err := appcrd.New(directoryPath, url, secretPath, crdPath, a.GenerateTemplateComponents, a.Reconcile)
+func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
+	c, err := gitcrd.New(a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
 	if err != nil {
 		return err
 	}
-	a.CrdGit = append(a.CrdGit, c)
-
-	c.Apply()
+	a.GitCrds = append(a.GitCrds, c)
 	return nil
 }
 
-func (a *App) MaintainSupervisedCrd() error {
-	for _, crdGit := range a.CrdGit {
-		err := crdGit.Maintain()
+func (a *App) ReconcileGitCrds() error {
+	for _, crdGit := range a.GitCrds {
+		err := crdGit.Reconcile(a.ToolsDirectoryPath, a.Toolsets)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (a *App) ReconcileCrd(namespacedName string, new *toolsetsv1beta1.Toolset) error {
+	crd, ok := a.Crds[namespacedName]
+	if !ok {
+		newCrd, err := appcrd.New(new, a.ToolsDirectoryPath, a.Toolsets)
+		if err != nil {
+			return err
+		}
+
+		a.Crds[namespacedName] = newCrd
+	} else {
+		if err := crd.Reconcile(new, a.ToolsDirectoryPath, a.Toolsets); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *App) GetCrdDirectoryPath() string {
+	return a.CrdDirectoryPath
+}
+
+func (a *App) GetToolsDirectoryPath() string {
+	return a.CrdDirectoryPath
 }

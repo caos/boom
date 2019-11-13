@@ -152,6 +152,5 @@ type Values struct {
 	NodeExporter              *DisabledTool             `yaml:"nodeExporter"`
 	PrometheusNodeExporter    *DisabledTool             `yaml:"prometheus-node-exporter"`
 	PrometheusOperator        *PrometheusOperatorValues `yaml:"prometheusOperator"`
-
-	Prometheus *DisabledTool `yaml:"prometheus"`
+	Prometheus                *DisabledTool             `yaml:"prometheus"`
 }
