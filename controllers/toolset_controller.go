@@ -33,7 +33,7 @@ type ToolsetReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	App    *app.App
+	App    app.App
 }
 
 // +kubebuilder:rbac:groups=toolsets.toolsop.caos.ch,resources=toolsets,verbs=get;list;watch;create;update;patch;delete
@@ -43,14 +43,16 @@ func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("toolset", req.NamespacedName)
 
-	var instance toolsetsv1beta1.Toolset
-
-	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
-		log.Error(err, "unable to fetch Toolset")
+	getToolset := func(instance runtime.Object) error {
+		if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+			log.Error(err, "unable to fetch Toolset")
+			return err
+		}
+		r.Log.Info("crd successfully loaded")
+		return nil
 	}
-	r.Log.Info("crd successfully loaded")
 
-	if err := r.App.ReconcileCrd(req.NamespacedName.String(), &instance); err != nil {
+	if err := r.App.ReconcileCrd(req.NamespacedName.String(), getToolset); err != nil {
 		log.Error(err, "unable to reconcile Toolset")
 	}
 	r.Log.Info("Toolset sucessfully reconciled")

@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	"github.com/caos/toolsop/internal/app/crd/prometheus/servicemonitor"
-	"github.com/caos/toolsop/internal/app/crd/prometheusoperator"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheus/servicemonitor"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"

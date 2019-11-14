@@ -34,6 +34,8 @@ type ToolsetSpec struct {
 	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
 	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
 	Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
+	CertManager            *CertManager            `json:"cert-manager,omitempty" yaml:"cert-manager"`
+	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

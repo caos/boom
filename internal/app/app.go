@@ -4,11 +4,9 @@ import (
 	"os"
 	"strings"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	appcrd "github.com/caos/toolsop/internal/app/crd"
-	"github.com/caos/toolsop/internal/app/gitcrd"
 	"github.com/caos/toolsop/internal/git"
 	"github.com/caos/toolsop/internal/toolset"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type App struct {
@@ -16,8 +14,8 @@ type App struct {
 	ToolsDirectoryPath string
 	CrdDirectoryPath   string
 	ToolsGit           *git.Git
-	GitCrds            []*gitcrd.GitCrd
-	Crds               map[string]*appcrd.Crd
+	GitCrds            []GitCrd
+	Crds               map[string]Crd
 }
 
 func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath, toolsUrl, toolsSecret string) (*App, error) {
@@ -33,8 +31,8 @@ func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath, toolsUrl, toolsSecr
 	}
 	app.ToolsGit = g
 
-	app.Crds = make(map[string]*appcrd.Crd, 0)
-	app.GitCrds = make([]*gitcrd.GitCrd, 0)
+	app.Crds = make(map[string]Crd, 0)
+	app.GitCrds = make([]GitCrd, 0)
 
 	err = app.ReloadCurrentToolsets(app.ToolsDirectoryPath, toolsetsPath)
 	if err != nil {
@@ -65,8 +63,8 @@ func (a *App) CleanUp() error {
 	return os.RemoveAll(a.ToolsDirectoryPath)
 }
 
-func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
-	c, err := gitcrd.New(a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
+func (a *App) AddGitCrd(version, url, secretPath, crdPath string) error {
+	c, err := NewGitCrd(version, a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
 	if err != nil {
 		return err
 	}
@@ -74,7 +72,7 @@ func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
 	return nil
 }
 
-func (a *App) ReconcileGitCrds() error {
+func (a *App) ReconcileGitCrds(version string) error {
 	for _, crdGit := range a.GitCrds {
 		err := crdGit.Reconcile(a.ToolsDirectoryPath, a.Toolsets)
 		if err != nil {
@@ -84,17 +82,17 @@ func (a *App) ReconcileGitCrds() error {
 	return nil
 }
 
-func (a *App) ReconcileCrd(namespacedName string, new *toolsetsv1beta1.Toolset) error {
+func (a *App) ReconcileCrd(version, namespacedName string, getToolset func(obj runtime.Object) error) error {
 	crd, ok := a.Crds[namespacedName]
 	if !ok {
-		newCrd, err := appcrd.New(new, a.ToolsDirectoryPath, a.Toolsets)
+		newCrd, err := NewCrd(version, getToolset, a.ToolsDirectoryPath, a.Toolsets)
 		if err != nil {
 			return err
 		}
 
 		a.Crds[namespacedName] = newCrd
 	} else {
-		if err := crd.Reconcile(new, a.ToolsDirectoryPath, a.Toolsets); err != nil {
+		if err := crd.ReconcileWithFunc(getToolset, a.ToolsDirectoryPath, a.Toolsets); err != nil {
 			return err
 		}
 	}

@@ -1,13 +1,16 @@
 package app
 
 import (
-	"github.com/caos/toolsop/internal/app/crd/grafana"
-	"github.com/caos/toolsop/internal/app/crd/loggingoperator"
-	"github.com/caos/toolsop/internal/app/crd/prometheus"
-	"github.com/caos/toolsop/internal/app/crd/prometheusnodeexporter"
-	"github.com/caos/toolsop/internal/app/crd/prometheusoperator"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/ambassador"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/certmanager"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/grafana"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/loggingoperator"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheus"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusnodeexporter"
+	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/toolsop/internal/template"
 	"github.com/caos/toolsop/internal/toolset"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 )
@@ -15,6 +18,14 @@ import (
 type Crd struct {
 	helm   *template.Helm
 	oldCrd *toolsetsv1beta1.Toolset
+}
+
+func NewWithFunc(getToolset func(obj runtime.Object) error, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
+	var toolsetCRD *toolsetsv1beta1.Toolset
+	if err := getToolset(toolsetCRD); err != nil {
+		return nil, err
+	}
+	return New(toolsetCRD, toolsDirectoryPath, toolsets)
 }
 
 func New(toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
@@ -32,8 +43,16 @@ func New(toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolset
 	return crd, nil
 }
 
-func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
+func (c *Crd) ReconcileWithFunc(getToolset func(obj runtime.Object) error, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
+	var new *toolsetsv1beta1.Toolset
+	if err := getToolset(new); err != nil {
+		return err
+	}
 
+	return c.Reconcile(new, toolsDirectoryPath, toolsets)
+}
+
+func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
 	fetcherGen, err := c.NewFetcherGeneration(new)
 	if err != nil {
 		return nil
@@ -117,6 +136,16 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 
 	p := prometheus.New(toolsDirectoryPath)
 	if err := p.Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
+		return err
+	}
+
+	cert := certmanager.New(toolsDirectoryPath)
+	if err := cert.Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
+		return err
+	}
+
+	ambassador := ambassador.New(toolsDirectoryPath)
+	if err := ambassador.Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
 		return err
 	}
 

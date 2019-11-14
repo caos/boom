@@ -141,7 +141,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusO
 		PrometheusOperator: &PrometheusOperatorValues{
 			Enabled: true,
 			TLSProxy: &TLSProxy{
-				Enabled: true,
+				Enabled: false,
 				Image: &Image{
 					Repository: "squareup/ghostunnel",
 					Tag:        imageTags["squareup/ghostunnel"],

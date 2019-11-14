@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	appcrd "github.com/caos/toolsop/internal/app/crd"
+	appcrd "github.com/caos/toolsop/internal/app/v1beta1/crd"
 	"github.com/caos/toolsop/internal/git"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/toolset"
