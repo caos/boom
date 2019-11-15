@@ -9,6 +9,7 @@ import (
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
+	"github.com/caos/utils/logging"
 )
 
 var (
@@ -32,18 +33,17 @@ func New(toolsDirectoryPath string) *PrometheusOperator {
 
 func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
 
+	logging.Log("CRD-2JlElqA8Zqu7wcw").Infof("Reconciling application %s", applicationName)
 	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
 	resultFilePath := filepath.Join(resultsFileDirectory, resultsFilename)
 
-	values, err := specToValues(helm.GetImageTags(applicationName), spec)
-	if err != nil {
-		return err
-	}
+	values := specToValues(helm.GetImageTags(applicationName), spec)
 
 	writeValues := func(path string) error {
 		if err := helper.StructToYaml(values, path); err != nil {
+			logging.Log("CRD-l4CrOkKeQcIFehd").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
 			return err
 		}
 		return nil
@@ -65,6 +65,7 @@ func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 	if spec.Deploy {
 		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 		if err := kubectlCmd.Run(); err != nil {
+			logging.Log("CRD-hOW8nm0IlUQdpSj").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
 			return err
 		}
 	}
@@ -72,7 +73,7 @@ func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 	return nil
 }
 
-func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusOperator) (*Values, error) {
+func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusOperator) *Values {
 
 	values := &Values{
 		DefaultRules: &DefaultRules{
@@ -221,5 +222,5 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusO
 			Enabled: false,
 		},
 	}
-	return values, nil
+	return values
 }

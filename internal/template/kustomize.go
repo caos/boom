@@ -1,6 +1,9 @@
 package template
 
-import "github.com/caos/toolsop/internal/helper"
+import (
+	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/utils/logging"
+)
 
 type Kustomization struct {
 	ApiVersion string   `yaml:"apiVersion"`
@@ -17,5 +20,7 @@ func generateKustomization(kustomizationFilePath string, resources []string, gen
 		Generators: generators,
 	}
 
-	return helper.StructToYaml(kustomization, kustomizationFilePath)
+	err := helper.StructToYaml(kustomization, kustomizationFilePath)
+	logging.Log("KUSTOMIZE-QCiaUk3u7mwOhLe").OnError(err).Debug("Failed to write kustomize to file")
+	return err
 }

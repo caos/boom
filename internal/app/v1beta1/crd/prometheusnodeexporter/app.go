@@ -9,6 +9,7 @@ import (
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
+	"github.com/caos/utils/logging"
 )
 
 var (
@@ -32,6 +33,7 @@ func New(toolsDirectoryPath string) *PrometheusNodeExporter {
 
 func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusNodeExporter) error {
 
+	logging.Log("CRD-uXoxEPz8UVURI6g").Infof("Reconciling application %s", applicationName)
 	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -41,6 +43,7 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 
 	writeValues := func(path string) error {
 		if err := helper.StructToYaml(values, path); err != nil {
+			logging.Log("CRD-zkqhLXoLJpLhUE9").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
 			return err
 		}
 		return nil
@@ -62,6 +65,7 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 	if spec.Deploy {
 		if err := kubectlCmd.Run(); err != nil {
+			logging.Log("CRD-BcRGwbZs6siXam0").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
 			return err
 		}
 	}

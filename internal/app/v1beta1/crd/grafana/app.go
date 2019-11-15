@@ -9,6 +9,7 @@ import (
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
+	"github.com/caos/utils/logging"
 )
 
 var (
@@ -32,6 +33,7 @@ func New(toolsDirectoryPath string) *Grafana {
 
 func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
 
+	logging.Log("CRD-tS3NCOfewXYGvDE").Infof("Reconciling application %s", applicationName)
 	resultsFileDirectory := filepath.Join(g.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -40,6 +42,7 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
 		if err := helper.StructToYaml(values, path); err != nil {
+			logging.Log("CRD-ZXIlvuoOW1WWBpU").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
 			return err
 		}
 		return nil
@@ -62,6 +65,7 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 
 	if spec.Deploy {
 		if err := kubectlCmd.Run(); err != nil {
+			logging.Log("CRD-HcT1sFDBfJMCQHG").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
 			return err
 		}
 	}

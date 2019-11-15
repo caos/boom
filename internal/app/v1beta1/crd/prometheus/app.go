@@ -11,6 +11,7 @@ import (
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
+	"github.com/caos/utils/logging"
 )
 
 var (
@@ -35,6 +36,7 @@ func New(toolsDirectoryPath string) *Prometheus {
 
 func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Prometheus) error {
 
+	logging.Log("CRD-G9XDSdcIChwHP4w").Infof("Reconciling application %s", applicationName)
 	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -47,6 +49,7 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 
 	writeValues := func(path string) error {
 		if err := helper.StructToYaml(values, path); err != nil {
+			logging.Log("CRD-gYvMyYckyLVKDFR").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
 			return err
 		}
 		return nil
@@ -68,6 +71,7 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 	if spec.Deploy {
 		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 		if err := kubectlCmd.Run(); err != nil {
+			logging.Log("CRD-oJlB3cir9Pc8i1k").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
 			return err
 		}
 	}

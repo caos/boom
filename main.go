@@ -42,6 +42,7 @@ func init() {
 
 	_ = toolsetsv1beta1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
+
 }
 
 func main() {

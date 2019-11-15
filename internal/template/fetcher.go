@@ -2,6 +2,7 @@ package template
 
 import (
 	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/utils/logging"
 )
 
 type Fetcher struct {
@@ -29,5 +30,7 @@ func NewFetcher(name, chartName, chartVersion, indexName, indexUrl string) *Fetc
 }
 
 func (f *Fetcher) writeToYaml(fetcherFilePath string) error {
-	return helper.StructToYaml(f, fetcherFilePath)
+	err := helper.StructToYaml(f, fetcherFilePath)
+	logging.Log("FETCHER-qIBSyOB0CD37u0P").OnError(err).Debugf("Failed to write fetcher to yaml, path: %s", fetcherFilePath)
+	return err
 }

@@ -1,6 +1,9 @@
 package template
 
-import "github.com/caos/toolsop/internal/helper"
+import (
+	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/utils/logging"
+)
 
 type Templator struct {
 	ApiVersion       string    `yaml:"apiVersion"`
@@ -33,5 +36,7 @@ func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace s
 }
 
 func (t *Templator) writeToYaml(templatorFilePath string) error {
-	return helper.StructToYaml(t, templatorFilePath)
+	err := helper.StructToYaml(t, templatorFilePath)
+	logging.Log("KUSTOMIZE-OpcyPaHsFxThLqH").OnError(err).Debugf("Failed to write templator to file path %s", templatorFilePath)
+	return err
 }

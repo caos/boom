@@ -1,10 +1,10 @@
 package app
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/caos/toolsop/internal/toolset"
+	"github.com/caos/utils/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -45,6 +45,9 @@ func (a *App) ReloadCurrentToolsets(toolsDirectoryPath string, toolsetsPath stri
 }
 
 func (a *App) CleanUp() error {
+
+	logging.Log("APP-GiK5XPA5PzwQtjR").Info("Cleanup")
+
 	for _, g := range a.GitCrds {
 		err := g.CleanUp()
 		if err != nil {
@@ -52,7 +55,14 @@ func (a *App) CleanUp() error {
 		}
 	}
 
-	return os.RemoveAll(a.ToolsDirectoryPath)
+	for _, c := range a.Crds {
+		err := c.CleanUp()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
@@ -66,6 +76,7 @@ func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
 
 func (a *App) ReconcileGitCrds() error {
 	for _, crdGit := range a.GitCrds {
+		logging.Log("APP-aZAeIqcAmHzflSB").Infof("Started reconciling of GitCRDs")
 		err := crdGit.Reconcile(a.ToolsDirectoryPath, a.Toolsets)
 		if err != nil {
 			return err
@@ -75,6 +86,7 @@ func (a *App) ReconcileGitCrds() error {
 }
 
 func (a *App) ReconcileCrd(version, namespacedName string, getToolset func(obj runtime.Object) error) error {
+	logging.Log("APP-AyYgx5EDdR5tbt6").Infof("Started reconciling of CRD %s", namespacedName)
 	crd, ok := a.Crds[namespacedName]
 	if !ok {
 		newCrd, err := NewCrd(version, getToolset, a.ToolsDirectoryPath, a.Toolsets)
@@ -89,12 +101,4 @@ func (a *App) ReconcileCrd(version, namespacedName string, getToolset func(obj r
 		}
 	}
 	return nil
-}
-
-func (a *App) GetCrdDirectoryPath() string {
-	return a.CrdDirectoryPath
-}
-
-func (a *App) GetToolsDirectoryPath() string {
-	return a.CrdDirectoryPath
 }

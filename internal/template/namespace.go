@@ -1,6 +1,9 @@
 package template
 
-import "github.com/caos/toolsop/internal/helper"
+import (
+	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/utils/logging"
+)
 
 type Namespace struct {
 	ApiVersion string    `yaml:"apiVersion"`
@@ -19,5 +22,7 @@ func NewNamespace(name string) *Namespace {
 }
 
 func (n *Namespace) writeToYaml(filePath string) error {
-	return helper.StructToYaml(n, filePath)
+	err := helper.StructToYaml(n, filePath)
+	logging.Log("KUSTOMIZE-M0FA6gOrtD32Pgf").OnError(err).Debug("Failed to write namespace to file")
+	return err
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/toolsop/internal/template"
 	"github.com/caos/toolsop/internal/toolset"
+	"github.com/caos/utils/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -18,6 +19,10 @@ import (
 type Crd struct {
 	helm   *template.Helm
 	oldCrd *toolsetsv1beta1.Toolset
+}
+
+func (c *Crd) CleanUp() error {
+	return c.helm.CleanUp()
 }
 
 func GetVersion() string {
@@ -57,21 +62,17 @@ func (c *Crd) ReconcileWithFunc(getToolset func(obj runtime.Object) error, tools
 }
 
 func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
-	fetcherGen, err := c.NewFetcherGeneration(new)
-	if err != nil {
-		return nil
-	}
+	fetcherGen := c.NewFetcherGeneration(new)
 	if fetcherGen {
+		logging.Log("CRD-6e7csH4wkujsRYE").Infof("Generate template components")
 		if err := c.GenerateTemplateComponents(toolsDirectoryPath, toolsets, new); err != nil {
 			return err
 		}
 	}
 
-	template, err := c.NewTemplate(new)
-	if err != nil {
-		return nil
-	}
+	template := c.NewTemplate(new)
 	if template {
+		logging.Log("CRD-6e7csH4wkujsRYE").Infof("Reconcile applications for CRD %s", new.Name)
 		if err := c.ReconcileApplications(new.Name, toolsDirectoryPath, new.Spec); err != nil {
 			return err
 		}
@@ -94,27 +95,24 @@ func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *to
 	return nil
 }
 
-func (c *Crd) NewFetcherGeneration(new *toolsetsv1beta1.Toolset) (bool, error) {
+func (c *Crd) NewFetcherGeneration(new *toolsetsv1beta1.Toolset) bool {
 	if new.Spec.Name != c.oldCrd.Spec.Name || new.Spec.Version != c.oldCrd.Spec.Version {
-		return true, nil
+		return true
 	}
-	return false, nil
+	return false
 }
 
-func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) (bool, error) {
-	fetcher, err := c.NewFetcherGeneration(new)
-	if err != nil {
-		return false, err
-	}
+func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
+	fetcher := c.NewFetcherGeneration(new)
 
 	if fetcher ||
 		new.Spec.LoggingOperator != c.oldCrd.Spec.LoggingOperator ||
 		new.Spec.PrometheusOperator != c.oldCrd.Spec.PrometheusOperator ||
 		new.Spec.PrometheusNodeExporter != c.oldCrd.Spec.PrometheusNodeExporter ||
 		new.Spec.Grafana != c.oldCrd.Spec.Grafana {
-		return true, nil
+		return true
 	}
-	return false, nil
+	return false
 }
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {

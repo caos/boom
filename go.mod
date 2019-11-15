@@ -1,9 +1,10 @@
 module github.com/caos/toolsop
 
-go 1.12
+go 1.13
 
 require (
-	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
+	github.com/caos/utils/logging v0.0.0-20191104132131-b318678afbef
+	github.com/ghodss/yaml v1.0.0
 	github.com/gin-contrib/zap v0.0.0-20190911144541-f473495929db
 	github.com/go-logr/logr v0.1.0
 	github.com/onsi/ginkgo v1.6.0

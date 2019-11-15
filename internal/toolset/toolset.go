@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/caos/utils/logging"
+
 	"github.com/caos/toolsop/internal/helper"
 )
 
@@ -57,6 +59,7 @@ func getToolsets(toolsetsDirectoryPath string) ([]*Toolset, error) {
 	toolsets := make([]*Toolset, 0)
 	toolsetFolders, err := ioutil.ReadDir(toolsetsDirectoryPath)
 	if err != nil {
+		logging.Log("TS-AjCLBjOMeovPIDf").OnError(err).Debug("Failed to read toolsets directory")
 		return nil, err
 	}
 
@@ -85,6 +88,7 @@ func getVersions(toolsetDirectoryPath string) ([]*Version, error) {
 
 	versionFolders, err := ioutil.ReadDir(toolsetDirectoryPath)
 	if err != nil {
+		logging.Log("TS-cV82w0uvnhC96G5").OnError(err).Debug("Failed to read version folders of toolset directory")
 		return nil, err
 	}
 	for _, versionFolder := range versionFolders {
@@ -112,6 +116,7 @@ func getApplications(versionDirectoryPath string) ([]*Application, error) {
 
 	applicationFiles, err := ioutil.ReadDir(versionDirectoryPath)
 	if err != nil {
+		logging.Log("TS-JqHQ4YkUynUKV2L").OnError(err).Debug("Failed to read appplications of version directory")
 		return nil, err
 	}
 	for _, applicationFile := range applicationFiles {
@@ -122,6 +127,7 @@ func getApplications(versionDirectoryPath string) ([]*Application, error) {
 			applicationFilePath := filepath.Join(versionDirectoryPath, applicationFile.Name())
 			var file ApplicationFile
 			if err := helper.YamlToStruct(applicationFilePath, &file); err != nil {
+				logging.Log("TS-gXrpa0M0OjiOnrf").OnError(err).Debug("Failed to marshal application yaml to struct")
 				return nil, err
 			}
 
