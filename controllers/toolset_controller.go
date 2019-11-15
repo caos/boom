@@ -52,7 +52,7 @@ func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return nil
 	}
 
-	if err := r.App.ReconcileCrd(req.NamespacedName.String(), getToolset); err != nil {
+	if err := r.App.ReconcileCrd("v1beta1", req.NamespacedName.String(), getToolset); err != nil {
 		log.Error(err, "unable to reconcile Toolset")
 	}
 	r.Log.Info("Toolset sucessfully reconciled")

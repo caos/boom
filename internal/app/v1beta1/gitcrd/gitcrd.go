@@ -2,7 +2,7 @@ package gitcrd
 
 import (
 	"os"
-	"strings"
+	"path/filepath"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	appcrd "github.com/caos/toolsop/internal/app/v1beta1/crd"
@@ -18,18 +18,13 @@ type GitCrd struct {
 	crdPath          string
 }
 
-func New(crdDirectoryPath, crdUrl, crdSecretPath, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*GitCrd, error) {
+func New(git *git.Git, crdDirectoryPath, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*GitCrd, error) {
 
 	gitCrd := &GitCrd{
 		crdDirectoryPath: crdDirectoryPath,
 		crdPath:          crdPath,
+		git:              git,
 	}
-
-	g, err := git.New(crdDirectoryPath, crdUrl, crdSecretPath)
-	if err != nil {
-		return nil, err
-	}
-	gitCrd.git = g
 
 	toolsetCRD, err := gitCrd.GetCrdContent()
 	if err != nil {
@@ -63,7 +58,7 @@ func (c *GitCrd) Reconcile(toolsDirectoryPath string, toolsets *toolset.Toolsets
 }
 
 func (c *GitCrd) GetCrdContent() (*toolsetsv1beta1.Toolset, error) {
-	crdFilePath := strings.Join([]string{c.crdDirectoryPath, c.crdPath}, "/")
+	crdFilePath := filepath.Join(c.crdDirectoryPath, c.crdPath)
 
 	toolsetCRD := &toolsetsv1beta1.Toolset{}
 	if err := helper.YamlToStruct(crdFilePath, toolsetCRD); err != nil {

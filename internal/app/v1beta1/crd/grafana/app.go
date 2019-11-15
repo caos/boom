@@ -1,6 +1,8 @@
 package grafana
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -10,9 +12,10 @@ import (
 )
 
 var (
-	applicationName  = "grafana"
-	resultsFilename  = "results.yaml"
-	defaultNamespace = "monitoring"
+	applicationName      = "grafana"
+	resultsDirectoryName = "results"
+	resultsFileName      = "results.yaml"
+	defaultNamespace     = "monitoring"
 )
 
 type Grafana struct {
@@ -21,7 +24,7 @@ type Grafana struct {
 
 func New(toolsDirectoryPath string) *Grafana {
 	lo := &Grafana{
-		ApplicationDirectoryPath: strings.Join([]string{toolsDirectoryPath, applicationName}, "/"),
+		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
 	}
 
 	return lo
@@ -29,7 +32,10 @@ func New(toolsDirectoryPath string) *Grafana {
 
 func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
 
-	resultFilePath := strings.Join([]string{g.ApplicationDirectoryPath, resultsFilename}, "/")
+	resultsFileDirectory := filepath.Join(g.ApplicationDirectoryPath, resultsDirectoryName, overlay)
+	_ = os.RemoveAll(resultsFileDirectory)
+	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
+	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
@@ -217,7 +223,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *V
 
 			values.Dashboards.Dashboards = make(map[string]map[string]*DashboardFile, 0)
 			for _, dashboard := range dConfigMap.FileNames {
-				filePath := strings.Join([]string{"dashboards", dashboard.FileName}, "/")
+				filePath := filepath.Join("dashboards", dashboard.FileName)
 				values.Dashboards.Dashboards[dConfigMap.ConfigMap][dashboard.Name] = &DashboardFile{
 					File: filePath,
 				}

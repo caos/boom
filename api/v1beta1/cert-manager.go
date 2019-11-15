@@ -16,7 +16,10 @@ type Acme struct {
 	Email               string     `json:"email,omitempty"`
 	Server              string     `json:"server,omitempty"`
 	PrivateKeySecretRef *SecretRef `json:"privateKeySecretRef,omitempty"`
-	http01              struct{}   `json:"http01,omitempty"`
+	Http01              *Http01    `json:"http01,omitempty"`
+}
+
+type Http01 struct {
 }
 
 type SecretRef struct {

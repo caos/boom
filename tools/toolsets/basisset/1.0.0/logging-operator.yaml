@@ -1,0 +1,8 @@
+chart:
+  name: logging-operator
+  version: 2.4.0
+  index: 
+    name: banzaicloud-stable
+    url: kubernetes-charts.banzaicloud.com
+imageTags:
+  banzaicloud/logging-operator: 2.4.0

@@ -1,0 +1,5 @@
+chart:
+  name: prometheus-node-exporter
+  version: 1.7.3
+imageTags:
+  quay.io/prometheus/node-exporter: v0.18.0

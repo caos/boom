@@ -1,6 +1,8 @@
 package certmanager
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -10,9 +12,10 @@ import (
 )
 
 var (
-	applicationName  = "cert-manager"
-	resultsFilename  = "results.yaml"
-	defaultNamespace = "kube-system"
+	applicationName      = "cert-manager"
+	resultsDirectoryName = "results"
+	resultsFileName      = "results.yaml"
+	defaultNamespace     = "kube-system"
 )
 
 type CertManager struct {
@@ -21,7 +24,7 @@ type CertManager struct {
 
 func New(toolsDirectoryPath string) *CertManager {
 	c := &CertManager{
-		ApplicationDirectoryPath: strings.Join([]string{toolsDirectoryPath, applicationName}, "/"),
+		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
 	}
 
 	return c
@@ -29,7 +32,10 @@ func New(toolsDirectoryPath string) *CertManager {
 
 func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.CertManager) error {
 
-	resultFilePath := strings.Join([]string{c.ApplicationDirectoryPath, resultsFilename}, "/")
+	resultsFileDirectory := filepath.Join(c.ApplicationDirectoryPath, resultsDirectoryName, overlay)
+	_ = os.RemoveAll(resultsFileDirectory)
+	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
+	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
 	prefix := spec.Prefix
 	if prefix == "" {

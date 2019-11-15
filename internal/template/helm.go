@@ -3,6 +3,7 @@ package template
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/caos/toolsop/internal/toolset"
@@ -57,10 +58,10 @@ func NewHelm(toolsDirectoryPath string, toolsets *toolset.Toolsets, crdName, crd
 
 func (h *Helm) CleanUp() {
 	for name := range h.Applications {
-		fetcherDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay}, "/")
+		fetcherDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay)
 		_ = os.RemoveAll(fetcherDirectoryPath)
 
-		templatorDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, templatorDirectoryName, h.Overlay}, "/")
+		templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, templatorDirectoryName, h.Overlay)
 		_ = os.RemoveAll(templatorDirectoryPath)
 	}
 }
@@ -72,11 +73,11 @@ func (h *Helm) collectApplications(crdName, crdVersion string) {
 				if version.Version == crdVersion {
 					for _, application := range version.Applications {
 						app := &Application{
-							ChartName:    application.Chart.Name,
-							ChartVersion: application.Chart.Version,
-							IndexName:    application.Chart.Index.Name,
-							IndexUrl:     application.Chart.Index.URL,
-							ImageTags:    application.ImageTags,
+							ChartName:    application.File.Chart.Name,
+							ChartVersion: application.File.Chart.Version,
+							IndexName:    application.File.Chart.Index.Name,
+							IndexUrl:     application.File.Chart.Index.URL,
+							ImageTags:    application.File.ImageTags,
 						}
 						h.Applications[application.Name] = app
 					}
@@ -89,7 +90,7 @@ func (h *Helm) collectApplications(crdName, crdVersion string) {
 func (h *Helm) GetDefaultValuesPath(appName string) string {
 	application := h.Applications[appName]
 	dir := strings.Join([]string{application.ChartName, application.ChartVersion}, "-")
-	defaultValuesFilePath := strings.Join([]string{h.ToolsDirectoryPath, "charts", dir, application.ChartName, "values.yaml"}, "/")
+	defaultValuesFilePath := filepath.Join(h.ToolsDirectoryPath, "charts", dir, application.ChartName, "values.yaml")
 	return defaultValuesFilePath
 }
 
@@ -102,16 +103,16 @@ func (h *Helm) generateFetchers() error {
 	h.CleanUp()
 
 	for name, application := range h.Applications {
-		fetcherDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay}, "/")
+		fetcherDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay)
 		_ = os.MkdirAll(fetcherDirectoryPath, os.ModePerm)
 
-		fetcherFilePath := strings.Join([]string{fetcherDirectoryPath, fetcherFileName}, "/")
+		fetcherFilePath := filepath.Join(fetcherDirectoryPath, fetcherFileName)
 		fetcher := NewFetcher(name, application.ChartName, application.ChartVersion, application.IndexName, application.IndexUrl)
 		if err := fetcher.writeToYaml(fetcherFilePath); err != nil {
 			return nil
 		}
 
-		kustomizationFilePath := strings.Join([]string{fetcherDirectoryPath, kustomizationFileName}, "/")
+		kustomizationFilePath := filepath.Join(fetcherDirectoryPath, kustomizationFileName)
 		filePaths := []string{fetcherFileName}
 		if err := generateKustomization(kustomizationFilePath, []string{}, filePaths); err != nil {
 			return err
@@ -141,10 +142,19 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 		return nil
 	}
 
-	cdCommand := strings.Join([]string{"cd", h.ToolsDirectoryPath}, " ")
+	base, err := filepath.Abs(h.ToolsDirectoryPath)
+	if err != nil {
+		return err
+	}
+	result, err := filepath.Abs(resultfilepath)
+	if err != nil {
+		return err
+	}
+
+	cdCommand := strings.Join([]string{"cd", base}, " ")
 	overlay := strings.Join([]string{templatorDirectoryName, h.Overlay}, "/")
 	startCommand := strings.Join([]string{"./start.sh", appName, overlay}, " ")
-	startCommand = strings.Join([]string{startCommand, ">", resultfilepath}, " ")
+	startCommand = strings.Join([]string{startCommand, ">", result}, " ")
 	command := strings.Join([]string{cdCommand, startCommand}, " && ")
 
 	cmd := exec.Command("/bin/sh", "-c", command)
@@ -152,18 +162,18 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 }
 
 func (h *Helm) generateTemplators(appName, releaseName, releaseNamespace string, writeValues func(path string) error) error {
-	templatorDirectoryPath := strings.Join([]string{h.ToolsDirectoryPath, appName, templatorDirectoryName, h.Overlay}, "/")
+	templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, appName, templatorDirectoryName, h.Overlay)
 	_ = os.RemoveAll(templatorDirectoryPath)
 	_ = os.MkdirAll(templatorDirectoryPath, os.ModePerm)
 
 	// values file
-	valuesFilePath := strings.Join([]string{templatorDirectoryPath, valuesFileName}, "/")
+	valuesFilePath := filepath.Join(templatorDirectoryPath, valuesFileName)
 	if err := writeValues(valuesFilePath); err != nil {
 		return err
 	}
 
 	// templator with valuesfilename
-	templatorFilePath := strings.Join([]string{templatorDirectoryPath, templatorFileName}, "/")
+	templatorFilePath := filepath.Join(templatorDirectoryPath, templatorFileName)
 	app := h.Applications[appName]
 	templator := NewTemplator(appName, app.ChartName, app.ChartVersion, releaseName, releaseNamespace)
 	err := templator.writeToYaml(templatorFilePath)
@@ -171,14 +181,14 @@ func (h *Helm) generateTemplators(appName, releaseName, releaseNamespace string,
 		return err
 	}
 
-	namespaceFilePath := strings.Join([]string{templatorDirectoryPath, namespaceFileName}, "/")
+	namespaceFilePath := filepath.Join(templatorDirectoryPath, namespaceFileName)
 	namespace := NewNamespace(releaseNamespace)
 	err = namespace.writeToYaml(namespaceFilePath)
 	if err != nil {
 		return err
 	}
 	//kustomization with templatorfilename
-	kustomizationFilePath := strings.Join([]string{templatorDirectoryPath, kustomizationFileName}, "/")
+	kustomizationFilePath := filepath.Join(templatorDirectoryPath, kustomizationFileName)
 	recources := []string{namespaceFileName}
 	generators := []string{templatorFileName}
 	err = generateKustomization(kustomizationFilePath, recources, generators)

@@ -1,0 +1,87 @@
+#!/bin/bash
+# Copyright 2019 The Kubernetes Authors.
+# SPDX-License-Identifier: Apache-2.0
+
+# Helm chart inflator
+#
+# Reads a file like this
+#
+#  apiVersion: kustomize.config.k8s.io/v1
+#  kind: ChartInflator
+#  metadata:
+#    name: notImportantHere
+#  chartName: nameOfStableChart
+#  values: /abs/path/to/local/values/file
+#  chartHome: /abs/path/local/chart/storage
+#  helmHome: /abs/path/to/helm/config
+#  helmBin: /abs/path/to/helmBin
+#  releaseNam: nameOfHelmRelease
+#  releaseNamespace: namespaceWhereHelmWouldApply
+#
+# fetches the given chart from stable/$chartName,
+# and inflates it to stdout, using the given values file.
+#
+# chartDir default: $TMP_DIR/charts
+#
+# Example execution:
+# ./plugin/someteam.example.com/v1/ChartInflator configFile.yaml
+
+# TODO: allow specification of a specific chart VERSION
+# so this test doesn't break every time minecraft is upgraded :P
+# See https://github.com/helm/helm/issues/4008
+
+set -e
+
+# Yaml parsing is a ridiculous thing to do in bash,
+# but let's try:
+function parseYaml {
+  local file=$1
+  while read -r line
+  do
+    local k=${line%:*}
+    local v=${line#*:}
+
+    [ "$k" == "chartName" ] && chartName=$v
+    [ "$k" == "chartVersion" ] && chartVersion=$v
+    [ "$k" == "valuesFile" ] && valuesFile=$v
+    [ "$k" == "releaseName" ] && releaseName=$v
+    [ "$k" == "releaseNamespace" ] && releaseNamespace=$v
+  done <"$file"
+
+  # Trim leading space
+  chartName="${chartName#"${chartName%%[![:space:]]*}"}"
+  chartVersion="${chartVersion#"${chartVersion%%[![:space:]]*}"}"
+  valuesFile="${valuesFile#"${valuesFile%%[![:space:]]*}"}"
+  releaseName="${releaseName#"${releaseName%%[![:space:]]*}"}"
+  releaseNamespace="${releaseNamespace#"${releaseNamespace%%[![:space:]]*}"}"
+}
+
+parseYaml $1
+
+helmHome=${TOOLS_HOME}/helm
+chartHome=${TOOLS_HOME}/charts
+
+if [ -z "$valuesFile" ]; then
+  valuesFile=$chartHome/$chartName/values.yaml
+fi
+
+if [ -z "$releaseName" ]; then
+  releaseName=caos
+fi
+
+if [ -z "$releaseNamespace" ]; then
+  releaseNamespace=default
+fi
+
+function doHelm {
+  helm --home $helmHome $@
+}
+
+# The init command is extremely chatty
+# doHelm init --client-only >& /dev/null
+
+doHelm template \
+    --name $releaseName \
+    --namespace $releaseNamespace \
+    --values $valuesFile \
+    ${chartHome}/${chartName}-${chartVersion}/$chartName

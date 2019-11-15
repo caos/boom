@@ -1,6 +1,8 @@
 package prometheusoperator
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -10,8 +12,10 @@ import (
 )
 
 var (
-	applicationName = "prometheus-operator"
-	resultsFilename = "results.yaml"
+	applicationName      = "prometheus-operator"
+	resultsDirectoryName = "results"
+	resultsFilename      = "results.yaml"
+	defaultNamespace     = "monitoring"
 )
 
 type PrometheusOperator struct {
@@ -20,14 +24,18 @@ type PrometheusOperator struct {
 
 func New(toolsDirectoryPath string) *PrometheusOperator {
 	lo := &PrometheusOperator{
-		ApplicationDirectoryPath: strings.Join([]string{toolsDirectoryPath, applicationName}, "/"),
+		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
 	}
 
 	return lo
 }
 
-func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
-	resultFilePath := strings.Join([]string{l.ApplicationDirectoryPath, resultsFilename}, "/")
+func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
+
+	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
+	_ = os.RemoveAll(resultsFileDirectory)
+	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
+	resultFilePath := filepath.Join(resultsFileDirectory, resultsFilename)
 
 	values, err := specToValues(helm.GetImageTags(applicationName), spec)
 	if err != nil {
@@ -47,7 +55,7 @@ func (l *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 	}
 	namespace := spec.Namespace
 	if namespace == "" {
-		namespace = strings.Join([]string{overlay, "monitoring"}, "-")
+		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
 	}
 
 	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {

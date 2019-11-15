@@ -20,6 +20,10 @@ type Crd struct {
 	oldCrd *toolsetsv1beta1.Toolset
 }
 
+func GetVersion() string {
+	return "v1beta1"
+}
+
 func NewWithFunc(getToolset func(obj runtime.Object) error, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
 	var toolsetCRD *toolsetsv1beta1.Toolset
 	if err := getToolset(toolsetCRD); err != nil {

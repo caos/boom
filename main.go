@@ -46,7 +46,7 @@ func init() {
 
 func main() {
 	var metricsAddr string
-	var toolsDirectoryPath, toolsSecret, toolsUrl, toolsetsPath string
+	var toolsDirectoryPath, toolsetsPath string
 	var gitCrdPath, gitCrdUrl, gitCrdSecret, gitCrdDirectoryPath string
 	var enableLeaderElection bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -58,10 +58,8 @@ func main() {
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd/example/crd.yaml", "The path to the CRD in the cloned git-repo ")
 
-	flag.StringVar(&toolsUrl, "tools-url", "git@github.com:caos/tools.git", "The URL from where the tools-repo should be cloned from")
-	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools-repo should be cloned to")
-	flag.StringVar(&toolsSecret, "tools-secret", "./secretdata/ssh-keys/id_rsa-toolsop-tools-read", "The secret which get used to clone the tools-repo")
-	flag.StringVar(&toolsetsPath, "tools-toolset-path", "./toolsets/toolsets.yaml", "The path to the yaml which defined the toolsets and their versions")
+	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "tools", "The local path where the tools folder should be")
+	flag.StringVar(&toolsetsPath, "tools-toolset-path", "toolsets", "The path to the fold structue which defines the toolsets and their versions")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(func(o *zap.Options) {
@@ -81,7 +79,7 @@ func main() {
 
 	ctx := context.Background()
 
-	app, err := app.New(toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath, toolsUrl, toolsSecret)
+	app, err := app.New(toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath)
 	if err != nil {
 		setupLog.Error(err, "unable to start app")
 		os.Exit(1)

@@ -2,9 +2,8 @@ package app
 
 import (
 	"os"
-	"strings"
+	"path/filepath"
 
-	"github.com/caos/toolsop/internal/git"
 	"github.com/caos/toolsop/internal/toolset"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -13,28 +12,21 @@ type App struct {
 	Toolsets           *toolset.Toolsets
 	ToolsDirectoryPath string
 	CrdDirectoryPath   string
-	ToolsGit           *git.Git
 	GitCrds            []GitCrd
 	Crds               map[string]Crd
 }
 
-func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath, toolsUrl, toolsSecret string) (*App, error) {
+func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath string) (*App, error) {
 
 	app := &App{
 		ToolsDirectoryPath: toolsDirectoryPath,
 		CrdDirectoryPath:   crdDirectoryPath,
 	}
 
-	g, err := git.New(toolsDirectoryPath, toolsUrl, toolsSecret)
-	if err != nil {
-		return nil, err
-	}
-	app.ToolsGit = g
-
 	app.Crds = make(map[string]Crd, 0)
 	app.GitCrds = make([]GitCrd, 0)
 
-	err = app.ReloadCurrentToolsets(app.ToolsDirectoryPath, toolsetsPath)
+	err := app.ReloadCurrentToolsets(app.ToolsDirectoryPath, toolsetsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +35,7 @@ func New(toolsDirectoryPath, crdDirectoryPath, toolsetsPath, toolsUrl, toolsSecr
 }
 
 func (a *App) ReloadCurrentToolsets(toolsDirectoryPath string, toolsetsPath string) error {
-	toolsetsFilePath := strings.Join([]string{toolsDirectoryPath, toolsetsPath}, "/")
+	toolsetsFilePath := filepath.Join(toolsDirectoryPath, toolsetsPath)
 	toolsets, err := toolset.NewToolsetsFromYaml(toolsetsFilePath)
 	if err != nil {
 		return err
@@ -63,8 +55,8 @@ func (a *App) CleanUp() error {
 	return os.RemoveAll(a.ToolsDirectoryPath)
 }
 
-func (a *App) AddGitCrd(version, url, secretPath, crdPath string) error {
-	c, err := NewGitCrd(version, a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
+func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
+	c, err := NewGitCrd(a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
 	if err != nil {
 		return err
 	}
@@ -72,7 +64,7 @@ func (a *App) AddGitCrd(version, url, secretPath, crdPath string) error {
 	return nil
 }
 
-func (a *App) ReconcileGitCrds(version string) error {
+func (a *App) ReconcileGitCrds() error {
 	for _, crdGit := range a.GitCrds {
 		err := crdGit.Reconcile(a.ToolsDirectoryPath, a.Toolsets)
 		if err != nil {

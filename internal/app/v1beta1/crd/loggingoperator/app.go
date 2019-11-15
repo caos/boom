@@ -1,6 +1,8 @@
 package loggingoperator
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -10,8 +12,10 @@ import (
 )
 
 var (
-	applicationName = "logging-operator"
-	resultsFilename = "results.yaml"
+	applicationName      = "logging-operator"
+	resultsDirectoryName = "results"
+	resultsFileName      = "results.yaml"
+	defaultNamespace     = "logging"
 )
 
 type LoggingOperator struct {
@@ -20,15 +24,17 @@ type LoggingOperator struct {
 
 func New(toolsDirectoryPath string) *LoggingOperator {
 	lo := &LoggingOperator{
-		ApplicationDirectoryPath: strings.Join([]string{toolsDirectoryPath, applicationName}, "/"),
+		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
 	}
 
 	return lo
 }
 
 func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.LoggingOperator) error {
-
-	resultFilePath := strings.Join([]string{l.ApplicationDirectoryPath, resultsFilename}, "/")
+	resultsFileDirectory := filepath.Join(l.ApplicationDirectoryPath, resultsDirectoryName, overlay)
+	_ = os.RemoveAll(resultsFileDirectory)
+	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
+	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
@@ -44,7 +50,7 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 	}
 	namespace := spec.Namespace
 	if namespace == "" {
-		namespace = strings.Join([]string{overlay, "logging"}, "-")
+		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
 	}
 
 	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {

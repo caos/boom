@@ -1,6 +1,8 @@
 package ambassador
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -10,9 +12,10 @@ import (
 )
 
 var (
-	applicationName  = "ambassador"
-	resultsFilename  = "results.yaml"
-	defaultNamespace = "ambassador"
+	applicationName      = "ambassador"
+	resultsDirectoryName = "results"
+	resultsFileName      = "results.yaml"
+	defaultNamespace     = "ambassador"
 )
 
 type Ambassador struct {
@@ -21,15 +24,18 @@ type Ambassador struct {
 
 func New(toolsDirectoryPath string) *Ambassador {
 	c := &Ambassador{
-		ApplicationDirectoryPath: strings.Join([]string{toolsDirectoryPath, applicationName}, "/"),
+		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
 	}
 
 	return c
 }
 
-func (c *Ambassador) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Ambassador) error {
+func (a *Ambassador) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Ambassador) error {
 
-	resultFilePath := strings.Join([]string{c.ApplicationDirectoryPath, resultsFilename}, "/")
+	resultsFileDirectory := filepath.Join(a.ApplicationDirectoryPath, resultsDirectoryName, overlay)
+	_ = os.RemoveAll(resultsFileDirectory)
+	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
+	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
 	prefix := spec.Prefix
 	if prefix == "" {
