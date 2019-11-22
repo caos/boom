@@ -1,0 +1,11 @@
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+  - image: eu.gcr.io/caos-ops/toolsop
+    docker:
+      buildArgs:
+        ANSIBLEVAULT_SECRET: CWwOU07FJl7tFKqpGb2e1oez
+deploy:
+  kustomize: 
+    path: ./config/manager

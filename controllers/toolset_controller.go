@@ -33,11 +33,22 @@ type ToolsetReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	App    app.App
+	App    *app.App
 }
 
 // +kubebuilder:rbac:groups=toolsets.toolsop.caos.ch,resources=toolsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=toolsets.toolsop.caos.ch,resources=toolsets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=*,verbs=*
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=apps,resources=*,verbs=*
+// +kubebuilder:rbac:groups=batch,resources=*,verbs=*
+// +kubebuilder:rbac:groups=extensions,resources=*,verbs=*
+// +kubebuilder:rbac:groups=logging.banzaicloud.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=*,verbs=*
+// +kubebuilder:rbac:groups=policy,resources=*,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=apiregistration.k8s.io,resources=*,verbs=*
 
 func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

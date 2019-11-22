@@ -1,11 +1,11 @@
 package v1beta1
 
 type Prometheus struct {
-	Prefix          string            `yaml:"prefix"`
-	Namespace       string            `yaml:"namespace"`
-	Deploy          bool              `yaml:"deploy"`
-	MonitorLabels   map[string]string `yaml:"monitorLabel"`
-	ServiceMonitors []*ServiceMonitor `yaml:"serviceMonitors"`
+	Prefix          string            `json:"prefix" yaml:"prefix"`
+	Namespace       string            `json:"namespace" yaml:"namespace"`
+	Deploy          bool              `json:"deploy" yaml:"deploy"`
+	MonitorLabels   map[string]string `json:"monitorLabel" yaml:"monitorLabel"`
+	ServiceMonitors []*ServiceMonitor `json:"serviceMonitors" yaml:"serviceMonitors"`
 	// Annotations           map[string]string `json:"annotations,omitempty"`
 	// RemoteWrite           []*RemoteWrite    `json:"remotewrite,omitempty"`
 }

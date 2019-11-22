@@ -1,13 +1,15 @@
 package git
 
 import (
+	"io/ioutil"
 	"os"
 
 	"github.com/caos/utils/logging"
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
+	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
 type Git struct {
@@ -25,12 +27,14 @@ func New(localPath, url, secretPath string) (*Git, error) {
 	}
 	g.Repo = repo
 
+	logging.Log("GIT-4Sia0VjJ79gb7cw").Info("Cloned...")
 	ref, err := g.Repo.Head()
 	if err != nil {
 		logging.Log("GIT-mMj1dZIWSoG2nZx").OnError(err).Debugf("Failed to get head of repo %s", url)
 		return nil, err
 	}
 
+	logging.Log("GIT-4Sia0VjJ79gb7cw").Info("Get last commit...")
 	commit, err := g.Repo.CommitObject(ref.Hash())
 	if err != nil {
 		logging.Log("GIT-juNgPH9agv09jNr").OnError(err).Debugf("Failed to get last commit of repo %s", url)
@@ -42,21 +46,38 @@ func New(localPath, url, secretPath string) (*Git, error) {
 		return nil, err
 	}
 	g.prevTree = prevTree
+	logging.Log("GIT-pQnw5FfIqAk0eWc").Infof("Cloned new GitCRD %s%s", url, localPath)
 
 	return g, nil
 }
 
 func (g *Git) cloneRepo(localPath, url, secretPath string) (*git.Repository, error) {
-	publicKey, err := ssh.NewPublicKeysFromFile("git", secretPath, "")
+
+	logging.Log("GIT-vNU9maj2Rfo5rRU").Infof("SecretPath %s", secretPath)
+	sshKey, err := ioutil.ReadFile(secretPath)
 	if err != nil {
-		logging.Log("GIT-ZImVXjm9lnrJwSu").OnError(err).Debugf("Failed to parse secret for repo %s", url)
 		return nil, err
 	}
+	signer, err := ssh.ParsePrivateKey([]byte(sshKey))
+	if err != nil {
+		return nil, err
+	}
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+	auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
+	// auth, err := ssh.NewPublicKeysFromFile("git", secretPath, "")
+	// if err != nil {
+	// 	logging.Log("GIT-ZImVXjm9lnrJwSu").OnError(err).Debugf("Failed to parse secret for repo %s", url)
+	// 	return nil, err
+	// }
+
+	logging.Log("GIT-6ccjBaSlm0DwboL").Infof("PlainClone %s %s", localPath, url)
 	return git.PlainClone(localPath, false, &git.CloneOptions{
-		URL:      url,
-		Progress: os.Stdout,
-		Auth:     publicKey,
+		URL:          url,
+		SingleBranch: true,
+		Depth:        1,
+		Progress:     os.Stdout,
+		Auth:         auth,
 	})
 }
 

@@ -34,8 +34,84 @@ spec:
         spec:
           description: ToolsetSpec defines the desired state of Toolset
           properties:
+            ambassador:
+              properties:
+                deploy:
+                  type: boolean
+                loadBalancerIP:
+                  type: string
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            cert-manager:
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            grafana:
+              properties:
+                admin:
+                  properties:
+                    existingSecret:
+                      type: string
+                    passwordKey:
+                      type: string
+                    userKey:
+                      type: string
+                  type: object
+                dashboards:
+                  items:
+                    properties:
+                      configMap:
+                        type: string
+                      files:
+                        items:
+                          properties:
+                            filename:
+                              type: string
+                            name:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
+                datasources:
+                  items:
+                    properties:
+                      access:
+                        type: string
+                      isDefault:
+                        type: boolean
+                      name:
+                        type: string
+                      type:
+                        type: string
+                      url:
+                        type: string
+                    type: object
+                  type: array
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
             logging-operator:
               properties:
+                deploy:
+                  type: boolean
+                logging:
+                  properties:
+                    controlNamespace:
+                      type: string
+                  type: object
                 namespace:
                   type: string
                 prefix:
@@ -45,54 +121,99 @@ spec:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "make" to regenerate code after modifying this file'
               type: string
-            prometheus-operator:
-              description: PrometheusOperator defines the desired state for the prometheus
-                operator
+            prometheus:
               properties:
+                deploy:
+                  type: boolean
+                monitorLabel:
+                  additionalProperties:
+                    type: string
+                  type: object
                 namespace:
                   type: string
                 prefix:
                   type: string
-                prometheus:
-                  properties:
-                    annotations:
-                      additionalProperties:
-                        type: string
-                      type: object
-                    remotewrite:
-                      items:
-                        properties:
-                          url:
-                            type: string
-                        type: object
-                      type: array
-                  type: object
-                servicemonitor:
-                  properties:
-                    annotations:
-                      additionalProperties:
-                        type: string
-                      type: object
-                    interval:
-                      type: string
-                    relabelings:
-                      items:
-                        properties:
-                          action:
-                            type: string
-                          regex:
-                            type: string
-                          replacement:
-                            type: string
-                          sourcelabels:
-                            items:
+                serviceMonitors:
+                  items:
+                    properties:
+                      endpoints:
+                        items:
+                          properties:
+                            interval:
                               type: string
-                            type: array
-                          targetlabel:
-                            type: string
+                            path:
+                              type: string
+                            port:
+                              type: string
+                            scheme:
+                              type: string
+                            targetPort:
+                              type: string
+                          type: object
+                        type: array
+                      interval:
+                        type: string
+                      name:
+                        type: string
+                      relabelings:
+                        items:
+                          properties:
+                            action:
+                              type: string
+                            regex:
+                              type: string
+                            replacement:
+                              type: string
+                            sourcelabels:
+                              items:
+                                type: string
+                              type: array
+                            targetlabel:
+                              type: string
+                          type: object
+                        type: array
+                      serviceMatchingLabels:
+                        additionalProperties:
+                          type: string
                         type: object
-                      type: array
+                    type: object
+                  type: array
+              required:
+              - deploy
+              - monitorLabel
+              - namespace
+              - prefix
+              - serviceMonitors
+              type: object
+            prometheus-node-exporter:
+              properties:
+                deploy:
+                  type: boolean
+                monitor:
+                  properties:
+                    enabled:
+                      type: boolean
+                    namespace:
+                      type: string
+                  required:
+                  - enabled
+                  - namespace
                   type: object
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            prometheus-operator:
+              description: PrometheusOperator defines the desired state for the prometheus
+                operator
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
               type: object
             version:
               type: string

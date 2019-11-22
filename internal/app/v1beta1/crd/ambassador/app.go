@@ -97,7 +97,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador,
 		DNSPolicy:   "ClusterFirst",
 		HostNetwork: false,
 		Service: &Service{
-			Type: "LoadBalancer",
+			Type: "NodePort",
 			Ports: []*Port{
 				&Port{
 					Name:       "http",
@@ -109,7 +109,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador,
 					TargetPort: 8443,
 				},
 			},
-			Annotations: defaultServiceAnnotations(),
+			Annotations: make(map[string]string, 0),
 		},
 		AdminService: &AdminService{
 			Create: true,
