@@ -17,6 +17,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         ANSIBLEVAULT_SECRET: ${{ secrets.ANSIBLEVAULT_SECRET }}
       run: |
+        export IMAGE=docker.pkg.github.com/caos/toolsop/toolsop
         export TAG_LATEST=${IMAGE}:latest
         docker build --tag ${TAG_LATEST} --build-arg ANSIBLEVAULT_SECRET=${ANSIBLEVAULT_SECRET} --file ./Dockerfile .
 
@@ -24,7 +25,6 @@ jobs:
         [[ "$GIT_TAG" == "v" ]] && echo "Exiting, as no new version needs to be released" && exit 0
         export IMAGE_VERSION=${IMAGE}:${GIT_TAG}
         docker login docker.pkg.github.com -u ci -p ${GITHUB_TOKEN}
-        export IMAGE=docker.pkg.github.com/caos/toolsop/toolsop
         docker tag ${TAG_LATEST} ${TAG_VERSION}
         docker push ${TAG_LATEST}
         docker push ${TAG_VERSION}
