@@ -23,7 +23,7 @@ jobs:
 
         export GIT_TAG="v$(npx semantic-release --dry-run --plugins=@semantic-release/commit-analyzer --analize-commits | grep "The next release version is" | sed -ne 's/.*The\ next\ release\ version\ is\ \([0-9]\+\.[0-9]\+\.[0-9]\+\)$/\1/p')"
         [[ "$GIT_TAG" == "v" ]] && echo "Exiting, as no new version needs to be released" && exit 0
-        export IMAGE_VERSION=${IMAGE}:${GIT_TAG}
+        export TAG_VERSION=${IMAGE}:${GIT_TAG}
         docker login docker.pkg.github.com -u ci -p ${GITHUB_TOKEN}
         docker tag ${TAG_LATEST} ${TAG_VERSION}
         docker push ${TAG_LATEST}
