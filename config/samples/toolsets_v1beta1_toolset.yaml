@@ -1,7 +1,40 @@
-apiVersion: toolsets.toolsop.caos.ch/v1beta1
+---
+apiVersion: toolsop.caos.ch/v1beta1
 kind: Toolset
 metadata:
-  name: toolset-sample
+  name: caos
+  namespace: tooling
 spec:
-  # Add fields here
-  foo: bar
+  version: "1.0.0"
+  name: basisset
+  prometheus-operator:
+    deploy: true
+  logging-operator:
+    deploy: true
+    logging:
+      controlNamespace: logging
+  prometheus-node-exporter:
+    deploy: true
+    monitor:
+      enabled: true
+      namespace: caos-monitoring
+  grafana:
+    deploy: true
+    datasources:
+      - name: prometheus
+        type: prometheus
+        url: http://caos-prometheus-operator-prometheus.caos-monitoring.svc:9090      
+        access: proxy
+  prometheus: 
+    deploy: true
+    serviceMonitors:
+      - name: caos-prometheus-node-exporter
+        serviceMatchingLabels:
+          app: prometheus-node-exporter
+          release: caos
+        Endpoints:
+          - port: metrics
+  cert-manager:
+    deploy: true
+  ambassador:
+    deploy: true
