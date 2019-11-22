@@ -23,7 +23,7 @@ jobs:
         export IMAGE=docker.pkg.github.com/caos/toolsop/toolsop
         export TAG_LATEST=${IMAGE}:latest
         export TAG_VERSION=${IMAGE}:${GIT_TAG}
-        docker build --tag ${TAG_LATEST} --tag ${TAG_VERSION} --build-arg ${ANSIBLEVAULT_SECRET} --file ./Dockerfile .
+        docker build --tag ${TAG_LATEST} --tag ${TAG_VERSION} --build-arg ANSIBLEVAULT_SECRET=${ANSIBLEVAULT_SECRET} --file ./Dockerfile .
         docker push ${TAG_LATEST}
         docker push ${TAG_VERSION}
         npx semantic-release
