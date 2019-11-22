@@ -1,7 +1,7 @@
 # toolsop
 Operator for the deployed toolset in a kubernetes cluster
 
-# local
+## local
 
 To decrypt the secretdata to run it locally:
 
@@ -23,6 +23,15 @@ To build it:
 
 ```bash
 docker build --build-arg ANSIBLEVAULT_SECRET=$(gopass caos-secrets/technical/toolsop/ansible-vault) -t controller:latest .
+```
+
+## cluster
+
+To deploy the toolsop to a cluster:
+
+```bash
+cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/toolsop/toolsop:latest
+kustomize build config/default | kubectl apply -f -
 ```
 
 
