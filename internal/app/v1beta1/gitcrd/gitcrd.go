@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/caos/orbiter/logging"
+
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	appcrd "github.com/caos/toolsop/internal/app/v1beta1/crd"
 	"github.com/caos/toolsop/internal/git"
@@ -18,7 +20,7 @@ type GitCrd struct {
 	crdPath          string
 }
 
-func New(git *git.Git, crdDirectoryPath, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*GitCrd, error) {
+func New(logger logging.Logger, git *git.Git, crdDirectoryPath, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*GitCrd, error) {
 
 	gitCrd := &GitCrd{
 		crdDirectoryPath: crdDirectoryPath,
@@ -31,7 +33,7 @@ func New(git *git.Git, crdDirectoryPath, crdPath, toolsDirectoryPath string, too
 		return nil, err
 	}
 
-	localcrd, err := appcrd.New(toolsetCRD, toolsDirectoryPath, toolsets)
+	localcrd, err := appcrd.New(logger, toolsetCRD, toolsDirectoryPath, toolsets)
 	if err != nil {
 		return nil, err
 	}

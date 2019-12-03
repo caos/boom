@@ -1,22 +1,17 @@
 module github.com/caos/toolsop
 
-go 1.13
+go 1.12
 
 require (
-	github.com/caos/utils/logging v0.0.0-20191104132131-b318678afbef
-	github.com/ghodss/yaml v1.0.0
-	github.com/gin-contrib/zap v0.0.0-20190911144541-f473495929db
+	github.com/caos/orbiter v0.2.0
 	github.com/go-logr/logr v0.1.0
-	github.com/onsi/ginkgo v1.6.0
-	github.com/onsi/gomega v1.4.2
-	github.com/rs/zerolog v1.16.0
-	golang.org/x/crypto v0.0.0-20191105034135-c7e5f84aec59
-	golang.org/x/net v0.0.0-20191101175033-0deb6923b6d9 // indirect
-	golang.org/x/sys v0.0.0-20191104094858-e8c54fb511f6 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	github.com/onsi/ginkgo v1.10.1
+	github.com/onsi/gomega v1.7.0
+	github.com/pkg/errors v0.8.1
+	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.2
-	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
-	k8s.io/client-go v0.0.0-20190918200256-06eb1244587a
-	sigs.k8s.io/controller-runtime v0.3.0
+	gopkg.in/yaml.v2 v2.2.7
+	k8s.io/apimachinery v0.0.0-20191123233150-4c4803ed55e3
+	k8s.io/client-go v0.0.0-20190918160344-1fbdaa4c8d90
+	sigs.k8s.io/controller-runtime v0.4.0
 )

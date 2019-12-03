@@ -30,7 +30,7 @@ spec:
         - "-git-crd-secret" 
         - "/secrets/tools-secret/id_rsa-toolsop-tools-read"
         image: controller:latest
-        imagePullPolicy: Never
+        imagePullPolicy: IfNotPresent
         name: manager
         # resources:
         #   limits:

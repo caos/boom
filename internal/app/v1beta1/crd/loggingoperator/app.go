@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
+
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
-	"github.com/caos/utils/logging"
 )
 
 var (
@@ -21,11 +23,13 @@ var (
 
 type LoggingOperator struct {
 	ApplicationDirectoryPath string
+	logger                   logging.Logger
 }
 
-func New(toolsDirectoryPath string) *LoggingOperator {
+func New(logger logging.Logger, toolsDirectoryPath string) *LoggingOperator {
 	lo := &LoggingOperator{
 		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
+		logger:                   logger,
 	}
 
 	return lo
@@ -33,7 +37,12 @@ func New(toolsDirectoryPath string) *LoggingOperator {
 
 func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.LoggingOperator) error {
 
-	logging.Log("CRD-8Z2ueDkBmkBONgc").Infof("Reconciling application %s", applicationName)
+	logFields := map[string]interface{}{
+		"application": applicationName,
+	}
+	logFields["logID"] = "CRD-8Z2ueDkBmkBONgc"
+	l.logger.WithFields(logFields).Info("Reconciling")
+
 	resultsFileDirectory := filepath.Join(l.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -41,8 +50,9 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
-		if err := helper.StructToYaml(values, path); err != nil {
-			logging.Log("CRD-H3Kr6BEPq3YJD5f").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
+		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
+			logFields["logID"] = "CRD-H3Kr6BEPq3YJD5f"
+			l.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -64,8 +74,9 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 
 	if spec.Deploy {
-		if err := kubectlCmd.Run(); err != nil {
-			logging.Log("CRD-KEtwxBOmfcymWAw").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
+		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+			logFields["logID"] = "CRD-KEtwxBOmfcymWAw"
+			l.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

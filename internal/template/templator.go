@@ -1,8 +1,9 @@
 package template
 
 import (
+	"github.com/caos/orbiter/logging"
 	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/utils/logging"
+	"github.com/pkg/errors"
 )
 
 type Templator struct {
@@ -14,13 +15,14 @@ type Templator struct {
 	ReleaseName      string    `yaml:"releaseName"`
 	ReleaseNamespace string    `yaml:"releaseNamespace"`
 	ValuesFile       string    `yaml:"valuesFile"`
+	logger           logging.Logger
 }
 
 type Metadata struct {
 	Name string `yaml:"name"`
 }
 
-func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace string) *Templator {
+func NewTemplator(logger logging.Logger, name, chartName, chartVersion, releaseName, releaseNamespace string) *Templator {
 	return &Templator{
 		ApiVersion: "caos.ch/v1",
 		Kind:       "Templator",
@@ -32,11 +34,14 @@ func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace s
 		ReleaseName:      releaseName,
 		ReleaseNamespace: releaseNamespace,
 		ValuesFile:       "values.yaml",
+		logger:           logger,
 	}
 }
 
 func (t *Templator) writeToYaml(templatorFilePath string) error {
 	err := helper.StructToYaml(t, templatorFilePath)
-	logging.Log("KUSTOMIZE-OpcyPaHsFxThLqH").OnError(err).Debugf("Failed to write templator to file path %s", templatorFilePath)
+	if err != nil {
+		t.logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-OpcyPaHsFxThLqH"}).Error(errors.Wrapf(err, "Failed to write templator to file path %s", templatorFilePath))
+	}
 	return err
 }
