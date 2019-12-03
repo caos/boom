@@ -42,9 +42,8 @@ COPY internal internal
 # ####################################################################################################
 FROM dependencies AS build
 
-RUN ls -la
 # RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o toolsop main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop /cmd/toolsop/*.go
 
 # ####################################################################################################
 # Run binary

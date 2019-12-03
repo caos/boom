@@ -144,7 +144,7 @@ func (h *Helm) generateFetchers() error {
 		logFields["logID"] = "HELM-8vzi64f69T7E4y2"
 		h.logger.WithFields(logFields).Info("Generating fetcher")
 		fetcherFilePath := filepath.Join(fetcherDirectoryPath, fetcherFileName)
-		fetcher := NewFetcher(h.logger, name, application.ChartName, application.ChartVersion, application.IndexName, application.IndexUrl)
+		fetcher := NewFetcher(name, application.ChartName, application.ChartVersion, application.IndexName, application.IndexUrl)
 		if err := fetcher.writeToYaml(fetcherFilePath); err != nil {
 			return nil
 		}
@@ -153,7 +153,7 @@ func (h *Helm) generateFetchers() error {
 		h.logger.WithFields(logFields).Info("Generating fetcher-kustomize")
 		kustomizationFilePath := filepath.Join(fetcherDirectoryPath, kustomizationFileName)
 		filePaths := []string{fetcherFileName}
-		if err := generateKustomization(h.logger, kustomizationFilePath, []string{}, filePaths); err != nil {
+		if err := generateKustomization(kustomizationFilePath, []string{}, filePaths); err != nil {
 			return err
 		}
 	}
@@ -240,7 +240,7 @@ func (h *Helm) generateTemplator(appName, releaseName, releaseNamespace string, 
 	app := h.Applications[appName]
 	logFields["logID"] = "HELM-bRlJLZvwmDxrNIN"
 	h.logger.WithFields(logFields).Info("Generating templator")
-	templator := NewTemplator(h.logger, appName, app.ChartName, app.ChartVersion, releaseName, releaseNamespace)
+	templator := NewTemplator(appName, app.ChartName, app.ChartVersion, releaseName, releaseNamespace)
 	err := templator.writeToYaml(templatorFilePath)
 	if err != nil {
 		return err
@@ -249,7 +249,7 @@ func (h *Helm) generateTemplator(appName, releaseName, releaseNamespace string, 
 	namespaceFilePath := filepath.Join(templatorDirectoryPath, namespaceFileName)
 	logFields["logID"] = "HELM-jG5n3lf5TJQGdLc"
 	h.logger.WithFields(logFields).Info("Generating namespace")
-	namespace := NewNamespace(h.logger, releaseNamespace)
+	namespace := NewNamespace(releaseNamespace)
 	err = namespace.writeToYaml(namespaceFilePath)
 	if err != nil {
 		return err
@@ -260,7 +260,7 @@ func (h *Helm) generateTemplator(appName, releaseName, releaseNamespace string, 
 	generators := []string{templatorFileName}
 	logFields["logID"] = "HELM-3o5gZY6roaWisQ7"
 	h.logger.WithFields(logFields).Info("Generating templator kustomize")
-	err = generateKustomization(h.logger, kustomizationFilePath, recources, generators)
+	err = generateKustomization(kustomizationFilePath, recources, generators)
 	if err != nil {
 		return err
 	}

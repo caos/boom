@@ -20,3 +20,6 @@ tools/*
 !tools/kustomize
 !tools/toolsets
 !tools/start.sh
+
+/*.go
+!main.go

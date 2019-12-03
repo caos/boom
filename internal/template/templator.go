@@ -1,28 +1,26 @@
 package template
 
 import (
-	"github.com/caos/orbiter/logging"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/pkg/errors"
 )
 
 type Templator struct {
-	ApiVersion       string         `yaml:"apiVersion"`
-	Kind             string         `yaml:"kind"`
-	Metadata         *Metadata      `yaml:"metadata"`
-	ChartName        string         `yaml:"chartName"`
-	ChartVersion     string         `yaml:"chartVersion"`
-	ReleaseName      string         `yaml:"releaseName"`
-	ReleaseNamespace string         `yaml:"releaseNamespace"`
-	ValuesFile       string         `yaml:"valuesFile"`
-	logger           logging.Logger `yaml:"-"`
+	ApiVersion       string    `yaml:"apiVersion"`
+	Kind             string    `yaml:"kind"`
+	Metadata         *Metadata `yaml:"metadata"`
+	ChartName        string    `yaml:"chartName"`
+	ChartVersion     string    `yaml:"chartVersion"`
+	ReleaseName      string    `yaml:"releaseName"`
+	ReleaseNamespace string    `yaml:"releaseNamespace"`
+	ValuesFile       string    `yaml:"valuesFile"`
 }
 
 type Metadata struct {
 	Name string `yaml:"name"`
 }
 
-func NewTemplator(logger logging.Logger, name, chartName, chartVersion, releaseName, releaseNamespace string) *Templator {
+func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace string) *Templator {
 	return &Templator{
 		ApiVersion: "caos.ch/v1",
 		Kind:       "Templator",
@@ -34,7 +32,6 @@ func NewTemplator(logger logging.Logger, name, chartName, chartVersion, releaseN
 		ReleaseName:      releaseName,
 		ReleaseNamespace: releaseNamespace,
 		ValuesFile:       "values.yaml",
-		logger:           logger,
 	}
 }
 
