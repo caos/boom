@@ -5,7 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caos/utils/logging"
+	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
 
 	"github.com/caos/toolsop/internal/helper"
 )
@@ -44,8 +45,8 @@ type Index struct {
 	URL  string `yaml:"url"`
 }
 
-func NewToolsetsFromYaml(toolsetsDirectoryPath string) (*Toolsets, error) {
-	toolsets, err := getToolsets(toolsetsDirectoryPath)
+func NewToolsetsFromYaml(logger logging.Logger, toolsetsDirectoryPath string) (*Toolsets, error) {
+	toolsets, err := getToolsets(logger, toolsetsDirectoryPath)
 	if err != nil {
 		return nil, err
 	}
@@ -55,18 +56,21 @@ func NewToolsetsFromYaml(toolsetsDirectoryPath string) (*Toolsets, error) {
 	}, nil
 }
 
-func getToolsets(toolsetsDirectoryPath string) ([]*Toolset, error) {
+func getToolsets(logger logging.Logger, toolsetsDirectoryPath string) ([]*Toolset, error) {
 	toolsets := make([]*Toolset, 0)
 	toolsetFolders, err := ioutil.ReadDir(toolsetsDirectoryPath)
 	if err != nil {
-		logging.Log("TS-AjCLBjOMeovPIDf").OnError(err).Debug("Failed to read toolsets directory")
+		err = errors.Wrap(err, "Failed to read toolsets directory")
+		logger.WithFields(map[string]interface{}{
+			"logID": "TS-AjCLBjOMeovPIDf",
+		}).Error(err)
 		return nil, err
 	}
 
 	for _, toolsetFolder := range toolsetFolders {
 		if toolsetFolder.IsDir() {
 			toolsetDirectoryPath := filepath.Join(toolsetsDirectoryPath, toolsetFolder.Name())
-			versions, err := getVersions(toolsetDirectoryPath)
+			versions, err := getVersions(logger, toolsetDirectoryPath)
 			if err != nil {
 				return nil, err
 			}
@@ -83,18 +87,21 @@ func getToolsets(toolsetsDirectoryPath string) ([]*Toolset, error) {
 	return toolsets, nil
 }
 
-func getVersions(toolsetDirectoryPath string) ([]*Version, error) {
+func getVersions(logger logging.Logger, toolsetDirectoryPath string) ([]*Version, error) {
 	versions := make([]*Version, 0)
 
 	versionFolders, err := ioutil.ReadDir(toolsetDirectoryPath)
 	if err != nil {
-		logging.Log("TS-cV82w0uvnhC96G5").OnError(err).Debug("Failed to read version folders of toolset directory")
+		err = errors.Wrap(err, "Failed to read version folders of toolset directory")
+		logger.WithFields(map[string]interface{}{
+			"logID": "TS-cV82w0uvnhC96G5",
+		}).Error(err)
 		return nil, err
 	}
 	for _, versionFolder := range versionFolders {
 		if versionFolder.IsDir() {
 			versionDirectoryPath := filepath.Join(toolsetDirectoryPath, versionFolder.Name())
-			applications, err := getApplications(versionDirectoryPath)
+			applications, err := getApplications(logger, versionDirectoryPath)
 			if err != nil {
 				return nil, err
 			}
@@ -111,12 +118,15 @@ func getVersions(toolsetDirectoryPath string) ([]*Version, error) {
 	return versions, nil
 }
 
-func getApplications(versionDirectoryPath string) ([]*Application, error) {
+func getApplications(logger logging.Logger, versionDirectoryPath string) ([]*Application, error) {
 	applications := make([]*Application, 0)
 
 	applicationFiles, err := ioutil.ReadDir(versionDirectoryPath)
 	if err != nil {
-		logging.Log("TS-JqHQ4YkUynUKV2L").OnError(err).Debug("Failed to read appplications of version directory")
+		err = errors.Wrap(err, "Failed to read appplications of version directory")
+		logger.WithFields(map[string]interface{}{
+			"logID": "TS-JqHQ4YkUynUKV2L",
+		}).Error(err)
 		return nil, err
 	}
 	for _, applicationFile := range applicationFiles {
@@ -126,8 +136,12 @@ func getApplications(versionDirectoryPath string) ([]*Application, error) {
 
 			applicationFilePath := filepath.Join(versionDirectoryPath, applicationFile.Name())
 			var file ApplicationFile
-			if err := helper.YamlToStruct(applicationFilePath, &file); err != nil {
-				logging.Log("TS-gXrpa0M0OjiOnrf").OnError(err).Debug("Failed to marshal application yaml to struct")
+			if err := errors.Wrap(
+				helper.YamlToStruct(applicationFilePath, &file),
+				"Failed to marshal application yaml to struct"); err != nil {
+				logger.WithFields(map[string]interface{}{
+					"logID": "TS-gXrpa0M0OjiOnrf",
+				}).Error(err)
 				return nil, err
 			}
 

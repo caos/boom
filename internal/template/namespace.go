@@ -1,28 +1,33 @@
 package template
 
 import (
+	"github.com/caos/orbiter/logging"
 	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/utils/logging"
+	"github.com/pkg/errors"
 )
 
 type Namespace struct {
 	ApiVersion string    `yaml:"apiVersion"`
 	Kind       string    `yaml:"kind"`
 	Metadata   *Metadata `yaml:"metadata"`
+	logger     logging.Logger
 }
 
-func NewNamespace(name string) *Namespace {
+func NewNamespace(logger logging.Logger, name string) *Namespace {
 	return &Namespace{
 		ApiVersion: "v1",
 		Kind:       "Namespace",
 		Metadata: &Metadata{
 			Name: name,
 		},
+		logger: logger,
 	}
 }
 
 func (n *Namespace) writeToYaml(filePath string) error {
 	err := helper.StructToYaml(n, filePath)
-	logging.Log("KUSTOMIZE-M0FA6gOrtD32Pgf").OnError(err).Debug("Failed to write namespace to file")
+	if err != nil {
+		n.logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-M0FA6gOrtD32Pgf"}).Error(errors.Wrap(err, "Failed to write namespace to file"))
+	}
 	return err
 }

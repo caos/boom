@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
+
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
-	"github.com/caos/utils/logging"
 )
 
 var (
@@ -21,11 +23,13 @@ var (
 
 type Grafana struct {
 	ApplicationDirectoryPath string
+	logger                   logging.Logger
 }
 
-func New(toolsDirectoryPath string) *Grafana {
+func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
 	lo := &Grafana{
 		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
+		logger:                   logger,
 	}
 
 	return lo
@@ -33,7 +37,12 @@ func New(toolsDirectoryPath string) *Grafana {
 
 func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
 
-	logging.Log("CRD-tS3NCOfewXYGvDE").Infof("Reconciling application %s", applicationName)
+	logFields := map[string]interface{}{
+		"application": applicationName,
+	}
+	logFields["logID"] = "CRD-tS3NCOfewXYGvDE"
+	g.logger.WithFields(logFields).Info("Reconciling")
+
 	resultsFileDirectory := filepath.Join(g.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -41,8 +50,9 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
-		if err := helper.StructToYaml(values, path); err != nil {
-			logging.Log("CRD-ZXIlvuoOW1WWBpU").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
+		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
+			logFields["logID"] = "CRD-ZXIlvuoOW1WWBpU"
+			g.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -64,8 +74,9 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 
 	if spec.Deploy {
-		if err := kubectlCmd.Run(); err != nil {
-			logging.Log("CRD-HcT1sFDBfJMCQHG").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
+		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+			logFields["logID"] = "CRD-HcT1sFDBfJMCQHG"
+			g.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

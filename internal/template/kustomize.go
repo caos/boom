@@ -1,8 +1,10 @@
 package template
 
 import (
+	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
+
 	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/utils/logging"
 )
 
 type Kustomization struct {
@@ -12,7 +14,7 @@ type Kustomization struct {
 	Generators []string `yaml:"generators,omitempty"`
 }
 
-func generateKustomization(kustomizationFilePath string, resources []string, generators []string) error {
+func generateKustomization(logger logging.Logger, kustomizationFilePath string, resources []string, generators []string) error {
 	kustomization := &Kustomization{
 		ApiVersion: "kustomize.config.k8s.io/v1beta1",
 		Kind:       "Kustomization",
@@ -21,6 +23,8 @@ func generateKustomization(kustomizationFilePath string, resources []string, gen
 	}
 
 	err := helper.StructToYaml(kustomization, kustomizationFilePath)
-	logging.Log("KUSTOMIZE-QCiaUk3u7mwOhLe").OnError(err).Debug("Failed to write kustomize to file")
+	if err != nil {
+		logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-QCiaUk3u7mwOhLe"}).Error(errors.Wrap(err, "Failed to write kustomize to file"))
+	}
 	return err
 }

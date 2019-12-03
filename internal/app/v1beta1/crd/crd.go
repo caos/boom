@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/caos/orbiter/logging"
 	"github.com/caos/toolsop/internal/app/v1beta1/crd/ambassador"
 	"github.com/caos/toolsop/internal/app/v1beta1/crd/certmanager"
 	"github.com/caos/toolsop/internal/app/v1beta1/crd/grafana"
@@ -10,7 +11,6 @@ import (
 	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/toolsop/internal/template"
 	"github.com/caos/toolsop/internal/toolset"
-	"github.com/caos/utils/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -19,6 +19,7 @@ import (
 type Crd struct {
 	helm   *template.Helm
 	oldCrd *toolsetsv1beta1.Toolset
+	logger logging.Logger
 }
 
 func (c *Crd) CleanUp() error {
@@ -29,16 +30,16 @@ func GetVersion() string {
 	return "v1beta1"
 }
 
-func NewWithFunc(getToolset func(obj runtime.Object) error, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
+func NewWithFunc(logger logging.Logger, getToolset func(obj runtime.Object) error, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
 	var toolsetCRD *toolsetsv1beta1.Toolset
 	if err := getToolset(toolsetCRD); err != nil {
 		return nil, err
 	}
-	return New(toolsetCRD, toolsDirectoryPath, toolsets)
+	return New(logger, toolsetCRD, toolsDirectoryPath, toolsets)
 }
 
-func New(toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
-	crd := &Crd{}
+func New(logger logging.Logger, toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
+	crd := &Crd{logger: logger}
 
 	if err := crd.GenerateTemplateComponents(toolsDirectoryPath, toolsets, toolsetCRD); err != nil {
 		return nil, err
@@ -64,7 +65,9 @@ func (c *Crd) ReconcileWithFunc(getToolset func(obj runtime.Object) error, tools
 func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
 	fetcherGen := c.NewFetcherGeneration(new)
 	if fetcherGen {
-		logging.Log("CRD-6e7csH4wkujsRYE").Infof("Generate template components")
+		c.logger.WithFields(map[string]interface{}{
+			"logID": "CRD-6e7csH4wkujsRYE",
+		}).Info("Generate template components")
 		if err := c.GenerateTemplateComponents(toolsDirectoryPath, toolsets, new); err != nil {
 			return err
 		}
@@ -72,7 +75,10 @@ func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string,
 
 	template := c.NewTemplate(new)
 	if template {
-		logging.Log("CRD-6e7csH4wkujsRYE").Infof("Reconcile applications for CRD %s", new.Name)
+		c.logger.WithFields(map[string]interface{}{
+			"logID": "CRD-6e7csH4wkujsRYE",
+			"CRD":   new.Name,
+		}).Info("Reconcile applications")
 		if err := c.ReconcileApplications(new.Name, toolsDirectoryPath, new.Spec); err != nil {
 			return err
 		}
@@ -87,7 +93,7 @@ func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *to
 		c.helm.CleanUp()
 	}
 
-	helm, err := template.NewHelm(toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Spec.Version, toolsetCRD.Name)
+	helm, err := template.NewHelm(c.logger, toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Spec.Version, toolsetCRD.Name)
 	if err != nil {
 		return err
 	}
@@ -116,37 +122,37 @@ func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
 }
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
-	lo := loggingoperator.New(toolsDirectoryPath)
+	lo := loggingoperator.New(c.logger, toolsDirectoryPath)
 	if err := lo.Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
 		return err
 	}
 
-	po := prometheusoperator.New(toolsDirectoryPath)
+	po := prometheusoperator.New(c.logger, toolsDirectoryPath)
 	if err := po.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
 		return err
 	}
 
-	pne := prometheusnodeexporter.New(toolsDirectoryPath)
+	pne := prometheusnodeexporter.New(c.logger, toolsDirectoryPath)
 	if err := pne.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
 		return err
 	}
 
-	g := grafana.New(toolsDirectoryPath)
+	g := grafana.New(c.logger, toolsDirectoryPath)
 	if err := g.Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
 		return err
 	}
 
-	p := prometheus.New(toolsDirectoryPath)
+	p := prometheus.New(c.logger, toolsDirectoryPath)
 	if err := p.Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
 		return err
 	}
 
-	cert := certmanager.New(toolsDirectoryPath)
+	cert := certmanager.New(c.logger, toolsDirectoryPath)
 	if err := cert.Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
 		return err
 	}
 
-	ambassador := ambassador.New(toolsDirectoryPath)
+	ambassador := ambassador.New(c.logger, toolsDirectoryPath)
 	if err := ambassador.Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
 		return err
 	}

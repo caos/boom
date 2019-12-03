@@ -23,6 +23,9 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	logcontext "github.com/caos/orbiter/logging/context"
+	"github.com/caos/orbiter/logging/stdlib"
+
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	"github.com/caos/toolsop/controllers"
 	"github.com/caos/toolsop/internal/app"
@@ -50,6 +53,7 @@ func main() {
 	var toolsDirectoryPath, toolsetsPath string
 	var gitCrdPath, gitCrdUrl, gitCrdSecret, gitCrdDirectoryPath string
 	var enableLeaderElection, localMode bool
+	verbose := flag.Bool("verbose", false, "Print logs for debugging")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
@@ -71,7 +75,12 @@ func main() {
 
 	ctx := context.Background()
 
-	app, err := app.New(toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath)
+	logger := logcontext.Add(stdlib.New(os.Stdout))
+	if *verbose {
+		logger = logger.Verbose()
+	}
+
+	app, err := app.New(logger, toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath)
 	if err != nil {
 		setupLog.Error(err, "unable to start app")
 		os.Exit(1)
@@ -92,6 +101,7 @@ func main() {
 		}()
 
 		go func() {
+			// TODO: use a function scoped error variable
 			for err == nil {
 				err = app.ReconcileGitCrds()
 				time.Sleep(10 * time.Second)

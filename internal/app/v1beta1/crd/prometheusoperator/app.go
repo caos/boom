@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
+
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/kubectl"
 	"github.com/caos/toolsop/internal/template"
-	"github.com/caos/utils/logging"
 )
 
 var (
@@ -21,11 +23,13 @@ var (
 
 type PrometheusOperator struct {
 	ApplicationDirectoryPath string
+	logger                   logging.Logger
 }
 
-func New(toolsDirectoryPath string) *PrometheusOperator {
+func New(logger logging.Logger, toolsDirectoryPath string) *PrometheusOperator {
 	lo := &PrometheusOperator{
 		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
+		logger:                   logger,
 	}
 
 	return lo
@@ -33,7 +37,12 @@ func New(toolsDirectoryPath string) *PrometheusOperator {
 
 func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
 
-	logging.Log("CRD-2JlElqA8Zqu7wcw").Infof("Reconciling application %s", applicationName)
+	logFields := map[string]interface{}{
+		"application": applicationName,
+	}
+	logFields["logID"] = "CRD-2JlElqA8Zqu7wcw"
+	p.logger.WithFields(logFields).Info("Reconciling")
+
 	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
 	_ = os.RemoveAll(resultsFileDirectory)
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
@@ -42,8 +51,9 @@ func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 
 	writeValues := func(path string) error {
-		if err := helper.StructToYaml(values, path); err != nil {
-			logging.Log("CRD-l4CrOkKeQcIFehd").Debugf("Failed to write values file overlay %s application %s", overlay, applicationName)
+		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
+			logFields["logID"] = "CRD-l4CrOkKeQcIFehd"
+			p.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -64,8 +74,9 @@ func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 
 	if spec.Deploy {
 		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-		if err := kubectlCmd.Run(); err != nil {
-			logging.Log("CRD-hOW8nm0IlUQdpSj").OnError(err).Debugf("Failed to apply file %s", resultFilePath)
+		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+			logFields["logID"] = "CRD-hOW8nm0IlUQdpSj"
+			p.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}
