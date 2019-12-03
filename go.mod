@@ -3,7 +3,7 @@ module github.com/caos/toolsop
 go 1.12
 
 require (
-	github.com/caos/orbiter v0.2.1-0.20191203121951-62a6cb6fc544
+	github.com/caos/orbiter v0.3.1-0.20191203154843-66823839f90e
 	github.com/go-logr/logr v0.1.0
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0

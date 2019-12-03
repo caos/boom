@@ -21,6 +21,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
+
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
@@ -83,7 +85,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	errChan := make(chan error)
 	if gitCrdPath != "" {
 		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
 			setupLog.Error(err, "unable to start supervised crd")
@@ -95,17 +96,6 @@ func main() {
 		go func() {
 			<-ctxChild.Done()
 			cancel()
-		}()
-
-		go func() {
-			// TODO: use a function scoped error variable
-			for err == nil {
-				err = app.ReconcileGitCrds()
-				time.Sleep(10 * time.Second)
-			}
-
-			setupLog.Error(err, "unable to maintaining supervised crd")
-			errChan <- err
 		}()
 	}
 
@@ -140,7 +130,14 @@ func main() {
 		setupLog.Info("starting manager")
 	}
 
-	<-errChan
-	app.CleanUp()
-	setupLog.Info("stopped")
+	for {
+		if err := app.ReconcileGitCrds(); err != nil {
+			logger.Error(errors.Wrap(err, "unable to maintaining supervised crd"))
+		}
+		if err := app.CleanUp(); err != nil {
+			setupLog.Error(err, "cleaning up failed")
+			os.Exit(1)
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
