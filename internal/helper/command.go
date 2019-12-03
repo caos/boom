@@ -12,8 +12,18 @@ import (
 
 func Run(logger logging.Logger, cmd exec.Cmd) error {
 
+	var command string
+	for _, arg := range cmd.Args {
+		if strings.Contains(arg, " ") {
+			command += " \\\"" + arg + "\\\""
+			continue
+		}
+		command += " " + arg
+	}
+	command = command[1:]
+
 	logger.WithFields(map[string]interface{}{
-		"cmd": strings.Join(cmd.Args, " "),
+		"cmd": command,
 	}).Debug("Executing")
 
 	if logger.IsVerbose() {
