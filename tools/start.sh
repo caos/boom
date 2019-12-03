@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export TOOLS_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 function kustomizeIt {
