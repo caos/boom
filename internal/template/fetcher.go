@@ -34,11 +34,5 @@ func NewFetcher(logger logging.Logger, name, chartName, chartVersion, indexName,
 }
 
 func (f *Fetcher) writeToYaml(fetcherFilePath string) error {
-	err := errors.Wrapf(helper.StructToYaml(f, fetcherFilePath), "Failed to write fetcher to yaml, path: %s", fetcherFilePath)
-	if err != nil {
-		f.logger.WithFields(map[string]interface{}{
-			"logID": "FETCHER-qIBSyOB0CD37u0P",
-		}).Error(err)
-	}
-	return err
+	return errors.Wrapf(helper.StructToYaml(f, fetcherFilePath), "Failed to write fetcher to yaml, path: %s", fetcherFilePath)
 }

@@ -51,8 +51,6 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
-			logFields["logID"] = "CRD-H3Kr6BEPq3YJD5f"
-			l.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -75,8 +73,6 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 
 	if spec.Deploy {
 		if err := errors.Wrapf(helper.Run(l.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			logFields["logID"] = "CRD-KEtwxBOmfcymWAw"
-			l.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

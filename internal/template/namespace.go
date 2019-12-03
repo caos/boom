@@ -25,9 +25,5 @@ func NewNamespace(logger logging.Logger, name string) *Namespace {
 }
 
 func (n *Namespace) writeToYaml(filePath string) error {
-	err := helper.StructToYaml(n, filePath)
-	if err != nil {
-		n.logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-M0FA6gOrtD32Pgf"}).Error(errors.Wrap(err, "Failed to write namespace to file"))
-	}
-	return err
+	return errors.Wrap(helper.StructToYaml(n, filePath), "Failed to write namespace to file")
 }

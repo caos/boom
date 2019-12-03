@@ -41,8 +41,6 @@ func Reconcile(logger logging.Logger, applicationDirectoryPath, resultsDirectory
 	values := specToValues(helm.GetImageTags(applicationName), spec, namespace)
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
-			logFields["logID"] = "CRD-se7ejQ2L9uj5pv1"
-			logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -56,8 +54,6 @@ func Reconcile(logger logging.Logger, applicationDirectoryPath, resultsDirectory
 
 	if spec.Deploy {
 		if err := errors.Wrapf(helper.Run(a.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			logFields["logID"] = "CRD-auZcsGJbTM8gahX"
-			logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

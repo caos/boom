@@ -39,9 +39,5 @@ func NewTemplator(logger logging.Logger, name, chartName, chartVersion, releaseN
 }
 
 func (t *Templator) writeToYaml(templatorFilePath string) error {
-	err := helper.StructToYaml(t, templatorFilePath)
-	if err != nil {
-		t.logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-OpcyPaHsFxThLqH"}).Error(errors.Wrapf(err, "Failed to write templator to file path %s", templatorFilePath))
-	}
-	return err
+	return errors.Wrapf(helper.StructToYaml(t, templatorFilePath), "Failed to write templator to file path %s", templatorFilePath)
 }

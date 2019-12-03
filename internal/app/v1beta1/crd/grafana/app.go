@@ -51,8 +51,6 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
-			logFields["logID"] = "CRD-ZXIlvuoOW1WWBpU"
-			g.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -75,8 +73,6 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 
 	if spec.Deploy {
 		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			logFields["logID"] = "CRD-HcT1sFDBfJMCQHG"
-			g.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

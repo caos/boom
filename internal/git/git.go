@@ -51,11 +51,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 	}
 	prevTree, err := commit.Tree()
 	if err != nil {
-		repoLogger.WithFields(map[string]interface{}{
-			"logID": "GIT-wYeDNaCqmhn8x64",
-			"err":   err.Error(),
-		}).Debug("Failed to get tree of last commit")
-		return nil, err
+		return nil, errors.Wrapf(err, "Failed to get tree of last commit from repo %s", url)
 	}
 	g.prevTree = prevTree
 	repoLogger.WithFields(map[string]interface{}{
@@ -111,10 +107,7 @@ func (g *Git) IsFileChanged(path string) (changed bool, err error) {
 	var action string
 	defer func() {
 		if err != nil {
-			g.logger.WithFields(map[string]interface{}{
-				"logID": "GIT-2PPaIdlguhB16n0",
-				"path":  path,
-			}).Error(errors.Wrapf(err, "Failed to %s of repo", action))
+			err = errors.Wrapf(err, "Failed to %s of repo", action)
 		}
 	}()
 

@@ -60,8 +60,6 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 	values := specToValues(helm.GetImageTags(applicationName), spec, namespace)
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
-			logFields["logID"] = "CRD-DKgMOrUg9n2WZe6"
-			c.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -75,8 +73,6 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 
 	if spec.Deploy {
 		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			logFields["logID"] = "CRD-yMKnT8CESdJTwVz"
-			c.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

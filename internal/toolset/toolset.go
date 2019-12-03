@@ -60,11 +60,7 @@ func getToolsets(logger logging.Logger, toolsetsDirectoryPath string) ([]*Toolse
 	toolsets := make([]*Toolset, 0)
 	toolsetFolders, err := ioutil.ReadDir(toolsetsDirectoryPath)
 	if err != nil {
-		err = errors.Wrap(err, "Failed to read toolsets directory")
-		logger.WithFields(map[string]interface{}{
-			"logID": "TS-AjCLBjOMeovPIDf",
-		}).Error(err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to read toolsets directory")
 	}
 
 	for _, toolsetFolder := range toolsetFolders {
@@ -92,11 +88,7 @@ func getVersions(logger logging.Logger, toolsetDirectoryPath string) ([]*Version
 
 	versionFolders, err := ioutil.ReadDir(toolsetDirectoryPath)
 	if err != nil {
-		err = errors.Wrap(err, "Failed to read version folders of toolset directory")
-		logger.WithFields(map[string]interface{}{
-			"logID": "TS-cV82w0uvnhC96G5",
-		}).Error(err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to read version folders of toolset directory")
 	}
 	for _, versionFolder := range versionFolders {
 		if versionFolder.IsDir() {
@@ -123,11 +115,7 @@ func getApplications(logger logging.Logger, versionDirectoryPath string) ([]*App
 
 	applicationFiles, err := ioutil.ReadDir(versionDirectoryPath)
 	if err != nil {
-		err = errors.Wrap(err, "Failed to read appplications of version directory")
-		logger.WithFields(map[string]interface{}{
-			"logID": "TS-JqHQ4YkUynUKV2L",
-		}).Error(err)
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to read appplications of version directory")
 	}
 	for _, applicationFile := range applicationFiles {
 		if !applicationFile.IsDir() {

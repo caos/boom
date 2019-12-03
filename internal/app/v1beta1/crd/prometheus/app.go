@@ -58,8 +58,6 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
-			logFields["logID"] = "CRD-gYvMyYckyLVKDFR"
-			p.logger.WithFields(logFields).Error(err)
 			return err
 		}
 		return nil
@@ -81,8 +79,6 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 	if spec.Deploy {
 		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			logFields["logID"] = "CRD-oJlB3cir9Pc8i1k"
-			p.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}

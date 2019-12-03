@@ -22,9 +22,5 @@ func generateKustomization(logger logging.Logger, kustomizationFilePath string, 
 		Generators: generators,
 	}
 
-	err := helper.StructToYaml(kustomization, kustomizationFilePath)
-	if err != nil {
-		logger.WithFields(map[string]interface{}{"logID": "KUSTOMIZE-QCiaUk3u7mwOhLe"}).Error(errors.Wrap(err, "Failed to write kustomize to file"))
-	}
-	return err
+	return errors.Wrap(helper.StructToYaml(kustomization, kustomizationFilePath), "Failed to write kustomize to file")
 }
