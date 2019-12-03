@@ -7,10 +7,10 @@ import (
 )
 
 type Namespace struct {
-	ApiVersion string    `yaml:"apiVersion"`
-	Kind       string    `yaml:"kind"`
-	Metadata   *Metadata `yaml:"metadata"`
-	logger     logging.Logger
+	ApiVersion string         `yaml:"apiVersion"`
+	Kind       string         `yaml:"kind"`
+	Metadata   *Metadata      `yaml:"metadata"`
+	logger     logging.Logger `yaml:"-"`
 }
 
 func NewNamespace(logger logging.Logger, name string) *Namespace {

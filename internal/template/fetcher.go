@@ -8,14 +8,14 @@ import (
 )
 
 type Fetcher struct {
-	ApiVersion   string    `yaml:"apiVersion"`
-	Kind         string    `yaml:"kind"`
-	Metadata     *Metadata `yaml:"metadata"`
-	ChartName    string    `yaml:"chartName"`
-	ChartVersion string    `yaml:"chartVersion"`
-	IndexName    string    `yaml:"indexName,omitempty"`
-	IndexUrl     string    `yaml:"indexUrl,omitempty"`
-	logger       logging.Logger
+	ApiVersion   string         `yaml:"apiVersion"`
+	Kind         string         `yaml:"kind"`
+	Metadata     *Metadata      `yaml:"metadata"`
+	ChartName    string         `yaml:"chartName"`
+	ChartVersion string         `yaml:"chartVersion"`
+	IndexName    string         `yaml:"indexName,omitempty"`
+	IndexUrl     string         `yaml:"indexUrl,omitempty"`
+	logger       logging.Logger `yaml:"-"`
 }
 
 func NewFetcher(logger logging.Logger, name, chartName, chartVersion, indexName, indexUrl string) *Fetcher {

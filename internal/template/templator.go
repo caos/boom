@@ -7,15 +7,15 @@ import (
 )
 
 type Templator struct {
-	ApiVersion       string    `yaml:"apiVersion"`
-	Kind             string    `yaml:"kind"`
-	Metadata         *Metadata `yaml:"metadata"`
-	ChartName        string    `yaml:"chartName"`
-	ChartVersion     string    `yaml:"chartVersion"`
-	ReleaseName      string    `yaml:"releaseName"`
-	ReleaseNamespace string    `yaml:"releaseNamespace"`
-	ValuesFile       string    `yaml:"valuesFile"`
-	logger           logging.Logger
+	ApiVersion       string         `yaml:"apiVersion"`
+	Kind             string         `yaml:"kind"`
+	Metadata         *Metadata      `yaml:"metadata"`
+	ChartName        string         `yaml:"chartName"`
+	ChartVersion     string         `yaml:"chartVersion"`
+	ReleaseName      string         `yaml:"releaseName"`
+	ReleaseNamespace string         `yaml:"releaseNamespace"`
+	ValuesFile       string         `yaml:"valuesFile"`
+	logger           logging.Logger `yaml:"-"`
 }
 
 type Metadata struct {
