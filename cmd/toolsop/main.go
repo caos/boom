@@ -90,13 +90,13 @@ func main() {
 						cuErr := app.CleanUp()
 						if goErr != nil && cuErr != nil {
 							goErr = errors.Wrap(goErr, cuErr.Error())
-						} 
-						if goErr == nil {
-							goErr = cuErr
 						}
 						if cuErr != nil {
 							setupLog.Error(goErr, "cleaning up failed")
 							os.Exit(1)
+						}
+						if goErr != nil {
+							logger.Error(goErr)
 						}
 					}()
 
