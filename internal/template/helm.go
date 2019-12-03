@@ -146,7 +146,7 @@ func (h *Helm) generateFetchers() error {
 		fetcherFilePath := filepath.Join(fetcherDirectoryPath, fetcherFileName)
 		fetcher := NewFetcher(name, application.ChartName, application.ChartVersion, application.IndexName, application.IndexUrl)
 		if err := fetcher.writeToYaml(fetcherFilePath); err != nil {
-			return nil
+			return err
 		}
 
 		logFields["logID"] = "HELM-F1SpEvzx9DFTksX"
