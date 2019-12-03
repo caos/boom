@@ -74,7 +74,7 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 
 	if spec.Deploy {
-		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			logFields["logID"] = "CRD-yMKnT8CESdJTwVz"
 			c.logger.WithFields(logFields).Error(err)
 			return err

@@ -74,7 +74,7 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 
 	if spec.Deploy {
-		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			logFields["logID"] = "CRD-HcT1sFDBfJMCQHG"
 			g.logger.WithFields(logFields).Error(err)
 			return err

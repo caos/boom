@@ -25,7 +25,7 @@ func (k *Kubectl) AddFlag(flag string) *Kubectl {
 	return k
 }
 
-func (k *Kubectl) Run() error {
+func (k *Kubectl) Build() exec.Cmd {
 	cmd := exec.Command("kubectl", k.parameters...)
-	return cmd.Run()
+	return *cmd
 }
