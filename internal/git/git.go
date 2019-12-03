@@ -1,8 +1,10 @@
 package git
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
@@ -104,7 +106,10 @@ func (g *Git) cloneRepo(localPath, url, secretPath string) (*git.Repository, err
 		"repo":  url,
 		"to":    localPath,
 	}).Info("Cloning plain")
-	return git.PlainClone(localPath, false, &git.CloneOptions{
+
+	ctx := context.TODO()
+	toCtx, _ := context.WithTimeout(ctx, 10*time.Second)
+	return git.PlainCloneContext(toCtx, localPath, false, &git.CloneOptions{
 		URL:          url,
 		SingleBranch: true,
 		Depth:        1,
