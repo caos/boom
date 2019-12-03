@@ -23,7 +23,10 @@ COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 # Copy the go source
-COPY main.go api controllers internal ./
+COPY main.go .
+COPY api api
+COPY controllers controllers
+COPY internal internal
 
 # ####################################################################################################
 # Run tests
@@ -39,6 +42,7 @@ COPY main.go api controllers internal ./
 # ####################################################################################################
 FROM dependencies AS build
 
+RUN ls -la
 # RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o toolsop main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop main.go
 
@@ -47,10 +51,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop main.go
 # ####################################################################################################
 FROM alpine:3.10
 WORKDIR /
-RUN apk add bash
-COPY --from=dependencies /artifacts/* /usr/local/bin
-COPY --from=build /artifacts/toolsop /toolsop
-# TODO: why not `COPY tools .` ?
+RUN apk update && apk add bash
+COPY --from=dependencies /artifacts /usr/local/bin/
+COPY --from=build /toolsop /
+
 COPY tools/kustomize tools/kustomize
 COPY tools/toolsets tools/toolsets
 COPY tools/start.sh tools/start.sh
