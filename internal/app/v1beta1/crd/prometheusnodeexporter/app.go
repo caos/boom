@@ -74,7 +74,7 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 	if spec.Deploy {
-		if err := errors.Wrapf(kubectlCmd.Run(), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			logFields["logID"] = "CRD-BcRGwbZs6siXam0"
 			p.logger.WithFields(logFields).Error(err)
 			return err

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/caos/orbiter/logging"
+	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/toolset"
 	"github.com/pkg/errors"
 )
@@ -178,9 +179,9 @@ func (h *Helm) fetchAllCharts() error {
 		command := strings.Join([]string{cdCommand, startCommand}, " && ")
 
 		cmd := exec.Command("/bin/sh", "-c", command)
-		if err := errors.Wrapf(cmd.Run(), "Failed to fetch chart for application %s", name); err != nil {
+		if err := errors.Wrapf(helper.Run(h.logger, *cmd), "Failed to fetch chart for application %s", name); err != nil {
 			logFields["logID"] = "HELM-QyuO17EOfqoEDP8"
-			h.logger.WithFields(logFields).Debug("Fetching chart")
+			h.logger.WithFields(logFields).Error(err)
 			return err
 		}
 	}
@@ -216,7 +217,7 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 	command := strings.Join([]string{cdCommand, startCommand}, " && ")
 
 	cmd := exec.Command("/bin/sh", "-c", command)
-	err = errors.Wrapf(cmd.Run(), "Failed on templating overlay %s application %s", h.Overlay, appName)
+	err = errors.Wrapf(helper.Run(h.logger, *cmd), "Failed on templating overlay %s application %s", h.Overlay, appName)
 	if err != nil {
 		logFields["logID"] = "HELM-mzF3DUV1zAi4vom"
 		h.logger.WithFields(logFields).Error(err)
