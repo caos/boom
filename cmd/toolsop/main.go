@@ -85,20 +85,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if gitCrdPath != "" {
-		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
-			setupLog.Error(err, "unable to start supervised crd")
-			os.Exit(1)
-		}
-
-		ctxChild, cancel := context.WithCancel(ctx)
-
-		go func() {
-			<-ctxChild.Done()
-			cancel()
-		}()
-	}
-
 	if !localMode {
 		mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 			Scheme:             scheme,
@@ -130,7 +116,16 @@ func main() {
 		setupLog.Info("starting manager")
 	}
 
+	if gitCrdPath == "" {
+		return
+	}
+
 	for {
+		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
+			setupLog.Error(err, "unable to start supervised crd")
+			os.Exit(1)
+		}
+
 		if err := app.ReconcileGitCrds(); err != nil {
 			logger.Error(errors.Wrap(err, "unable to maintaining supervised crd"))
 		}
