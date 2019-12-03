@@ -6,18 +6,6 @@ FROM golang:1.13.1-alpine3.10 AS dependencies
 ENV GO111MODULE on
 WORKDIR $GOPATH/src/github.com/caos/toolsop
 
-# Runtime dependencies
-RUN apk update && apk add git curl && \
-    mkdir /artifacts && \
-    curl -L "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.4.0/kustomize_v3.4.0_linux_amd64.tar.gz" |tar xvz && \
-    mv ./kustomize /artifacts/kustomize && \
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl && \
-    chmod +x ./kubectl && \
-    mv ./kubectl /artifacts/kubectl && \
-    curl -L "https://get.helm.sh/helm-v2.12.0-linux-amd64.tar.gz" |tar xvz && \
-    mv linux-amd64/helm /artifacts/helm && \
-    chmod +x /artifacts/helm
-
 # copy all sourcecode from the current repository
 COPY ./go.mod ./go.sum ./
 RUN go mod download
@@ -50,8 +38,30 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop cmd/tool
 # ####################################################################################################
 FROM alpine:3.10
 WORKDIR /
-RUN apk update && apk add bash
-COPY --from=dependencies /artifacts /usr/local/bin/
+RUN apk update && apk add bash curl
+
+RUN curl -L "https://get.helm.sh/helm-v2.12.0-linux-amd64.tar.gz" |tar xvz && \
+    mv linux-amd64/helm /usr/bin/helm && \
+    chmod +x /usr/bin/helm && \
+    rm -rf linux-amd64 && \
+    rm -f /var/cache/apk/* 
+
+RUN curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases" |\
+    grep browser_download |\
+    grep linux |\
+    cut -d '"' -f 4 |\
+    grep /kustomize/v |\
+    sort | tail -n 1 |\
+    xargs curl -O -L && \
+    tar xzf ./kustomize_v*_linux_amd64.tar.gz && \
+    mv kustomize /usr/local/bin/kustomize
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl && \
+    mv ./kubectl /usr/local/bin/kubectl
+
+RUN apk del curl
+
 COPY --from=build /toolsop /
 
 COPY tools/kustomize tools/kustomize
