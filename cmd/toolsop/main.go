@@ -82,6 +82,35 @@ func main() {
 		os.Exit(1)
 	}
 
+	if gitCrdPath != "" {
+		go func() {
+			for {
+				func() (goErr error) {
+					defer func() {
+						cuErr := app.CleanUp()
+						if goErr != nil && cuErr != nil {
+							goErr = errors.Wrap(goErr, cuErr.Error())
+						} 
+						if goErr == nil {
+							goErr = cuErr
+						}
+						if cuErr != nil {
+							setupLog.Error(goErr, "cleaning up failed")
+							os.Exit(1)
+						}
+					}()
+
+					if goErr = errors.Wrap(app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath), "unable to start supervised crd"); goErr != nil {
+						return goErr
+					}
+
+					return errors.Wrap(app.ReconcileGitCrds(), "unable to maintaining supervised crd")
+				}()
+				time.Sleep(10 * time.Second)
+			}
+		}()
+	}
+
 	if !localMode {
 		mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 			Scheme:             scheme,
@@ -111,25 +140,5 @@ func main() {
 		}
 
 		setupLog.Info("starting manager")
-	}
-
-	if gitCrdPath == "" {
-		return
-	}
-
-	for {
-		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
-			setupLog.Error(err, "unable to start supervised crd")
-			os.Exit(1)
-		}
-
-		if err := app.ReconcileGitCrds(); err != nil {
-			logger.Error(errors.Wrap(err, "unable to maintaining supervised crd"))
-		}
-		if err := app.CleanUp(); err != nil {
-			setupLog.Error(err, "cleaning up failed")
-			os.Exit(1)
-		}
-		time.Sleep(10 * time.Second)
 	}
 }
