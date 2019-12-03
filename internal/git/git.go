@@ -30,11 +30,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 
 	repo, err := g.cloneRepo(localPath, url, secretPath)
 	if err != nil {
-		repoLogger.WithFields(map[string]interface{}{
-			"logID": "GIT-5TP1NETBBdY2M4B",
-			"err":   err.Error(),
-		}).Debug("Cloning failed")
-		return nil, err
+		return nil, errors.Wrapf(err, "Cloning repo %s failed", url)
 	}
 	g.Repo = repo
 
@@ -43,11 +39,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 	}).Info("Cloned...")
 	ref, err := g.Repo.Head()
 	if err != nil {
-		repoLogger.WithFields(map[string]interface{}{
-			"logID": "GIT-mMj1dZIWSoG2nZx",
-			"err":   err.Error(),
-		}).Debug("Failed to get head")
-		return nil, err
+		return nil, errors.Wrapf(err, "Failed to get head from repo %s", url)
 	}
 
 	g.logger.WithFields(map[string]interface{}{
@@ -55,11 +47,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 	}).Info("Get last commit...")
 	commit, err := g.Repo.CommitObject(ref.Hash())
 	if err != nil {
-		repoLogger.WithFields(map[string]interface{}{
-			"logID": "GIT-juNgPH9agv09jNr",
-			"err":   err.Error(),
-		}).Debug("Failed to get last commit")
-		return nil, err
+		return nil, errors.Wrapf(err, "Failed to get last commit from repo %s", url)
 	}
 	prevTree, err := commit.Tree()
 	if err != nil {

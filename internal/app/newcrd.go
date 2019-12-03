@@ -10,6 +10,8 @@ import (
 	"github.com/caos/toolsop/internal/helper"
 	"github.com/caos/toolsop/internal/toolset"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/pkg/errors"
 )
 
 type Crd interface {
@@ -25,15 +27,10 @@ func NewCrd(logger logging.Logger, version string, getToolset func(obj runtime.O
 	crdLogger.WithFields(map[string]interface{}{
 		"logID": "CRD-OieUWt0rdMoRrIh",
 	}).Info("New CDR")
-	if version == "v1beta1" {
-		return v1beta1crd.NewWithFunc(logger, getToolset, toolsDirectoryPath, toolsets)
-	} else {
-		crdLogger.WithFields(map[string]interface{}{
-			"logID": "CRD-FaiKDyXLo4J5aig",
-		}).Debug("Unknown CRD version")
+	if version != "v1beta1" {
+		return nil, errors.Errorf("Unknown CRD version %s", version)
 	}
-
-	return nil, nil
+	return v1beta1crd.NewWithFunc(logger, getToolset, toolsDirectoryPath, toolsets)
 }
 
 type GitCrd interface {
@@ -59,14 +56,8 @@ func NewGitCrd(logger logging.Logger, crdDirectoryPath, crdUrl, crdSecretPath, c
 	if err != nil {
 		return nil, err
 	}
-	if version == "v1beta1" {
-		return v1beta1gitcrd.New(logger, git, crdDirectoryPath, crdPath, toolsDirectoryPath, toolsets)
-	} else {
-		logger.WithFields(map[string]interface{}{
-			"logID":   "CRD-lm6tYjdFndkdk1G",
-			"version": version,
-		}).Debug("Unknown CRD version")
+	if version != "v1beta1" {
+		return nil, errors.Errorf("Unknown CRD version %s", version)
 	}
-
-	return nil, nil
+	return v1beta1gitcrd.New(logger, git, crdDirectoryPath, crdPath, toolsDirectoryPath, toolsets)
 }

@@ -21,9 +21,8 @@ import (
 	"os"
 	"time"
 
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	logcontext "github.com/caos/orbiter/logging/context"
+	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
 
 	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
@@ -69,16 +68,14 @@ func main() {
 	flag.StringVar(&toolsetsPath, "tools-toolset-path", "toolsets", "The path to the fold structue which defines the toolsets and their versions")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(func(o *zap.Options) {
-		o.Development = true
-	}))
-
 	ctx := context.Background()
 
 	logger := logcontext.Add(stdlib.New(os.Stdout))
 	if *verbose {
 		logger = logger.Verbose()
 	}
+
+	ctrl.SetLogger(kubebuilder.New(logger))
 
 	app, err := app.New(logger, toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath)
 	if err != nil {

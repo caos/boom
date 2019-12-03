@@ -80,8 +80,6 @@ func (h *Helm) CleanUp() error {
 		h.logger.WithFields(logFields).Info("Cleaning up fetchers")
 		fetcherDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay)
 		if err := errors.Wrapf(os.RemoveAll(fetcherDirectoryPath), "Failed cleanup fetchers application %s overlay %s", name, h.Overlay); err != nil {
-			logFields["logID"] = "HELM-o9Fj1ljqCjtqKPj"
-			h.logger.WithFields(logFields).Debug("Failed cleaning up fetchers")
 			return err
 		}
 
@@ -89,8 +87,6 @@ func (h *Helm) CleanUp() error {
 		h.logger.WithFields(logFields).Info("Cleaning up templators")
 		templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, templatorDirectoryName, h.Overlay)
 		if err := errors.Wrapf(os.RemoveAll(templatorDirectoryPath), "Failed cleanup templators application %s overlay %s", name, h.Overlay); err != nil {
-			logFields["logID"] = "HELM-IOzamCt9i2GFohA"
-			h.logger.WithFields(logFields).Debug("Failed cleanup templators")
 			return err
 		}
 	}
