@@ -16,7 +16,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 	"time"
@@ -69,8 +68,6 @@ func main() {
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "tools", "The local path where the tools folder should be")
 	flag.StringVar(&toolsetsPath, "tools-toolset-path", "toolsets", "The path to the fold structue which defines the toolsets and their versions")
 	flag.Parse()
-
-	ctx := context.Background()
 
 	logger := logcontext.Add(stdlib.New(os.Stdout))
 	if *verbose {
