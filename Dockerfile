@@ -23,7 +23,7 @@ COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 # Copy the go source
-COPY main.go .
+COPY cmd cmd
 COPY api api
 COPY controllers controllers
 COPY internal internal
@@ -43,7 +43,7 @@ COPY internal internal
 FROM dependencies AS build
 
 # RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o toolsop main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop /cmd/toolsop/*.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop cmd/toolsop/*.go
 
 # ####################################################################################################
 # Run binary
