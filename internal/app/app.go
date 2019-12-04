@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/caos/orbiter/logging"
-	"github.com/caos/toolsop/internal/toolset"
+	"github.com/caos/boom/internal/toolset"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 

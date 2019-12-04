@@ -6,11 +6,11 @@ import (
 
 	"github.com/caos/orbiter/logging"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	appcrd "github.com/caos/toolsop/internal/app/v1beta1/crd"
-	"github.com/caos/toolsop/internal/git"
-	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/toolsop/internal/toolset"
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	appcrd "github.com/caos/boom/internal/app/v1beta1/crd"
+	"github.com/caos/boom/internal/git"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/toolset"
 )
 
 type GitCrd struct {

@@ -1,4 +1,4 @@
-module github.com/caos/toolsop
+module github.com/caos/boom
 
 go 1.12
 

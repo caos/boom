@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/caos/orbiter/logging"
-	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/toolsop/internal/toolset"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/toolset"
 	"github.com/pkg/errors"
 )
 

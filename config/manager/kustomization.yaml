@@ -3,7 +3,7 @@ resources:
 
 secretGenerator:
 - files:
-  - secret/id_rsa-toolsop-tools-read
+  - secret/id_rsa-boom-tools-read
   name: tools-secret
 
 generatorOptions:

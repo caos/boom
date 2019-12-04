@@ -24,4 +24,4 @@ spec:
         - "--metrics-addr=127.0.0.1:8080"
         - "--enable-leader-election"
         - "-git-crd-secret" 
-        - "/secrets/tools-secret/id_rsa-toolsop-tools-read"
+        - "/secrets/tools-secret/id_rsa-boom-tools-read"

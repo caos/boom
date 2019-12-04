@@ -24,9 +24,9 @@ import (
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	"github.com/caos/toolsop/controllers"
-	"github.com/caos/toolsop/internal/app"
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/controllers"
+	"github.com/caos/boom/internal/app"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -59,7 +59,7 @@ func main() {
 		"Disable the controller manager and only use the operator to handle gitcrds")
 
 	flag.StringVar(&gitCrdUrl, "git-crd-url", "git@github.com:caos/tools.git", "The url for the git-repo to clone for the CRD ")
-	flag.StringVar(&gitCrdSecret, "git-crd-secret", "config/manager/secret/id_rsa-toolsop-tools-read", "Path to Secret to clone the git-repo for the CRD")
+	flag.StringVar(&gitCrdSecret, "git-crd-secret", "config/manager/secret/id_rsa-boom-tools-read", "Path to Secret to clone the git-repo for the CRD")
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd/example/crd.yaml", "The path to the CRD in the cloned git-repo ")
 

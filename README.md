@@ -1,4 +1,7 @@
-# toolsop
+This project is in alpha state
+-----  
+
+# boom
 Operator for the deployed toolset in a kubernetes cluster
 
 ## local
@@ -6,31 +9,31 @@ Operator for the deployed toolset in a kubernetes cluster
 To decrypt the secretdata to run it locally:
 
 ```bash
-gopass caos-secrets/technical/toolsop/ansible-vault > ansible-vault-secret && \
-ansible-vault decrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-toolsop-tools-read && \
+gopass caos-secrets/technical/boom/ansible-vault > ansible-vault-secret && \
+ansible-vault decrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-boom-tools-read && \
 rm ansible-vault-secret
 ```
 
 To encrypt it again:
 
 ```bash
-gopass caos-secrets/technical/toolsop/ansible-vault > ansible-vault-secret && \
-ansible-vault encrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-toolsop-tools-read && \
+gopass caos-secrets/technical/boom/ansible-vault > ansible-vault-secret && \
+ansible-vault encrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-boom-tools-read && \
 rm ansible-vault-secret
 ```
 
 To build it:
 
 ```bash
-docker build --build-arg ANSIBLEVAULT_SECRET=$(gopass caos-secrets/technical/toolsop/ansible-vault) -t controller:latest .
+docker build --build-arg ANSIBLEVAULT_SECRET=$(gopass caos-secrets/technical/boom/ansible-vault) -t controller:latest .
 ```
 
 ## cluster
 
-To deploy the toolsop to a cluster:
+To deploy the boom to a cluster:
 
 ```bash
-cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/toolsop/toolsop:latest
+cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest
 kustomize build config/default | kubectl apply -f -
 ```
 
@@ -39,7 +42,7 @@ kustomize build config/default | kubectl apply -f -
 
 ## folder structure
 
-The toolsop will extend the existing tools folder with different subfolders for the necessary applications.
+The boom will extend the existing tools folder with different subfolders for the necessary applications.
 Each application will have 3 folders fetchers, templators and results. The fetchers will fetch the necessary chart for the local availability, the templators will use de generated values.yaml to compress all resulting yamls into the results/results.yaml file which gets applied into the clsuter.
 
 Like this:
@@ -86,11 +89,11 @@ The structure in this folder is *important* as it is as follows:
     * *version*
       * *application-name*.yaml
 
-It is *important* as the toolsop has logic which works over this structe to build the knowledge which toolsets are existing and out of which applications do they consist.
+It is *important* as the boom has logic which works over this structe to build the knowledge which toolsets are existing and out of which applications do they consist.
 
 ## used tools
 
-The following cli-tools are used from the toolsop:
+The following cli-tools are used from the boom:
 
 * helm
 * kubectl

@@ -18,14 +18,14 @@ package controllers
 import (
 	"context"
 
-	"github.com/caos/toolsop/internal/app"
+	"github.com/caos/boom/internal/app"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 )
 
 // ToolsetReconciler reconciles a Toolset object
@@ -36,8 +36,8 @@ type ToolsetReconciler struct {
 	App    *app.App
 }
 
-// +kubebuilder:rbac:groups=toolsets.toolsop.caos.ch,resources=toolsets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=toolsets.toolsop.caos.ch,resources=toolsets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=toolsets.boom.caos.ch,resources=toolsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=toolsets.boom.caos.ch,resources=toolsets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=*,verbs=*
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=apps,resources=*,verbs=*

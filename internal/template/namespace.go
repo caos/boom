@@ -1,7 +1,7 @@
 package template
 
 import (
-	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/boom/internal/helper"
 	"github.com/pkg/errors"
 )
 

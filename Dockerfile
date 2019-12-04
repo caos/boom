@@ -4,7 +4,7 @@
 FROM golang:1.13.1-alpine3.10 AS dependencies
 
 ENV GO111MODULE on
-WORKDIR $GOPATH/src/github.com/caos/toolsop
+WORKDIR $GOPATH/src/github.com/caos/boom
 
 # Runtime dependencies
 RUN apk update && apk add git curl && \
@@ -42,8 +42,8 @@ COPY internal internal
 # ####################################################################################################
 FROM dependencies AS build
 
-# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o toolsop main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /toolsop cmd/toolsop/*.go
+# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /boom cmd/boom/*.go
 
 # ####################################################################################################
 # Run binary
@@ -52,10 +52,10 @@ FROM alpine:3.10
 
 RUN apk update && apk add bash ca-certificates
 COPY --from=dependencies /artifacts /usr/local/bin/
-COPY --from=build /toolsop /
+COPY --from=build /boom /
 
 COPY tools/kustomize tools/kustomize
 COPY tools/toolsets tools/toolsets
 COPY tools/start.sh tools/start.sh
 
-ENTRYPOINT ["/toolsop"]
+ENTRYPOINT ["/boom"]

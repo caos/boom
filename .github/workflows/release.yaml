@@ -17,7 +17,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         ANSIBLEVAULT_SECRET: ${{ secrets.ANSIBLEVAULT_SECRET }}
       run: |
-        export IMAGE=docker.pkg.github.com/caos/toolsop/toolsop
+        export IMAGE=docker.pkg.github.com/caos/boom/boom
         export TAG_LATEST=${IMAGE}:latest
         docker build --tag ${TAG_LATEST} --build-arg ANSIBLEVAULT_SECRET=${ANSIBLEVAULT_SECRET} --file ./Dockerfile .
 

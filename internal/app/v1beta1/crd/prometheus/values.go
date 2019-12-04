@@ -1,8 +1,8 @@
 package prometheus
 
 import (
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheus/servicemonitor"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 )
 
 type Service struct {

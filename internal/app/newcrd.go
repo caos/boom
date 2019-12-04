@@ -4,11 +4,11 @@ import (
 	"path/filepath"
 
 	"github.com/caos/orbiter/logging"
-	v1beta1crd "github.com/caos/toolsop/internal/app/v1beta1/crd"
-	v1beta1gitcrd "github.com/caos/toolsop/internal/app/v1beta1/gitcrd"
-	"github.com/caos/toolsop/internal/git"
-	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/toolsop/internal/toolset"
+	v1beta1crd "github.com/caos/boom/internal/app/v1beta1/crd"
+	v1beta1gitcrd "github.com/caos/boom/internal/app/v1beta1/gitcrd"
+	"github.com/caos/boom/internal/git"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/toolset"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/pkg/errors"

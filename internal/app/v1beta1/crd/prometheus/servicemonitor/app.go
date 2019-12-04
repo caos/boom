@@ -1,6 +1,6 @@
 package servicemonitor
 
-import toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
+import toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 
 func SpecToValues(labels map[string]string, spec *toolsetsv1beta1.ServiceMonitor) *Values {
 

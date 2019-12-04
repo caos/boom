@@ -1,6 +1,6 @@
 version: "2"
-domain: toolsop.caos.ch
-repo: github.com/caos/toolsop
+domain: boom.caos.ch
+repo: github.com/caos/boom
 resources:
 - group: toolsets
   version: v1beta1

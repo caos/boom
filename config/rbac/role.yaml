@@ -73,7 +73,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - toolsets.toolsop.caos.ch
+  - toolsets.boom.caos.ch
   resources:
   - toolsets
   verbs:
@@ -85,7 +85,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - toolsets.toolsop.caos.ch
+  - toolsets.boom.caos.ch
   resources:
   - toolsets/status
   verbs:

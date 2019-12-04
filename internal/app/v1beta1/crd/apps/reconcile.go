@@ -9,10 +9,10 @@ import (
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
-	"github.com/caos/toolsop/internal/helper"
-	"github.com/caos/toolsop/internal/kubectl"
-	"github.com/caos/toolsop/internal/template"
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/template"
 )
 
 func Reconcile(logger logging.Logger, applicationDirectoryPath, resultsDirectoryName, resultsFileName, applicationName, defaultNamespace, overlay string, helm *template.Helm, spec *toolsetsv1beta1.Ambassador) error {

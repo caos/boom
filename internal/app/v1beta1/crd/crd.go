@@ -2,18 +2,18 @@ package app
 
 import (
 	"github.com/caos/orbiter/logging"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/ambassador"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/certmanager"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/grafana"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/loggingoperator"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheus"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusnodeexporter"
-	"github.com/caos/toolsop/internal/app/v1beta1/crd/prometheusoperator"
-	"github.com/caos/toolsop/internal/template"
-	"github.com/caos/toolsop/internal/toolset"
+	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
+	"github.com/caos/boom/internal/app/v1beta1/crd/certmanager"
+	"github.com/caos/boom/internal/app/v1beta1/crd/grafana"
+	"github.com/caos/boom/internal/app/v1beta1/crd/loggingoperator"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusnodeexporter"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
+	"github.com/caos/boom/internal/template"
+	"github.com/caos/boom/internal/toolset"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	toolsetsv1beta1 "github.com/caos/toolsop/api/v1beta1"
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 )
 
 type Crd struct {

@@ -3,7 +3,7 @@ package template
 import (
 	"github.com/pkg/errors"
 
-	"github.com/caos/toolsop/internal/helper"
+	"github.com/caos/boom/internal/helper"
 )
 
 type Kustomization struct {

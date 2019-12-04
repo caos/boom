@@ -24,11 +24,11 @@ spec:
     spec:
       containers:
       - command:
-        - /toolsop
+        - /boom
         args:
         - "--enable-leader-election"
         - "-git-crd-secret" 
-        - "/secrets/tools-secret/id_rsa-toolsop-tools-read"
+        - "/secrets/tools-secret/id_rsa-boom-tools-read"
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
