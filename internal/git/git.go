@@ -19,10 +19,28 @@ type Git struct {
 	Repo     *git.Repository
 	prevTree *object.Tree
 	logger   logging.Logger
+	auth     *gitssh.PublicKeys
 }
 
 func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error) {
-	g := &Git{logger: logger}
+
+	logger.WithFields(map[string]interface{}{
+		"logID": "GIT-vNU9maj2Rfo5rRU",
+		"path":  secretPath,
+	}).Info("Using secret")
+	sshKey, err := ioutil.ReadFile(secretPath)
+	if err != nil {
+		return nil, err
+	}
+	signer, err := ssh.ParsePrivateKey([]byte(sshKey))
+	if err != nil {
+		return nil, err
+	}
+
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+	auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+
+	g := &Git{logger: logger, auth: auth}
 
 	repoLogger := g.logger.WithFields(map[string]interface{}{
 		"repo": url,
@@ -64,21 +82,6 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 
 func (g *Git) cloneRepo(localPath, url, secretPath string) (*git.Repository, error) {
 
-	g.logger.WithFields(map[string]interface{}{
-		"logID": "GIT-vNU9maj2Rfo5rRU",
-		"path":  secretPath,
-	}).Info("Using secret")
-	sshKey, err := ioutil.ReadFile(secretPath)
-	if err != nil {
-		return nil, err
-	}
-	signer, err := ssh.ParsePrivateKey([]byte(sshKey))
-	if err != nil {
-		return nil, err
-	}
-	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
-	auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-
 	// auth, err := ssh.NewPublicKeysFromFile("git", secretPath, "")
 	// if err != nil {
 	// 	logging.Log("GIT-ZImVXjm9lnrJwSu").OnError(err).Debugf("Failed to parse secret for repo %s", url)
@@ -98,7 +101,7 @@ func (g *Git) cloneRepo(localPath, url, secretPath string) (*git.Repository, err
 		SingleBranch: true,
 		Depth:        1,
 		Progress:     os.Stdout,
-		Auth:         auth,
+		Auth:         g.auth,
 	})
 }
 
@@ -117,7 +120,10 @@ func (g *Git) IsFileChanged(path string) (changed bool, err error) {
 		return false, err
 	}
 
-	err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+	err = w.Pull(&git.PullOptions{
+		RemoteName: "origin",
+		Auth:       g.auth,
+	})
 	if err == git.NoErrAlreadyUpToDate {
 		return false, nil
 	}
