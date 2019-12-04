@@ -111,6 +111,7 @@ func getVersions(logger logging.Logger, toolsetDirectoryPath string) ([]*Version
 }
 
 func getApplications(logger logging.Logger, versionDirectoryPath string) ([]*Application, error) {
+
 	applications := make([]*Application, 0)
 
 	applicationFiles, err := ioutil.ReadDir(versionDirectoryPath)
@@ -127,9 +128,6 @@ func getApplications(logger logging.Logger, versionDirectoryPath string) ([]*App
 			if err := errors.Wrap(
 				helper.YamlToStruct(applicationFilePath, &file),
 				"Failed to marshal application yaml to struct"); err != nil {
-				logger.WithFields(map[string]interface{}{
-					"logID": "TS-gXrpa0M0OjiOnrf",
-				}).Error(err)
 				return nil, err
 			}
 

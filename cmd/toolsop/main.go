@@ -20,8 +20,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
-
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
@@ -83,29 +81,23 @@ func main() {
 	}
 
 	if gitCrdPath != "" {
+		if err := app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath); err != nil {
+			setupLog.Error(err, "unable to start supervised crd")
+			os.Exit(1)
+		}
+
 		go func() {
+			// TODO: use a function scoped error variable
 			for {
-				func() (goErr error) {
-					defer func() {
-						cuErr := app.CleanUp()
-						if goErr != nil && cuErr != nil {
-							goErr = errors.Wrap(goErr, cuErr.Error())
-						}
-						if cuErr != nil {
-							setupLog.Error(goErr, "cleaning up failed")
-							os.Exit(1)
-						}
-						if goErr != nil {
-							logger.Error(goErr)
-						}
-					}()
-
-					if goErr = errors.Wrap(app.AddGitCrd(gitCrdUrl, gitCrdSecret, gitCrdPath), "unable to start supervised crd"); goErr != nil {
-						return goErr
-					}
-
-					return errors.Wrap(app.ReconcileGitCrds(), "unable to maintaining supervised crd")
-				}()
+				started := time.Now()
+				goErr := app.ReconcileGitCrds()
+				recLogger := logger.WithFields(map[string]interface{}{
+					"took": time.Since(started),
+				})
+				if goErr != nil {
+					recLogger.Error(goErr)
+				}
+				recLogger.Info("Iteration done")
 				time.Sleep(10 * time.Second)
 			}
 		}()
