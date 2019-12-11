@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/caos/orbiter/logging"
 	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
 	"github.com/caos/boom/internal/app/v1beta1/crd/certmanager"
 	"github.com/caos/boom/internal/app/v1beta1/crd/grafana"
@@ -11,6 +10,7 @@ import (
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/template"
 	"github.com/caos/boom/internal/toolset"
+	"github.com/caos/orbiter/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -122,39 +122,47 @@ func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
 }
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
-	lo := loggingoperator.New(c.logger, toolsDirectoryPath)
-	if err := lo.Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
-		return err
+
+	if toolsetCRDSpec.LoggingOperator.Deploy {
+		if err := loggingoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
+			return err
+		}
 	}
 
-	po := prometheusoperator.New(c.logger, toolsDirectoryPath)
-	if err := po.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
-		return err
+	if toolsetCRDSpec.PrometheusOperator.Deploy {
+		if err := prometheusoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
+			return err
+		}
 	}
 
-	pne := prometheusnodeexporter.New(c.logger, toolsDirectoryPath)
-	if err := pne.Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
-		return err
+	if toolsetCRDSpec.PrometheusNodeExporter.Deploy {
+		if err := prometheusnodeexporter.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
+			return err
+		}
 	}
 
-	g := grafana.New(c.logger, toolsDirectoryPath)
-	if err := g.Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
-		return err
+	if toolsetCRDSpec.Grafana.Deploy {
+		if err := grafana.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
+			return err
+		}
 	}
 
-	p := prometheus.New(c.logger, toolsDirectoryPath)
-	if err := p.Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
-		return err
+	if toolsetCRDSpec.Prometheus.Deploy {
+		if err := prometheus.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
+			return err
+		}
 	}
 
-	cert := certmanager.New(c.logger, toolsDirectoryPath)
-	if err := cert.Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
-		return err
+	if toolsetCRDSpec.CertManager.Deploy {
+		if err := certmanager.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
+			return err
+		}
 	}
 
-	ambassador := ambassador.New(c.logger, toolsDirectoryPath)
-	if err := ambassador.Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
-		return err
+	if toolsetCRDSpec.Ambassador.Deploy {
+		if err := ambassador.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
+			return err
+		}
 	}
 
 	return nil
