@@ -1,0 +1,240 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: boom-system
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.2
+  creationTimestamp: null
+  name: toolsets.toolsets.boom.caos.ch
+spec:
+  group: toolsets.boom.caos.ch
+  names:
+    kind: Toolset
+    listKind: ToolsetList
+    plural: toolsets
+    singular: toolset
+  scope: ""
+  validation:
+    openAPIV3Schema:
+      description: Toolset is the Schema for the toolsets API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ToolsetSpec defines the desired state of Toolset
+          properties:
+            ambassador:
+              properties:
+                deploy:
+                  type: boolean
+                loadBalancerIP:
+                  type: string
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            cert-manager:
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            grafana:
+              properties:
+                admin:
+                  properties:
+                    existingSecret:
+                      type: string
+                    passwordKey:
+                      type: string
+                    userKey:
+                      type: string
+                  type: object
+                dashboards:
+                  items:
+                    properties:
+                      configMap:
+                        type: string
+                      files:
+                        items:
+                          properties:
+                            filename:
+                              type: string
+                            name:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
+                datasources:
+                  items:
+                    properties:
+                      access:
+                        type: string
+                      isDefault:
+                        type: boolean
+                      name:
+                        type: string
+                      type:
+                        type: string
+                      url:
+                        type: string
+                    type: object
+                  type: array
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            logging-operator:
+              properties:
+                deploy:
+                  type: boolean
+                logging:
+                  properties:
+                    controlNamespace:
+                      type: string
+                  type: object
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            name:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+            prometheus:
+              properties:
+                deploy:
+                  type: boolean
+                monitorLabel:
+                  additionalProperties:
+                    type: string
+                  type: object
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+                serviceMonitors:
+                  items:
+                    properties:
+                      endpoints:
+                        items:
+                          properties:
+                            interval:
+                              type: string
+                            path:
+                              type: string
+                            port:
+                              type: string
+                            scheme:
+                              type: string
+                            targetPort:
+                              type: string
+                          type: object
+                        type: array
+                      interval:
+                        type: string
+                      name:
+                        type: string
+                      relabelings:
+                        items:
+                          properties:
+                            action:
+                              type: string
+                            regex:
+                              type: string
+                            replacement:
+                              type: string
+                            sourcelabels:
+                              items:
+                                type: string
+                              type: array
+                            targetlabel:
+                              type: string
+                          type: object
+                        type: array
+                      serviceMatchingLabels:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  type: array
+              required:
+              - deploy
+              - monitorLabel
+              - namespace
+              - prefix
+              - serviceMonitors
+              type: object
+            prometheus-node-exporter:
+              properties:
+                deploy:
+                  type: boolean
+                monitor:
+                  properties:
+                    enabled:
+                      type: boolean
+                    namespace:
+                      type: string
+                  required:
+                  - enabled
+                  - namespace
+                  type: object
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            prometheus-operator:
+              description: PrometheusOperator defines the desired state for the prometheus
+                operator
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
+            version:
+              type: string
+          type: object
+        status:
+          description: ToolsetStatus defines the observed state of Toolset
+          type: object
+      type: object
+  version: v1beta1
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
