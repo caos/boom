@@ -1,10 +1,10 @@
 resources:
 - manager.yaml
 
-secretGenerator:
-- files:
-  - secret/id_rsa-boom-tools-read
-  name: tools-secret
+  # secretGenerator:
+  # - files:
+  #   - secret/id_rsa-boom-tools-read
+  #   name: tools-secret
 
 generatorOptions:
   disableNameSuffixHash: true
