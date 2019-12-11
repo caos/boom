@@ -3,8 +3,8 @@ package app
 import (
 	"path/filepath"
 
-	"github.com/caos/orbiter/logging"
 	"github.com/caos/boom/internal/toolset"
+	"github.com/caos/orbiter/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -69,8 +69,8 @@ func (a *App) CleanUp() error {
 	return nil
 }
 
-func (a *App) AddGitCrd(url, secretPath, crdPath string) error {
-	c, err := NewGitCrd(a.logger, a.CrdDirectoryPath, url, secretPath, crdPath, a.ToolsDirectoryPath, a.Toolsets)
+func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
+	c, err := NewGitCrd(a.logger, a.CrdDirectoryPath, url, privateKey, crdPath, a.ToolsDirectoryPath, a.Toolsets)
 	if err != nil {
 		return err
 	}

@@ -3,12 +3,12 @@ package app
 import (
 	"path/filepath"
 
-	"github.com/caos/orbiter/logging"
 	v1beta1crd "github.com/caos/boom/internal/app/v1beta1/crd"
 	v1beta1gitcrd "github.com/caos/boom/internal/app/v1beta1/gitcrd"
 	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/toolset"
+	"github.com/caos/orbiter/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/pkg/errors"
@@ -38,7 +38,7 @@ type GitCrd interface {
 	CleanUp() error
 }
 
-func NewGitCrd(logger logging.Logger, crdDirectoryPath, crdUrl, crdSecretPath, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (GitCrd, error) {
+func NewGitCrd(logger logging.Logger, crdDirectoryPath, crdUrl string, privateKey []byte, crdPath, toolsDirectoryPath string, toolsets *toolset.Toolsets) (GitCrd, error) {
 
 	logger.WithFields(map[string]interface{}{
 		"logID": "CRD-OieUWt0rdMoRrIh",
@@ -46,7 +46,7 @@ func NewGitCrd(logger logging.Logger, crdDirectoryPath, crdUrl, crdSecretPath, c
 		"path":  crdPath,
 	}).Info("New GitCRD")
 
-	git, err := git.New(logger, crdDirectoryPath, crdUrl, crdSecretPath)
+	git, err := git.New(logger, crdDirectoryPath, crdUrl, privateKey)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package git
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -22,17 +21,9 @@ type Git struct {
 	auth     *gitssh.PublicKeys
 }
 
-func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error) {
+func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git, error) {
 
-	logger.WithFields(map[string]interface{}{
-		"logID": "GIT-vNU9maj2Rfo5rRU",
-		"path":  secretPath,
-	}).Info("Using secret")
-	sshKey, err := ioutil.ReadFile(secretPath)
-	if err != nil {
-		return nil, err
-	}
-	signer, err := ssh.ParsePrivateKey([]byte(sshKey))
+	signer, err := ssh.ParsePrivateKey(privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +37,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 		"repo": url,
 	})
 
-	repo, err := g.cloneRepo(localPath, url, secretPath)
+	repo, err := g.cloneRepo(localPath, url)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Cloning repo %s failed", url)
 	}
@@ -80,13 +71,7 @@ func New(logger logging.Logger, localPath, url, secretPath string) (*Git, error)
 	return g, nil
 }
 
-func (g *Git) cloneRepo(localPath, url, secretPath string) (*git.Repository, error) {
-
-	// auth, err := ssh.NewPublicKeysFromFile("git", secretPath, "")
-	// if err != nil {
-	// 	logging.Log("GIT-ZImVXjm9lnrJwSu").OnError(err).Debugf("Failed to parse secret for repo %s", url)
-	// 	return nil, err
-	// }
+func (g *Git) cloneRepo(localPath, url string) (*git.Repository, error) {
 
 	g.logger.WithFields(map[string]interface{}{
 		"logID": "GIT-vNU9maj2Rfo5rRU",
