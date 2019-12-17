@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/service"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
@@ -69,6 +70,10 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 		return err
 	}
 
+	if err := addService(resultFilePath, prefix, namespace); err != nil {
+		return err
+	}
+
 	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 
 	if spec.Deploy {
@@ -77,6 +82,28 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 		}
 	}
 
+	return nil
+}
+
+func addService(filePath string, prefix string, namespace string) error {
+	name := "cert-manager"
+	if prefix != "" {
+		name = strings.Join([]string{prefix, name}, "-")
+	}
+
+	service := service.New(&service.Config{
+		Name:       name,
+		Namespace:  namespace,
+		Labels:     map[string]string{"app": "cert-manager"},
+		Protocol:   "TCP",
+		Port:       9402,
+		TargetPort: 9402,
+		Selector:   map[string]string{"app": "cert-manager"},
+	})
+
+	if err := helper.AddStructToYaml(filePath, service); err != nil {
+		return err
+	}
 	return nil
 }
 

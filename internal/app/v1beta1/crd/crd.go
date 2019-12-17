@@ -177,7 +177,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 
 	servicemonitors := make([]*servicemonitor.Config, 0)
 
-	if toolsetCRDSpec.Ambassador.ScrapeMetrics {
+	if toolsetCRDSpec.Ambassador.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "ambassador-admin",
 			Path: "/metrics",
@@ -193,12 +193,12 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.CertManager.ScrapeMetrics {
+	if toolsetCRDSpec.CertManager.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			TargetPort: "9402",
 			Path:       "/metrics",
 		}
-		labels := map[string]string{"service": "cert-manager"}
+		labels := map[string]string{"app": "cert-manager"}
 
 		smconfig := &servicemonitor.Config{
 			Name:                  "cert-manager-servicemonitor",
@@ -209,7 +209,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.PrometheusOperator.ScrapeMetrics {
+	if toolsetCRDSpec.PrometheusOperator.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "http",
 			Path: "/metrics",
@@ -225,7 +225,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.PrometheusNodeExporter.ScrapeMetrics {
+	if toolsetCRDSpec.PrometheusNodeExporter.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "metrics",
 			Path: "/metrics",

@@ -5,5 +5,4 @@ type Ambassador struct {
 	Prefix         string `json:"prefix,omitempty"`
 	Namespace      string `json:"namespace,omitempty"`
 	LoadBalancerIP string `json:"loadBalancerIP,omitempty"`
-	ScrapeMetrics  bool   `json:"scrapeMetrics,omitempty" yaml:"scrapeMetrics,omitempty"`
 }

@@ -2,6 +2,7 @@ package helper
 
 import (
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -23,4 +24,27 @@ func YamlToStruct(path string, struc interface{}) error {
 	}
 
 	return yaml.Unmarshal(data, struc)
+}
+
+func AddStructToYaml(path string, struc interface{}) error {
+	f, err := os.OpenFile(path,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	data, err := yaml.Marshal(struc)
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.WriteString("\n---\n"); err != nil {
+		return err
+	}
+	if _, err := f.Write(data); err != nil {
+		return err
+	}
+	return nil
 }
