@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caos/orbiter/logging"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/toolset"
+	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 )
 
@@ -38,7 +38,7 @@ type Application struct {
 	ImageTags    map[string]string
 }
 
-func NewHelm(logger logging.Logger, toolsDirectoryPath string, toolsets *toolset.Toolsets, crdName, crdVersion, overlay string) (*Helm, error) {
+func NewHelm(logger logging.Logger, toolsDirectoryPath string, toolsets *toolset.Toolsets, crdName, overlay string) (*Helm, error) {
 	applications := make(map[string]*Application, 0)
 	helm := &Helm{
 		ToolsDirectoryPath: toolsDirectoryPath,
@@ -51,7 +51,7 @@ func NewHelm(logger logging.Logger, toolsDirectoryPath string, toolsets *toolset
 	logger.WithFields(map[string]interface{}{
 		"logID": "HELM-FuyctETdHmsd7xH",
 	}).Info("Collecting list of applications from provided toolsets")
-	helm.collectApplications(crdName, crdVersion)
+	helm.collectApplications(crdName)
 
 	logger.WithFields(map[string]interface{}{
 		"logID": "HELM-NVpmSPi56GezX7D",
@@ -93,22 +93,18 @@ func (h *Helm) CleanUp() error {
 	return nil
 }
 
-func (h *Helm) collectApplications(crdName, crdVersion string) {
+func (h *Helm) collectApplications(crdName string) {
 	for _, toolset := range h.Toolsets.Toolsets {
 		if toolset.Name == crdName {
-			for _, version := range toolset.Versions {
-				if version.Version == crdVersion {
-					for _, application := range version.Applications {
-						app := &Application{
-							ChartName:    application.File.Chart.Name,
-							ChartVersion: application.File.Chart.Version,
-							IndexName:    application.File.Chart.Index.Name,
-							IndexUrl:     application.File.Chart.Index.URL,
-							ImageTags:    application.File.ImageTags,
-						}
-						h.Applications[application.Name] = app
-					}
+			for _, application := range toolset.Applications {
+				app := &Application{
+					ChartName:    application.File.Chart.Name,
+					ChartVersion: application.File.Chart.Version,
+					IndexName:    application.File.Chart.Index.Name,
+					IndexUrl:     application.File.Chart.Index.URL,
+					ImageTags:    application.File.ImageTags,
 				}
+				h.Applications[application.Name] = app
 			}
 		}
 	}

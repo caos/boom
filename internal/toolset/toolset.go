@@ -16,12 +16,7 @@ type Toolsets struct {
 }
 
 type Toolset struct {
-	Name     string     `yaml:"name"`
-	Versions []*Version `yaml:"versions"`
-}
-
-type Version struct {
-	Version      string         `yaml:"version"`
+	Name         string         `yaml:"name"`
 	Applications []*Application `yaml:"applications"`
 }
 
@@ -32,6 +27,7 @@ type Application struct {
 type ApplicationFile struct {
 	Chart     *Chart            `yaml:"chart"`
 	ImageTags map[string]string `yaml:"imageTags"`
+	Crds      []string          `yaml:"crds,omitempty"`
 }
 
 type Chart struct {
@@ -66,14 +62,14 @@ func getToolsets(logger logging.Logger, toolsetsDirectoryPath string) ([]*Toolse
 	for _, toolsetFolder := range toolsetFolders {
 		if toolsetFolder.IsDir() {
 			toolsetDirectoryPath := filepath.Join(toolsetsDirectoryPath, toolsetFolder.Name())
-			versions, err := getVersions(logger, toolsetDirectoryPath)
+			applications, err := getApplications(logger, toolsetDirectoryPath)
 			if err != nil {
 				return nil, err
 			}
 
 			toolset := &Toolset{
-				Name:     toolsetFolder.Name(),
-				Versions: versions,
+				Name:         toolsetFolder.Name(),
+				Applications: applications,
 			}
 
 			toolsets = append(toolsets, toolset)
@@ -81,33 +77,6 @@ func getToolsets(logger logging.Logger, toolsetsDirectoryPath string) ([]*Toolse
 	}
 
 	return toolsets, nil
-}
-
-func getVersions(logger logging.Logger, toolsetDirectoryPath string) ([]*Version, error) {
-	versions := make([]*Version, 0)
-
-	versionFolders, err := ioutil.ReadDir(toolsetDirectoryPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to read version folders of toolset directory")
-	}
-	for _, versionFolder := range versionFolders {
-		if versionFolder.IsDir() {
-			versionDirectoryPath := filepath.Join(toolsetDirectoryPath, versionFolder.Name())
-			applications, err := getApplications(logger, versionDirectoryPath)
-			if err != nil {
-				return nil, err
-			}
-
-			version := &Version{
-				Version:      versionFolder.Name(),
-				Applications: applications,
-			}
-
-			versions = append(versions, version)
-		}
-	}
-
-	return versions, nil
 }
 
 func getApplications(logger logging.Logger, versionDirectoryPath string) ([]*Application, error) {

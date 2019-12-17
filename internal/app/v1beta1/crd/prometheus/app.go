@@ -8,7 +8,6 @@ import (
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
-	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/helper"
@@ -20,8 +19,15 @@ var (
 	applicationName      = "prometheus"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "monitoring"
+	defaultNamespace     = "system"
 )
+
+type Config struct {
+	Prefix          string
+	Namespace       string
+	MonitorLabels   map[string]string
+	ServiceMonitors []*servicemonitor.Config
+}
 
 type Prometheus struct {
 	ApplicationDirectoryPath string
@@ -38,7 +44,7 @@ func New(logger logging.Logger, toolsDirectoryPath string) *Prometheus {
 	return p
 }
 
-func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Prometheus) error {
+func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, config *Config) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
@@ -51,9 +57,18 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
 	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
-	values, err := specToValues(helm.GetImageTags(applicationName), spec)
+	values, err := specToValues(helm.GetImageTags(applicationName), config)
 	if err != nil {
 		return err
+	}
+
+	prefix := config.Prefix
+	if prefix == "" {
+		prefix = overlay
+	}
+	namespace := config.Namespace
+	if namespace == "" {
+		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
 	}
 
 	writeValues := func(path string) error {
@@ -63,30 +78,19 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, spec *toolse
 		return nil
 	}
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
-
 	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
 		return err
 	}
 
-	if spec.Deploy {
-		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-			return err
-		}
+	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+	if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Prometheus) (*Values, error) {
+func specToValues(imageTags map[string]string, config *Config) (*Values, error) {
 	promValues := &PrometheusValues{
 		Enabled: true,
 		ServiceAccount: &ServiceAccount{
@@ -116,7 +120,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Prometheus)
 		},
 		PodSecurityPolicy: &PodSecurityPolicy{},
 		ServiceMonitor: &ServiceMonitor{
-			SelfMonitor: true,
+			SelfMonitor: false,
 		},
 		PrometheusSpec: &PrometheusSpec{
 			Image: &Image{
@@ -140,13 +144,16 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Prometheus)
 		},
 	}
 
-	if spec.MonitorLabels != nil {
+	if config.MonitorLabels != nil {
 		promValues.PrometheusSpec.ServiceMonitorSelector = &MonitorSelector{
-			MatchLabels: spec.MonitorLabels,
+			MatchLabels: config.MonitorLabels,
 		}
+	}
+
+	if config.ServiceMonitors != nil {
 		additionalServiceMonitors := make([]*servicemonitor.Values, 0)
-		for _, specServiceMonitor := range spec.ServiceMonitors {
-			valuesServiceMonitor := servicemonitor.SpecToValues(spec.MonitorLabels, specServiceMonitor)
+		for _, specServiceMonitor := range config.ServiceMonitors {
+			valuesServiceMonitor := servicemonitor.SpecToValues(specServiceMonitor)
 			additionalServiceMonitors = append(additionalServiceMonitors, valuesServiceMonitor)
 		}
 

@@ -18,7 +18,7 @@ var (
 	applicationName      = "logging-operator"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "logging"
+	defaultNamespace     = "system"
 )
 
 type LoggingOperator struct {

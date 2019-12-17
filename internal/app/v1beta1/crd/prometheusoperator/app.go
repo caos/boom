@@ -18,7 +18,7 @@ var (
 	applicationName      = "prometheus-operator"
 	resultsDirectoryName = "results"
 	resultsFilename      = "results.yaml"
-	defaultNamespace     = "monitoring"
+	defaultNamespace     = "system"
 )
 
 type PrometheusOperator struct {

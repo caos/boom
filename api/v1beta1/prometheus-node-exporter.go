@@ -1,10 +1,11 @@
 package v1beta1
 
 type PrometheusNodeExporter struct {
-	Deploy    bool     `json:"deploy,omitempty"`
-	Prefix    string   `json:"prefix,omitempty"`
-	Namespace string   `json:"namespace,omitempty"`
-	Monitor   *Monitor `json:"monitor,omitempty"`
+	Deploy        bool     `json:"deploy,omitempty"`
+	Prefix        string   `json:"prefix,omitempty"`
+	Namespace     string   `json:"namespace,omitempty"`
+	Monitor       *Monitor `json:"monitor,omitempty"`
+	ScrapeMetrics bool     `json:"scrapeMetrics,omitempty" yaml:"scrapeMetrics,omitempty"`
 }
 
 type Monitor struct {

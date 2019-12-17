@@ -80,14 +80,19 @@ func (g *Git) cloneRepo(localPath, url string) (*git.Repository, error) {
 	}).Info("Cloning plain")
 
 	ctx := context.TODO()
-	toCtx, _ := context.WithTimeout(ctx, 10*time.Second)
-	return git.PlainCloneContext(toCtx, localPath, false, &git.CloneOptions{
+	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	repo, err := git.PlainCloneContext(toCtx, localPath, false, &git.CloneOptions{
 		URL:          url,
 		SingleBranch: true,
 		Depth:        1,
 		Progress:     os.Stdout,
 		Auth:         g.auth,
 	})
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
 func (g *Git) IsFileChanged(path string) (changed bool, err error) {

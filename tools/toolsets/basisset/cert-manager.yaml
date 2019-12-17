@@ -1,0 +1,12 @@
+chart:
+  name: cert-manager
+  version: v0.12.0
+  index:
+    name: jetstack
+    url: charts.jetstack.io
+imageTags:
+  quay.io/jetstack/cert-manager-controller: v0.12.0
+  quay.io/jetstack/cert-manager-webhook: v0.12.0
+  quay.io/jetstack/cert-manager-cainjector: v0.12.0
+crds:
+  - https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml

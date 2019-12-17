@@ -18,7 +18,7 @@ var (
 	applicationName      = "ambassador"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "ambassador"
+	defaultNamespace     = "system"
 )
 
 type Ambassador struct {
@@ -81,6 +81,8 @@ func (a *Ambassador) Reconcile(overlay string, helm *template.Helm, spec *toolse
 }
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador, namespace string) *Values {
+	adminAnnotations := map[string]string{"app.kubernetes.io/use": "admin-service"}
+
 	values := &Values{
 		ReplicaCount: 3,
 		DaemonSet:    false,
@@ -121,9 +123,10 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador,
 			Annotations: make(map[string]string, 0),
 		},
 		AdminService: &AdminService{
-			Create: true,
-			Type:   "ClusterIP",
-			Port:   8877,
+			Create:      true,
+			Type:        "ClusterIP",
+			Port:        8877,
+			Annotations: adminAnnotations,
 		},
 		Rbac: &Rbac{
 			Create: true,

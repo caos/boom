@@ -26,16 +26,15 @@ import (
 type ToolsetSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Name    string `json:"name,omitempty"`
-	Version string `json:"version,omitempty"`
+	Name string `json:"name,omitempty"`
 	// PrometheusOperator defines the desired state for the prometheus operator
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
 	LoggingOperator        *LoggingOperator        `json:"logging-operator,omitempty" yaml:"logging-operator"`
 	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
 	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
-	Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
-	CertManager            *CertManager            `json:"cert-manager,omitempty" yaml:"cert-manager"`
-	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
+	// Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
+	CertManager *CertManager `json:"cert-manager,omitempty" yaml:"cert-manager"`
+	Ambassador  *Ambassador  `json:"ambassador,omitempty" yaml:"ambassador"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

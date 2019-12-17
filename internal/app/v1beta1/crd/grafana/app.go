@@ -18,7 +18,7 @@ var (
 	applicationName      = "grafana"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "monitoring"
+	defaultNamespace     = "system"
 )
 
 type Grafana struct {

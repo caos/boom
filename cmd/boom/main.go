@@ -68,11 +68,11 @@ func main() {
 
 	flag.StringVar(&gitOrbConfig, "git-orbconfig", "", "The orbconfig path. If not provided, --git-crd-url and --git-crd-secret are used")
 	flag.StringVar(&gitCrdURL, "git-crd-url", "git@github.com:caos/tools.git", "The url for the git-repo to clone for the CRD")
-	flag.StringVar(&gitCrdPrivateKey, "git-crd-private-key", "config/manager/secret/id_rsa-boom-tools-read", "Path to private key required to clone the git-repo for the CRD")
+	flag.StringVar(&gitCrdPrivateKey, "git-crd-private-key", "../../config/manager/secret/id_rsa-boom-tools-read", "Path to private key required to clone the git-repo for the CRD")
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd/example/crd.yaml", "The path to the CRD in the cloned git-repo ")
 
-	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "tools", "The local path where the tools folder should be")
+	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "../../tools", "The local path where the tools folder should be")
 	flag.StringVar(&toolsetsPath, "toolsq-toolset-path", "toolsets", "The path to the fold structue which defines the toolsets and their versions")
 	flag.Parse()
 

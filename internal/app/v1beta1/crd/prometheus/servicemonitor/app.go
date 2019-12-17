@@ -1,11 +1,24 @@
 package servicemonitor
 
-import toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+type ConfigEndpoint struct {
+	Port       string
+	TargetPort string
+	Interval   string
+	Scheme     string
+	Path       string
+}
 
-func SpecToValues(labels map[string]string, spec *toolsetsv1beta1.ServiceMonitor) *Values {
+type Config struct {
+	Name                  string
+	Endpoints             []*ConfigEndpoint
+	MonitorMatchingLabels map[string]string
+	ServiceMatchingLabels map[string]string
+}
+
+func SpecToValues(config *Config) *Values {
 
 	endpoints := make([]*Endpoint, 0)
-	for _, endpoint := range spec.Endpoints {
+	for _, endpoint := range config.Endpoints {
 		valueEndpoint := &Endpoint{
 			Port:       endpoint.Port,
 			TargetPort: endpoint.TargetPort,
@@ -17,10 +30,10 @@ func SpecToValues(labels map[string]string, spec *toolsetsv1beta1.ServiceMonitor
 	}
 
 	values := &Values{
-		Name:             spec.Name,
-		AdditionalLabels: labels,
+		Name:             config.Name,
+		AdditionalLabels: config.MonitorMatchingLabels,
 		Selector: &Selector{
-			MatchLabels: spec.ServiceMatchingLabels,
+			MatchLabels: config.ServiceMatchingLabels,
 		},
 		NamespaceSelector: &NamespaceSelector{
 			Any: true,

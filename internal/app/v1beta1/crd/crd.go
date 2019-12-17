@@ -1,11 +1,14 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
 	"github.com/caos/boom/internal/app/v1beta1/crd/certmanager"
 	"github.com/caos/boom/internal/app/v1beta1/crd/grafana"
 	"github.com/caos/boom/internal/app/v1beta1/crd/loggingoperator"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusnodeexporter"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/template"
@@ -93,7 +96,7 @@ func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *to
 		c.helm.CleanUp()
 	}
 
-	helm, err := template.NewHelm(c.logger, toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Spec.Version, toolsetCRD.Name)
+	helm, err := template.NewHelm(c.logger, toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Name)
 	if err != nil {
 		return err
 	}
@@ -102,7 +105,7 @@ func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *to
 }
 
 func (c *Crd) NewFetcherGeneration(new *toolsetsv1beta1.Toolset) bool {
-	if new.Spec.Name != c.oldCrd.Spec.Name || new.Spec.Version != c.oldCrd.Spec.Version {
+	if new.Spec.Name != c.oldCrd.Spec.Name {
 		return true
 	}
 	return false
@@ -123,47 +126,146 @@ func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
 
-	if toolsetCRDSpec.LoggingOperator.Deploy {
-		if err := loggingoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
+	if err := loggingoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
+		return err
+	}
+
+	if err := prometheusoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
+		return err
+	}
+
+	if err := prometheusnodeexporter.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
+		return err
+	}
+
+	if err := certmanager.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
+		return err
+	}
+
+	if err := ambassador.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
+		return err
+	}
+
+	conf, datasource, err := c.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	if err != nil {
+		return err
+	}
+	if conf != nil {
+		if err := prometheus.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, conf); err != nil {
 			return err
 		}
 	}
 
-	if toolsetCRDSpec.PrometheusOperator.Deploy {
-		if err := prometheusoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
-			return err
-		}
-	}
+	toolsetCRDSpec.Grafana.Datasources = append(toolsetCRDSpec.Grafana.Datasources, &toolsetsv1beta1.Datasource{
+		Name:   "prometheus",
+		Type:   "prometheus",
+		Url:    datasource,
+		Access: "proxy",
+	})
 
-	if toolsetCRDSpec.PrometheusNodeExporter.Deploy {
-		if err := prometheusnodeexporter.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
-			return err
-		}
-	}
-
-	if toolsetCRDSpec.Grafana.Deploy {
-		if err := grafana.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
-			return err
-		}
-	}
-
-	if toolsetCRDSpec.Prometheus.Deploy {
-		if err := prometheus.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Prometheus); err != nil {
-			return err
-		}
-	}
-
-	if toolsetCRDSpec.CertManager.Deploy {
-		if err := certmanager.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
-			return err
-		}
-	}
-
-	if toolsetCRDSpec.Ambassador.Deploy {
-		if err := ambassador.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
-			return err
-		}
+	if err := grafana.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) (*prometheus.Config, string, error) {
+
+	monitorlabels := make(map[string]string, 0)
+	monitorlabels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
+
+	servicemonitors := make([]*servicemonitor.Config, 0)
+
+	if toolsetCRDSpec.Ambassador.ScrapeMetrics {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "ambassador-admin",
+			Path: "/metrics",
+		}
+		labels := map[string]string{"service": "ambassador-admin"}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "ambassador-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if toolsetCRDSpec.CertManager.ScrapeMetrics {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			TargetPort: "9402",
+			Path:       "/metrics",
+		}
+		labels := map[string]string{"service": "cert-manager"}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "cert-manager-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if toolsetCRDSpec.PrometheusOperator.ScrapeMetrics {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "http",
+			Path: "/metrics",
+		}
+		labels := map[string]string{"app": "prometheus-operator-operator"}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "prometheus-operator-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if toolsetCRDSpec.PrometheusNodeExporter.ScrapeMetrics {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "metrics",
+			Path: "/metrics",
+		}
+		labels := map[string]string{"app": "prometheus-node-exporter"}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "prometheus-node-exporter-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if len(servicemonitors) > 0 {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "web",
+			Path: "/metrics",
+		}
+		labels := map[string]string{"app": "prometheus-operator-prometheus", "release": "caos"}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "prometheus-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+
+		prom := &prometheus.Config{
+			Prefix:          "caos",
+			Namespace:       "caos-system",
+			MonitorLabels:   monitorlabels,
+			ServiceMonitors: servicemonitors,
+		}
+		datasource := strings.Join([]string{"http://", prom.Prefix, "-prometheus-operator-prometheus.", prom.Namespace, ":9090"}, "")
+
+		return prom, datasource, nil
+	}
+
+	return nil, "", nil
 }

@@ -18,7 +18,7 @@ var (
 	applicationName      = "cert-manager"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "kube-system"
+	defaultNamespace     = "system"
 )
 
 type CertManager struct {

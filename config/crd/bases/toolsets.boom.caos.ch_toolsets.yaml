@@ -22,12 +22,12 @@ spec:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
           description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -44,8 +44,12 @@ spec:
                   type: string
                 prefix:
                   type: string
+                scrapeMetrics:
+                  type: boolean
               type: object
             cert-manager:
+              description: Prometheus             *Prometheus             `json:"prometheus,omitempty"
+                yaml:"prometheus"`
               properties:
                 deploy:
                   type: boolean
@@ -53,6 +57,8 @@ spec:
                   type: string
                 prefix:
                   type: string
+                scrapeMetrics:
+                  type: boolean
               type: object
             grafana:
               properties:
@@ -121,70 +127,6 @@ spec:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "make" to regenerate code after modifying this file'
               type: string
-            prometheus:
-              properties:
-                deploy:
-                  type: boolean
-                monitorLabel:
-                  additionalProperties:
-                    type: string
-                  type: object
-                namespace:
-                  type: string
-                prefix:
-                  type: string
-                serviceMonitors:
-                  items:
-                    properties:
-                      endpoints:
-                        items:
-                          properties:
-                            interval:
-                              type: string
-                            path:
-                              type: string
-                            port:
-                              type: string
-                            scheme:
-                              type: string
-                            targetPort:
-                              type: string
-                          type: object
-                        type: array
-                      interval:
-                        type: string
-                      name:
-                        type: string
-                      relabelings:
-                        items:
-                          properties:
-                            action:
-                              type: string
-                            regex:
-                              type: string
-                            replacement:
-                              type: string
-                            sourcelabels:
-                              items:
-                                type: string
-                              type: array
-                            targetlabel:
-                              type: string
-                          type: object
-                        type: array
-                      serviceMatchingLabels:
-                        additionalProperties:
-                          type: string
-                        type: object
-                    type: object
-                  type: array
-              required:
-              - deploy
-              - monitorLabel
-              - namespace
-              - prefix
-              - serviceMonitors
-              type: object
             prometheus-node-exporter:
               properties:
                 deploy:
@@ -215,8 +157,6 @@ spec:
                 prefix:
                   type: string
               type: object
-            version:
-              type: string
           type: object
         status:
           description: ToolsetStatus defines the observed state of Toolset

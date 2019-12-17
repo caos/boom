@@ -18,7 +18,7 @@ var (
 	applicationName      = "prometheus-node-exporter"
 	resultsDirectoryName = "results"
 	resultsFileName      = "results.yaml"
-	defaultNamespace     = "monitoring"
+	defaultNamespace     = "system"
 )
 
 type PrometheusNodeExporter struct {
