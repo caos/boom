@@ -1,29 +1,26 @@
 package ambassador
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
 )
 
 var (
-	applicationName      = "ambassador"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "ambassador"
 )
 
 type Ambassador struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.Ambassador
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *Ambassador {
@@ -35,27 +32,18 @@ func New(logger logging.Logger, toolsDirectoryPath string) *Ambassador {
 	return c
 }
 
-func (a *Ambassador) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Ambassador) error {
+func (a *Ambassador) Reconcile(overlay string, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.Ambassador) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-rGkpjHLZtVAWumr",
 	}
 
-	logFields["logID"] = "CRD-rGkpjHLZtVAWumr"
 	a.logger.WithFields(logFields).Info("Reconciling")
-	resultsFileDirectory := filepath.Join(a.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
+	resultFilePath := defaults.GetResultFilePath(overlay, a.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec, namespace)
 	writeValues := func(path string) error {
@@ -65,16 +53,36 @@ func (a *Ambassador) Reconcile(overlay string, helm *template.Helm, spec *toolse
 		return nil
 	}
 
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-
 	if spec.Deploy {
-		if err := errors.Wrapf(helper.Run(a.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, a.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		if err := errors.Wrapf(helper.Run(a.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		a.spec = spec
+	} else if !spec.Deploy && a.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		if err := errors.Wrapf(helper.Run(a.logger, kubectlCmd.Build()), "Failed to delete with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		a.spec = nil
 	}
 
 	return nil
@@ -157,6 +165,10 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador,
 			PullPolicy:    "IfNotPresent",
 			Configuration: defaultExporterConfig(),
 		},
+	}
+
+	if spec.ReplicaCount != 0 {
+		values.ReplicaCount = spec.ReplicaCount
 	}
 
 	return values

@@ -1,29 +1,26 @@
 package grafana
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
 )
 
 var (
-	applicationName      = "grafana"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "grafana"
 )
 
 type Grafana struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.Grafana
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
@@ -35,18 +32,17 @@ func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
 	return lo
 }
 
-func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
+func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-tS3NCOfewXYGvDE",
 	}
-	logFields["logID"] = "CRD-tS3NCOfewXYGvDE"
 	g.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(g.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
+	resultFilePath := defaults.GetResultFilePath(overlay, g.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
@@ -56,27 +52,37 @@ func (g *Grafana) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv
 		return nil
 	}
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
-
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-
 	if spec.Deploy {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, g.ApplicationDirectoryPath, applicationName)); err != nil {
+			return err
+		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
 		}
-	}
 
+		g.spec = spec
+	} else if !spec.Deploy && g.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		g.spec = nil
+	}
 	return nil
 }
 

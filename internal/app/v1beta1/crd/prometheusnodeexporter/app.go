@@ -1,29 +1,26 @@
 package prometheusnodeexporter
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
 )
 
 var (
-	applicationName      = "prometheus-node-exporter"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "prometheus-node-exporter"
 )
 
 type PrometheusNodeExporter struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.PrometheusNodeExporter
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *PrometheusNodeExporter {
@@ -35,18 +32,17 @@ func New(logger logging.Logger, toolsDirectoryPath string) *PrometheusNodeExport
 	return pne
 }
 
-func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusNodeExporter) error {
+func (p *PrometheusNodeExporter) Reconcile(overlay, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusNodeExporter) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-8Z2ueDkBmkBONgc",
 	}
-	logFields["logID"] = "CRD-8Z2ueDkBmkBONgc"
 	p.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
+	resultFilePath := defaults.GetResultFilePath(overlay, p.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 
@@ -57,24 +53,36 @@ func (p *PrometheusNodeExporter) Reconcile(overlay string, helm *template.Helm, 
 		return nil
 	}
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
-
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 	if spec.Deploy {
-		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, p.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.spec = spec
+	} else if !spec.Deploy && p.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to delete with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.spec = nil
 	}
 
 	return nil
@@ -118,15 +126,6 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusN
 			Effect:   "NoSchedule",
 			Operator: "Exists",
 		}},
-	}
-
-	if spec.Monitor != nil {
-		values.Prometheus = &Prometheus{
-			Monitor: &Monitor{
-				Enabled:   spec.Monitor.Enabled,
-				Namespace: spec.Monitor.Namespace,
-			},
-		}
 	}
 
 	return values

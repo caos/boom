@@ -5,7 +5,3 @@ type PrometheusOperator struct {
 	Prefix    string `json:"prefix,omitempty"`
 	Namespace string `json:"namespace,omitempty"`
 }
-
-type RemoteWrite struct {
-	URL string `json:"url,omitempty"`
-}

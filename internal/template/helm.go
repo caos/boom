@@ -178,8 +178,7 @@ func (h *Helm) fetchAllCharts() error {
 	return nil
 }
 
-func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath string, writeValues func(path string) error) error {
-
+func (h *Helm) PrepareTemplate(appName, releaseName, releaseNamespace string, writeValues func(path string) error) error {
 	logFields := map[string]interface{}{
 		"application": appName,
 		"overlay":     h.Overlay,
@@ -188,8 +187,12 @@ func (h *Helm) Template(appName, releaseName, releaseNamespace, resultfilepath s
 	logFields["logID"] = "HELM-YF1XEbmiazmdCmN"
 	h.logger.WithFields(logFields).Info("Generating templator")
 	if err := h.generateTemplator(appName, releaseName, releaseNamespace, writeValues); err != nil {
-		return nil
+		return err
 	}
+	return nil
+}
+
+func (h *Helm) Template(appName, resultfilepath string) error {
 
 	base, err := filepath.Abs(h.ToolsDirectoryPath)
 	if err != nil {

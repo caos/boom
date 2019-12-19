@@ -20,9 +20,20 @@ import (
 )
 
 type Crd struct {
-	helm   *template.Helm
-	oldCrd *toolsetsv1beta1.Toolset
-	logger logging.Logger
+	helm         *template.Helm
+	oldCrd       *toolsetsv1beta1.Toolset
+	applications *Applications
+	logger       logging.Logger
+}
+
+type Applications struct {
+	LoggingOperator        *loggingoperator.LoggingOperator
+	Ambassador             *ambassador.Ambassador
+	Prometheus             *prometheus.Prometheus
+	PrometheusOperator     *prometheusoperator.PrometheusOperator
+	PrometheusNodeExporter *prometheusnodeexporter.PrometheusNodeExporter
+	Grafana                *grafana.Grafana
+	CertManager            *certmanager.CertManager
 }
 
 func (c *Crd) CleanUp() error {
@@ -43,6 +54,12 @@ func NewWithFunc(logger logging.Logger, getToolset func(obj runtime.Object) erro
 
 func New(logger logging.Logger, toolsetCRD *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) (*Crd, error) {
 	crd := &Crd{logger: logger}
+
+	apps, err := crd.NewApplications(toolsDirectoryPath)
+	if err != nil {
+		return nil, err
+	}
+	crd.applications = apps
 
 	if err := crd.GenerateTemplateComponents(toolsDirectoryPath, toolsets, toolsetCRD); err != nil {
 		return nil, err
@@ -126,23 +143,23 @@ func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
 
-	if err := loggingoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
+	if err := c.applications.LoggingOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
 		return err
 	}
 
-	if err := prometheusoperator.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
+	if err := c.applications.PrometheusOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
 		return err
 	}
 
-	if err := prometheusnodeexporter.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
+	if err := c.applications.PrometheusNodeExporter.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
 		return err
 	}
 
-	if err := certmanager.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.CertManager); err != nil {
+	if err := c.applications.CertManager.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.CertManager); err != nil {
 		return err
 	}
 
-	if err := ambassador.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Ambassador); err != nil {
+	if err := c.applications.Ambassador.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Ambassador); err != nil {
 		return err
 	}
 
@@ -151,7 +168,7 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		return err
 	}
 	if conf != nil {
-		if err := prometheus.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, conf); err != nil {
+		if err := c.applications.Prometheus.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, conf); err != nil {
 			return err
 		}
 	}
@@ -163,11 +180,25 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		Access: "proxy",
 	})
 
-	if err := grafana.New(c.logger, toolsDirectoryPath).Reconcile(overlay, c.helm, toolsetCRDSpec.Grafana); err != nil {
+	if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Grafana); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (c *Crd) NewApplications(toolsDirectoryPath string) (*Applications, error) {
+	applications := &Applications{
+		LoggingOperator:        loggingoperator.New(c.logger, toolsDirectoryPath),
+		PrometheusOperator:     prometheusoperator.New(c.logger, toolsDirectoryPath),
+		PrometheusNodeExporter: prometheusnodeexporter.New(c.logger, toolsDirectoryPath),
+		CertManager:            certmanager.New(c.logger, toolsDirectoryPath),
+		Ambassador:             ambassador.New(c.logger, toolsDirectoryPath),
+		Prometheus:             prometheus.New(c.logger, toolsDirectoryPath),
+		Grafana:                grafana.New(c.logger, toolsDirectoryPath),
+	}
+
+	return applications, nil
 }
 
 func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) (*prometheus.Config, string, error) {

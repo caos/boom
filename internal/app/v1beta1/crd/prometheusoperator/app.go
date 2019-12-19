@@ -1,29 +1,26 @@
 package prometheusoperator
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
 )
 
 var (
-	applicationName      = "prometheus-operator"
-	resultsDirectoryName = "results"
-	resultsFilename      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "prometheus-operator"
 )
 
 type PrometheusOperator struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.PrometheusOperator
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *PrometheusOperator {
@@ -35,19 +32,18 @@ func New(logger logging.Logger, toolsDirectoryPath string) *PrometheusOperator {
 	return lo
 }
 
-func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
+func (p *PrometheusOperator) Reconcile(overlay, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.PrometheusOperator) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-2JlElqA8Zqu7wcw",
 	}
-	logFields["logID"] = "CRD-2JlElqA8Zqu7wcw"
+
 	p.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFilename)
-
+	resultFilePath := defaults.GetResultFilePath(overlay, p.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 
 	writeValues := func(path string) error {
@@ -57,24 +53,36 @@ func (p *PrometheusOperator) Reconcile(overlay string, helm *template.Helm, spec
 		return nil
 	}
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
-
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
 	if spec.Deploy {
-		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, p.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.spec = spec
+	} else if !spec.Deploy && p.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to delete with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.spec = nil
 	}
 
 	return nil

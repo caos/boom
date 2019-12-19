@@ -1,7 +1,6 @@
 package certmanager
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/app/v1beta1/crd/service"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
@@ -16,15 +16,13 @@ import (
 )
 
 var (
-	applicationName      = "cert-manager"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "cert-manager"
 )
 
 type CertManager struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.CertManager
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *CertManager {
@@ -36,27 +34,18 @@ func New(logger logging.Logger, toolsDirectoryPath string) *CertManager {
 	return c
 }
 
-func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.CertManager) error {
+func (c *CertManager) Reconcile(overlay string, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.CertManager) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-S9vTqVD7gqyLPrQ",
 	}
-	logFields["logID"] = "CRD-S9vTqVD7gqyLPrQ"
+
 	c.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(c.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
-
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
+	resultFilePath := defaults.GetResultFilePath(overlay, c.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec, namespace)
 	writeValues := func(path string) error {
@@ -66,20 +55,40 @@ func (c *CertManager) Reconcile(overlay string, helm *template.Helm, spec *tools
 		return nil
 	}
 
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
-
-	if err := addService(resultFilePath, prefix, namespace); err != nil {
-		return err
-	}
-
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
 
 	if spec.Deploy {
-		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, c.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := addService(resultFilePath, prefix, namespace); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		c.spec = spec
+	} else if !spec.Deploy && c.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		c.spec = nil
 	}
 
 	return nil
@@ -140,7 +149,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.CertManager
 			Enabled: false,
 		},
 		Webhook: &Webhook{
-			Enabled:      true,
+			Enabled:      false,
 			ReplicaCount: 1,
 			Image: &Image{
 				Repository: "quay.io/jetstack/cert-manager-webhook",
@@ -159,5 +168,10 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.CertManager
 			},
 		},
 	}
+
+	if spec.ReplicaCount != 0 {
+		values.ReplicaCount = spec.ReplicaCount
+	}
+
 	return values
 }

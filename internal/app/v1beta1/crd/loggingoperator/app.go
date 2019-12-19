@@ -1,29 +1,26 @@
 package loggingoperator
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
 )
 
 var (
-	applicationName      = "logging-operator"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "logging-operator"
 )
 
 type LoggingOperator struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	spec                     *toolsetsv1beta1.LoggingOperator
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *LoggingOperator {
@@ -35,18 +32,18 @@ func New(logger logging.Logger, toolsDirectoryPath string) *LoggingOperator {
 	return lo
 }
 
-func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *toolsetsv1beta1.LoggingOperator) error {
+func (l *LoggingOperator) Reconcile(overlay, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.LoggingOperator) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-8Z2ueDkBmkBONgc",
 	}
-	logFields["logID"] = "CRD-8Z2ueDkBmkBONgc"
+
 	l.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(l.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
+	resultFilePath := defaults.GetResultFilePath(overlay, l.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
 
 	values := specToValues(helm.GetImageTags(applicationName), spec)
 	writeValues := func(path string) error {
@@ -56,25 +53,38 @@ func (l *LoggingOperator) Reconcile(overlay string, helm *template.Helm, spec *t
 		return nil
 	}
 
-	prefix := spec.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := spec.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
-	}
-
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-
 	if spec.Deploy {
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, l.ApplicationDirectoryPath, applicationName)); err != nil {
+			return err
+		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+
 		if err := errors.Wrapf(helper.Run(l.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
 		}
+
+		l.spec = spec
+	} else if !spec.Deploy && l.spec != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+
+		if err := errors.Wrapf(helper.Run(l.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		l.spec = nil
 	}
 
 	return nil

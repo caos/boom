@@ -1,13 +1,12 @@
 package prometheus
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
+	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/helper"
@@ -16,10 +15,7 @@ import (
 )
 
 var (
-	applicationName      = "prometheus"
-	resultsDirectoryName = "results"
-	resultsFileName      = "results.yaml"
-	defaultNamespace     = "system"
+	applicationName = "prometheus"
 )
 
 type Config struct {
@@ -27,11 +23,20 @@ type Config struct {
 	Namespace       string
 	MonitorLabels   map[string]string
 	ServiceMonitors []*servicemonitor.Config
+	ReplicaCount    int
+	StorageSpec     *ConfigStorageSpec
+}
+
+type ConfigStorageSpec struct {
+	StorageClass string
+	AccessModes  []string
+	Storage      string
 }
 
 type Prometheus struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
+	config                   *Config
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *Prometheus {
@@ -44,31 +49,20 @@ func New(logger logging.Logger, toolsDirectoryPath string) *Prometheus {
 	return p
 }
 
-func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, config *Config) error {
+func (p *Prometheus) Reconcile(overlay, specNamespace string, helm *template.Helm, config *Config) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
+		"logID":       "CRD-G9XDSdcIChwHP4w",
 	}
-	logFields["logID"] = "CRD-G9XDSdcIChwHP4w"
 	p.logger.WithFields(logFields).Info("Reconciling")
 
-	resultsFileDirectory := filepath.Join(p.ApplicationDirectoryPath, resultsDirectoryName, overlay)
-	_ = os.RemoveAll(resultsFileDirectory)
-	_ = os.MkdirAll(resultsFileDirectory, os.ModePerm)
-	resultFilePath := filepath.Join(resultsFileDirectory, resultsFileName)
-
+	resultFilePath := defaults.GetResultFilePath(overlay, p.ApplicationDirectoryPath, applicationName)
+	prefix := defaults.GetPrefix(overlay, applicationName, config.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, config.Namespace)
 	values, err := specToValues(helm.GetImageTags(applicationName), config)
 	if err != nil {
 		return err
-	}
-
-	prefix := config.Prefix
-	if prefix == "" {
-		prefix = overlay
-	}
-	namespace := config.Namespace
-	if namespace == "" {
-		namespace = strings.Join([]string{overlay, defaultNamespace}, "-")
 	}
 
 	writeValues := func(path string) error {
@@ -78,13 +72,37 @@ func (p *Prometheus) Reconcile(overlay string, helm *template.Helm, config *Conf
 		return nil
 	}
 
-	if err := helm.Template(applicationName, prefix, namespace, resultFilePath, writeValues); err != nil {
+	if err := helm.PrepareTemplate(applicationName, prefix, namespace, writeValues); err != nil {
 		return err
 	}
 
-	kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-	if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
-		return err
+	if config != nil {
+
+		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, p.ApplicationDirectoryPath, applicationName)); err != nil {
+			return err
+		}
+
+		if err := helm.Template(applicationName, resultFilePath); err != nil {
+			return err
+		}
+
+		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.config = config
+	} else if config == nil && p.config != nil {
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath)
+		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
+			return err
+		}
+
+		p.config = nil
 	}
 
 	return nil
@@ -142,6 +160,24 @@ func specToValues(imageTags map[string]string, config *Config) (*Values, error) 
 				FsGroup:      2000,
 			},
 		},
+	}
+
+	if config.StorageSpec != nil {
+		storageSpec := &StorageSpec{
+			VolumeClaimTemplate: &VolumeClaimTemplate{
+				Spec: &VolumeClaimTemplateSpec{
+					StorageClassName: config.StorageSpec.StorageClass,
+					AccessModes:      config.StorageSpec.AccessModes,
+					Resources: &Resources{
+						Requests: &Request{
+							Storage: config.StorageSpec.Storage,
+						},
+					},
+				},
+			},
+		}
+
+		promValues.PrometheusSpec.StorageSpec = storageSpec
 	}
 
 	if config.MonitorLabels != nil {
