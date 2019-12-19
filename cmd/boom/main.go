@@ -30,10 +30,13 @@ import (
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/controllers"
 	"github.com/caos/boom/internal/app"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/kustomize"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -117,6 +120,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	cmd, err := kustomize.New("../../config/crd")
+	if err != nil {
+		setupLog.Error(err, "unable to locate crd")
+		os.Exit(1)
+	}
+
+	err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
+	if err != nil {
+		setupLog.Error(err, "unable to apply crd")
+		os.Exit(1)
+	}
+
+	var gitCrdError chan error
 	if gitCrdPath != "" {
 		if err := app.AddGitCrd(gitCrdURL, gitCrdPrivateKeyBytes, gitCrdPath); err != nil {
 			setupLog.Error(err, "unable to start supervised crd")
@@ -133,6 +149,7 @@ func main() {
 				})
 				if goErr != nil {
 					recLogger.Error(goErr)
+					gitCrdError <- goErr
 				}
 				recLogger.Info("Iteration done")
 				time.Sleep(10 * time.Second)
@@ -169,5 +186,8 @@ func main() {
 		}
 
 		setupLog.Info("starting manager")
+	} else {
+		<-gitCrdError
 	}
+
 }

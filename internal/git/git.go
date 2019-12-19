@@ -15,10 +15,12 @@ import (
 )
 
 type Git struct {
-	Repo     *git.Repository
-	prevTree *object.Tree
-	logger   logging.Logger
-	auth     *gitssh.PublicKeys
+	url       string
+	localPath string
+	Repo      *git.Repository
+	prevTree  *object.Tree
+	logger    logging.Logger
+	auth      *gitssh.PublicKeys
 }
 
 func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git, error) {
@@ -31,13 +33,18 @@ func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git,
 	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
 	auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
-	g := &Git{logger: logger, auth: auth}
+	g := &Git{
+		logger:    logger,
+		auth:      auth,
+		localPath: localPath,
+		url:       url,
+	}
 
 	repoLogger := g.logger.WithFields(map[string]interface{}{
 		"repo": url,
 	})
 
-	repo, err := g.cloneRepo(localPath, url)
+	repo, err := g.cloneRepo()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Cloning repo %s failed", url)
 	}
@@ -71,18 +78,18 @@ func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git,
 	return g, nil
 }
 
-func (g *Git) cloneRepo(localPath, url string) (*git.Repository, error) {
+func (g *Git) cloneRepo() (*git.Repository, error) {
 
 	g.logger.WithFields(map[string]interface{}{
 		"logID": "GIT-vNU9maj2Rfo5rRU",
-		"repo":  url,
-		"to":    localPath,
+		"repo":  g.url,
+		"to":    g.localPath,
 	}).Info("Cloning plain")
 
 	ctx := context.TODO()
 	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	repo, err := git.PlainCloneContext(toCtx, localPath, false, &git.CloneOptions{
-		URL:          url,
+	repo, err := git.PlainCloneContext(toCtx, g.localPath, false, &git.CloneOptions{
+		URL:          g.url,
 		SingleBranch: true,
 		Depth:        1,
 		Progress:     os.Stdout,
@@ -95,63 +102,80 @@ func (g *Git) cloneRepo(localPath, url string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func (g *Git) IsFileChanged(path string) (changed bool, err error) {
-
-	var action string
-	defer func() {
-		if err != nil {
-			err = errors.Wrapf(err, "Failed to %s of repo", action)
-		}
-	}()
-
-	w, err := g.Repo.Worktree()
+func (g *Git) ReloadRepo() error {
+	err := os.RemoveAll(g.localPath)
 	if err != nil {
-		action = "get workingtree"
-		return false, err
+		return err
 	}
 
-	err = w.Pull(&git.PullOptions{
-		RemoteName: "origin",
-		Auth:       g.auth,
-	})
-	if err == git.NoErrAlreadyUpToDate {
-		return false, nil
-	}
+	repo, err := g.cloneRepo()
 	if err != nil {
-		action = "pull"
-		return false, err
+		return err
 	}
 
-	ref, err := g.Repo.Head()
-	if err != nil {
-		action = "get the head"
-		return false, err
-	}
-
-	commit, err := g.Repo.CommitObject(ref.Hash())
-	if err != nil {
-		action = "get last commit"
-		return false, err
-	}
-
-	currentTree, err := commit.Tree()
-	if err != nil {
-		action = "get tree of last commit"
-		return false, err
-	}
-
-	changes, err := currentTree.Diff(g.prevTree)
-	if err != nil {
-		action = "diff changes"
-		return false, err
-	}
-	g.prevTree = currentTree
-
-	for _, c := range changes {
-		if c.To.Name == path {
-			return true, nil
-		}
-	}
-	return false, nil
-
+	g.Repo = repo
+	return nil
 }
+
+// func (g *Git) IsFileChanged(path string) (changed bool, err error) {
+
+// 	var action string
+// 	defer func() {
+// 		if err != nil {
+// 			err = errors.Wrapf(err, "Failed to %s of repo", action)
+// 		}
+// 	}()
+
+// 	w, err := g.Repo.Worktree()
+// 	if err != nil {
+// 		action = "get workingtree"
+// 		return false, err
+// 	}
+// 	w.
+// 		err = w.Pull(&git.PullOptions{
+// 		RemoteName: "origin",
+// 		Auth:       g.auth,
+// 	})
+
+// 	if err == git.NoErrAlreadyUpToDate {
+// 		return false, nil
+// 	}
+
+// 	if err != nil {
+// 		action = "pull"
+// 		return false, err
+// 	}
+
+// 	ref, err := g.Repo.Head()
+// 	if err != nil {
+// 		action = "get the head"
+// 		return false, err
+// 	}
+
+// 	commit, err := g.Repo.CommitObject(ref.Hash())
+// 	if err != nil {
+// 		action = "get last commit"
+// 		return false, err
+// 	}
+
+// 	currentTree, err := commit.Tree()
+// 	if err != nil {
+// 		action = "get tree of last commit"
+// 		return false, err
+// 	}
+
+// 	changes, err := currentTree.Diff(g.prevTree)
+// 	if err != nil {
+// 		action = "diff changes"
+// 		return false, err
+// 	}
+// 	g.prevTree = currentTree
+
+// 	for _, c := range changes {
+// 		if c.To.Name == path {
+// 			return true, nil
+// 		}
+// 	}
+// 	return false, nil
+
+// }

@@ -46,8 +46,7 @@ func (c *GitCrd) CleanUp() error {
 }
 
 func (c *GitCrd) Reconcile(toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
-	changed, err := c.git.IsFileChanged(c.crdPath)
-	if err != nil || !changed {
+	if err := c.git.ReloadRepo(); err != nil {
 		return err
 	}
 
