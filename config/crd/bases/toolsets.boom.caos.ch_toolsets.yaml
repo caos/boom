@@ -44,12 +44,10 @@ spec:
                   type: string
                 prefix:
                   type: string
-                scrapeMetrics:
-                  type: boolean
+                replicaCount:
+                  type: integer
               type: object
             cert-manager:
-              description: Prometheus             *Prometheus             `json:"prometheus,omitempty"
-                yaml:"prometheus"`
               properties:
                 deploy:
                   type: boolean
@@ -57,8 +55,8 @@ spec:
                   type: string
                 prefix:
                   type: string
-                scrapeMetrics:
-                  type: boolean
+                replicaCount:
+                  type: integer
               type: object
             grafana:
               properties:
@@ -109,46 +107,91 @@ spec:
                 prefix:
                   type: string
               type: object
+            kube-state-metrics:
+              properties:
+                collectors:
+                  properties:
+                    certificatesigningrequests:
+                      type: boolean
+                    configmaps:
+                      type: boolean
+                    cronjobs:
+                      type: boolean
+                    daemonsets:
+                      type: boolean
+                    deployments:
+                      type: boolean
+                    endpoints:
+                      type: boolean
+                    horizontalpodautoscalers:
+                      type: boolean
+                    ingresses:
+                      type: boolean
+                    jobs:
+                      type: boolean
+                    limitranges:
+                      type: boolean
+                    namespaces:
+                      type: boolean
+                    nodes:
+                      type: boolean
+                    persistentvolumeclaims:
+                      type: boolean
+                    persistentvolumes:
+                      type: boolean
+                    poddisruptionbudgets:
+                      type: boolean
+                    pods:
+                      type: boolean
+                    replicasets:
+                      type: boolean
+                    replicationcontrollers:
+                      type: boolean
+                    resourcequotas:
+                      type: boolean
+                    secrets:
+                      type: boolean
+                    services:
+                      type: boolean
+                    statefulsets:
+                      type: boolean
+                    storageclasses:
+                      type: boolean
+                    verticalpodautoscalers:
+                      type: boolean
+                  type: object
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+                replicaCount:
+                  type: integer
+              type: object
             logging-operator:
               properties:
                 deploy:
                   type: boolean
-                logging:
-                  properties:
-                    controlNamespace:
-                      type: string
-                  type: object
                 namespace:
                   type: string
                 prefix:
                   type: string
               type: object
             name:
-              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+            namespace:
               type: string
             prometheus-node-exporter:
               properties:
                 deploy:
                   type: boolean
-                monitor:
-                  properties:
-                    enabled:
-                      type: boolean
-                    namespace:
-                      type: string
-                  required:
-                  - enabled
-                  - namespace
-                  type: object
                 namespace:
                   type: string
                 prefix:
                   type: string
               type: object
             prometheus-operator:
-              description: PrometheusOperator defines the desired state for the prometheus
-                operator
               properties:
                 deploy:
                   type: boolean

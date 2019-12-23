@@ -65,7 +65,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 			return err
 		}
 
-		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+		if err := helper.DeleteKindFromYaml(resultFilePath, "Namespace"); err != nil {
 			return err
 		}
 

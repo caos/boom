@@ -42,7 +42,6 @@ function parseYaml {
     local v=${line#*:}
 
     [ "$k" == "chartName" ] && chartName=$v
-    [ "$k" == "chartVersion" ] && chartVersion=$v
     [ "$k" == "valuesFile" ] && valuesFile=$v
     [ "$k" == "releaseName" ] && releaseName=$v
     [ "$k" == "releaseNamespace" ] && releaseNamespace=$v
@@ -50,7 +49,6 @@ function parseYaml {
 
   # Trim leading space
   chartName="${chartName#"${chartName%%[![:space:]]*}"}"
-  chartVersion="${chartVersion#"${chartVersion%%[![:space:]]*}"}"
   valuesFile="${valuesFile#"${valuesFile%%[![:space:]]*}"}"
   releaseName="${releaseName#"${releaseName%%[![:space:]]*}"}"
   releaseNamespace="${releaseNamespace#"${releaseNamespace%%[![:space:]]*}"}"
@@ -84,4 +82,4 @@ doHelm template \
     --name $releaseName \
     --namespace $releaseNamespace \
     --values $valuesFile \
-    ${chartHome}/${chartName}-${chartVersion}/$chartName
+    ${chartHome}/$chartName

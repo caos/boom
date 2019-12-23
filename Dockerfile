@@ -50,12 +50,15 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /boom cmd/boom/*.
 # ####################################################################################################
 FROM alpine:3.10
 
-RUN apk update && apk add bash ca-certificates
+RUN apk update && apk add bash ca-certificates bash
 COPY --from=dependencies /artifacts /usr/local/bin/
 COPY --from=build /boom /
 
 COPY tools/kustomize tools/kustomize
 COPY tools/toolsets tools/toolsets
 COPY tools/start.sh tools/start.sh
+COPY tools/fetch-all.sh tools/fetch-all.sh
+
+RUN cd /tools && ./fetch-all.sh basisset
 
 ENTRYPOINT ["/boom"]

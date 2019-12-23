@@ -86,7 +86,7 @@ func (p *Prometheus) Reconcile(overlay, specNamespace string, helm *template.Hel
 			return err
 		}
 
-		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+		if err := helper.DeleteKindFromYaml(resultFilePath, "Namespace"); err != nil {
 			return err
 		}
 

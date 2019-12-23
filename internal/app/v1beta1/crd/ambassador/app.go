@@ -66,7 +66,7 @@ func (a *Ambassador) Reconcile(overlay string, specNamespace string, helm *templ
 			return err
 		}
 
-		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+		if err := helper.DeleteKindFromYaml(resultFilePath, "Namespace"); err != nil {
 			return err
 		}
 

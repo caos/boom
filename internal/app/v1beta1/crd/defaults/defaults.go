@@ -7,6 +7,7 @@ import (
 )
 
 var Defaults = initDefaults()
+var defaultValue = "default"
 
 type value struct {
 	resultsDirectoryName string
@@ -27,8 +28,14 @@ func GetNamespace(overlay, application, specNamespace, namespace string) string 
 	}
 
 	//default applicationspecific namespace in combination with crd name
-	if Defaults[application].defaultNamespace != "" {
+	def, ok := Defaults[application]
+	if ok && def.defaultNamespace != "" {
 		return strings.Join([]string{overlay, Defaults[application].defaultNamespace}, "-")
+	}
+
+	//default namespace in combination with crd name
+	if Defaults[defaultValue].defaultNamespace != "" {
+		return strings.Join([]string{overlay, Defaults[defaultValue].defaultNamespace}, "-")
 	}
 
 	//crd name
@@ -41,19 +48,34 @@ func GetPrefix(overlay, application, prefix string) string {
 		return prefix
 	}
 
-	if Defaults[application].defaultPrefix != "" {
+	def, ok := Defaults[application]
+	if ok && def.defaultPrefix != "" {
 		return strings.Join([]string{overlay, Defaults[application].defaultPrefix}, "-")
+	}
+
+	if Defaults[defaultValue].defaultPrefix != "" {
+		return strings.Join([]string{overlay, Defaults[defaultValue].defaultPrefix}, "-")
 	}
 
 	return overlay
 }
 
 func GetResultFileDirectory(overlay, path, application string) string {
-	return filepath.Join(path, Defaults[application].resultsDirectoryName, overlay)
+	def, ok := Defaults[application]
+	if ok {
+		filepath.Join(path, def.resultsDirectoryName, overlay)
+	}
+
+	return filepath.Join(path, Defaults[defaultValue].resultsDirectoryName, overlay)
 }
 
 func GetResultFilePath(overlay, path, application string) string {
-	return filepath.Join(GetResultFileDirectory(overlay, path, application), Defaults[application].resultsFileName)
+	def, ok := Defaults[application]
+	if ok {
+		filepath.Join(GetResultFileDirectory(overlay, path, application), def.resultsFileName)
+	}
+
+	return filepath.Join(GetResultFileDirectory(overlay, path, application), Defaults[defaultValue].resultsFileName)
 }
 
 func PrepareForResultOutput(resultsFileDirectory string) error {
@@ -69,13 +91,14 @@ func PrepareForResultOutput(resultsFileDirectory string) error {
 func initDefaults() map[string]*value {
 	defaults := make(map[string]*value, 0)
 
-	defaults["ambassador"] = NewValue("results", "results.yaml", "system", "")
-	defaults["cert-manager"] = NewValue("results", "results.yaml", "system", "")
-	defaults["grafana"] = NewValue("results", "results.yaml", "system", "")
-	defaults["logging-operator"] = NewValue("results", "results.yaml", "system", "")
-	defaults["prometheus"] = NewValue("results", "results.yaml", "system", "")
-	defaults["prometheus-node-exporter"] = NewValue("results", "results.yaml", "system", "")
-	defaults["prometheus-operator"] = NewValue("results", "results.yaml", "system", "")
+	defaults[defaultValue] = NewValue("results", "results.yaml", "system", "")
+	// defaults["ambassador"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["cert-manager"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["grafana"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["logging-operator"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["prometheus"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["prometheus-node-exporter"] = NewValue("results", "results.yaml", "system", "")
+	// defaults["prometheus-operator"] = NewValue("results", "results.yaml", "system", "")
 
 	return defaults
 }

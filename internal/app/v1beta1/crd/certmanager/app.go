@@ -1,6 +1,7 @@
 package certmanager
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -21,6 +22,7 @@ var (
 
 type CertManager struct {
 	ApplicationDirectoryPath string
+	toolsDirectoryPath       string
 	logger                   logging.Logger
 	spec                     *toolsetsv1beta1.CertManager
 }
@@ -28,6 +30,7 @@ type CertManager struct {
 func New(logger logging.Logger, toolsDirectoryPath string) *CertManager {
 	c := &CertManager{
 		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
+		toolsDirectoryPath:       toolsDirectoryPath,
 		logger:                   logger,
 	}
 
@@ -72,11 +75,15 @@ func (c *CertManager) Reconcile(overlay string, specNamespace string, helm *temp
 			return err
 		}
 
-		if err := helper.DeletePartOfYaml(resultFilePath, "kind: Namespace"); err != nil {
+		if err := addCrds(resultFilePath, c.toolsDirectoryPath); err != nil {
 			return err
 		}
 
-		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		if err := helper.DeleteKindFromYaml(resultFilePath, "Namespace"); err != nil {
+			return err
+		}
+
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddFlag("--validate=false")
 		if err := errors.Wrapf(helper.Run(c.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath); err != nil {
 			return err
 		}
@@ -112,6 +119,29 @@ func addService(filePath string, prefix string, namespace string) error {
 
 	if err := helper.AddStructToYaml(filePath, service); err != nil {
 		return err
+	}
+	return nil
+}
+
+func addCrds(filePath string, toolsDirectoryPath string) error {
+	chartsPath := filepath.Join(toolsDirectoryPath, "charts", applicationName, "crds")
+
+	var files []string
+	err := filepath.Walk(chartsPath, func(path string, info os.FileInfo, err error) error {
+		if path != chartsPath {
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		err := helper.AddYamlToYaml(filePath, file)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

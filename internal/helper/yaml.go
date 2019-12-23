@@ -68,7 +68,7 @@ func AddStringToYaml(path string, str string) error {
 	return nil
 }
 
-func DeletePartOfYaml(path string, str string) error {
+func DeleteKindFromYaml(path string, kind string) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -79,12 +79,56 @@ func DeletePartOfYaml(path string, str string) error {
 
 	os.Remove(path)
 	for _, part := range parts {
-		if !strings.Contains(part, str) {
+		struc := &Resource{}
+		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
+			return err
+		}
+
+		if struc.Kind != kind {
 			if err := AddStringToYaml(path, part); err != nil {
 				return err
 			}
 		}
 	}
 
+	return nil
+}
+
+type Resource struct {
+	Kind       string `yaml:"kind"`
+	ApiVersion string `yaml:"apiVersion"`
+}
+
+func GetVersionFromYaml(filePath string) (string, error) {
+	resource := &Resource{}
+	if err := YamlToStruct(filePath, resource); err != nil {
+		return "", err
+	}
+	parts := strings.Split(resource.ApiVersion, "/")
+
+	return parts[1], nil
+}
+
+func AddYamlToYaml(filePath, addFilePath string) error {
+
+	f, err := os.OpenFile(filePath,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	addContent, err := ioutil.ReadFile(addFilePath)
+	if err != nil {
+		return err
+	}
+	addText := string(addContent)
+
+	if _, err := f.WriteString("\n---\n"); err != nil {
+		return err
+	}
+	if _, err := f.WriteString(addText); err != nil {
+		return err
+	}
 	return nil
 }

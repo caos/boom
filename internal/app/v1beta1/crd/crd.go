@@ -6,6 +6,7 @@ import (
 	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
 	"github.com/caos/boom/internal/app/v1beta1/crd/certmanager"
 	"github.com/caos/boom/internal/app/v1beta1/crd/grafana"
+	"github.com/caos/boom/internal/app/v1beta1/crd/kubestatemetrics"
 	"github.com/caos/boom/internal/app/v1beta1/crd/loggingoperator"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
@@ -34,6 +35,7 @@ type Applications struct {
 	PrometheusNodeExporter *prometheusnodeexporter.PrometheusNodeExporter
 	Grafana                *grafana.Grafana
 	CertManager            *certmanager.CertManager
+	KubeStateMetrics       *kubestatemetrics.KubeStateMetrics
 }
 
 func (c *Crd) CleanUp() error {
@@ -61,9 +63,11 @@ func New(logger logging.Logger, toolsetCRD *toolsetsv1beta1.Toolset, toolsDirect
 	}
 	crd.applications = apps
 
-	if err := crd.GenerateTemplateComponents(toolsDirectoryPath, toolsets, toolsetCRD); err != nil {
+	helm, err := template.NewHelm(crd.logger, toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Name)
+	if err != nil {
 		return nil, err
 	}
+	crd.helm = helm
 
 	if err := crd.ReconcileApplications(toolsetCRD.Name, toolsDirectoryPath, toolsetCRD.Spec); err != nil {
 		return nil, err
@@ -83,15 +87,6 @@ func (c *Crd) ReconcileWithFunc(getToolset func(obj runtime.Object) error, tools
 }
 
 func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string, toolsets *toolset.Toolsets) error {
-	fetcherGen := c.NewFetcherGeneration(new)
-	if fetcherGen {
-		c.logger.WithFields(map[string]interface{}{
-			"logID": "CRD-6e7csH4wkujsRYE",
-		}).Info("Generate template components")
-		if err := c.GenerateTemplateComponents(toolsDirectoryPath, toolsets, new); err != nil {
-			return err
-		}
-	}
 
 	template := c.NewTemplate(new)
 	if template {
@@ -108,34 +103,9 @@ func (c *Crd) Reconcile(new *toolsetsv1beta1.Toolset, toolsDirectoryPath string,
 	return nil
 }
 
-func (c *Crd) GenerateTemplateComponents(toolsDirectoryPath string, toolsets *toolset.Toolsets, toolsetCRD *toolsetsv1beta1.Toolset) error {
-	if c.helm != nil {
-		c.helm.CleanUp()
-	}
-
-	helm, err := template.NewHelm(c.logger, toolsDirectoryPath, toolsets, toolsetCRD.Spec.Name, toolsetCRD.Name)
-	if err != nil {
-		return err
-	}
-	c.helm = helm
-	return nil
-}
-
-func (c *Crd) NewFetcherGeneration(new *toolsetsv1beta1.Toolset) bool {
-	if new.Spec.Name != c.oldCrd.Spec.Name {
-		return true
-	}
-	return false
-}
-
 func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
-	fetcher := c.NewFetcherGeneration(new)
 
-	if fetcher ||
-		new.Spec.LoggingOperator != c.oldCrd.Spec.LoggingOperator ||
-		new.Spec.PrometheusOperator != c.oldCrd.Spec.PrometheusOperator ||
-		new.Spec.PrometheusNodeExporter != c.oldCrd.Spec.PrometheusNodeExporter ||
-		new.Spec.Grafana != c.oldCrd.Spec.Grafana {
+	if new.Spec != c.oldCrd.Spec {
 		return true
 	}
 	return false
@@ -160,6 +130,10 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 	}
 
 	if err := c.applications.Ambassador.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Ambassador); err != nil {
+		return err
+	}
+
+	if err := c.applications.KubeStateMetrics.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.KubeStateMetrics); err != nil {
 		return err
 	}
 
@@ -196,6 +170,7 @@ func (c *Crd) NewApplications(toolsDirectoryPath string) (*Applications, error) 
 		Ambassador:             ambassador.New(c.logger, toolsDirectoryPath),
 		Prometheus:             prometheus.New(c.logger, toolsDirectoryPath),
 		Grafana:                grafana.New(c.logger, toolsDirectoryPath),
+		KubeStateMetrics:       kubestatemetrics.New(c.logger, toolsDirectoryPath),
 	}
 
 	return applications, nil
@@ -265,6 +240,25 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 
 		smconfig := &servicemonitor.Config{
 			Name:                  "prometheus-node-exporter-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if toolsetCRDSpec.KubeStateMetrics.Deploy {
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "http",
+			Path: "/metrics",
+		}
+
+		labels := map[string]string{
+			"app.kubernetes.io/name": "kube-state-metrics",
+		}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "kube-state-metrics-servicemonitor",
 			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 			MonitorMatchingLabels: monitorlabels,
 			ServiceMatchingLabels: labels,

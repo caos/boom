@@ -13,13 +13,10 @@ import (
 )
 
 var (
-	fetcherDirectoryName   = "fetchers"
-	fetcherFileName        = "fetcher.yaml"
-	kustomizationFileName  = "kustomization.yaml"
-	templatorDirectoryName = "templators"
-	templatorFileName      = "templator.yaml"
-	valuesFileName         = "values.yaml"
-	namespaceFileName      = "namespace.yaml"
+	kustomizationFileName = "kustomization.yaml"
+	templatorFileName     = "templator.yaml"
+	valuesFileName        = "values.yaml"
+	namespaceFileName     = "namespace.yaml"
 )
 
 type Helm struct {
@@ -53,20 +50,6 @@ func NewHelm(logger logging.Logger, toolsDirectoryPath string, toolsets *toolset
 	}).Info("Collecting list of applications from provided toolsets")
 	helm.collectApplications(crdName)
 
-	logger.WithFields(map[string]interface{}{
-		"logID": "HELM-NVpmSPi56GezX7D",
-	}).Info("Generating fetchers for necessary helm charts")
-	if err := helm.generateFetchers(); err != nil {
-		return nil, err
-	}
-
-	logger.WithFields(map[string]interface{}{
-		"logID": "HELM-AH5kPecXCXAYVGy",
-	}).Info("Fetching all helm charts to local")
-	if err := helm.fetchAllCharts(); err != nil {
-		return nil, err
-	}
-
 	return helm, nil
 }
 
@@ -74,18 +57,12 @@ func (h *Helm) CleanUp() error {
 	logFields := map[string]interface{}{
 		"overlay": h.Overlay,
 	}
+
 	for name := range h.Applications {
 		logFields["application"] = name
-		logFields["logID"] = "HELM-cUCPkTW3n2paliN"
-		h.logger.WithFields(logFields).Info("Cleaning up fetchers")
-		fetcherDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay)
-		if err := errors.Wrapf(os.RemoveAll(fetcherDirectoryPath), "Failed cleanup fetchers application %s overlay %s", name, h.Overlay); err != nil {
-			return err
-		}
-
 		logFields["logID"] = "HELM-YCXTWaGws6NsMNJ"
 		h.logger.WithFields(logFields).Info("Cleaning up templators")
-		templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, templatorDirectoryName, h.Overlay)
+		templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, h.Overlay)
 		if err := errors.Wrapf(os.RemoveAll(templatorDirectoryPath), "Failed cleanup templators application %s overlay %s", name, h.Overlay); err != nil {
 			return err
 		}
@@ -122,62 +99,6 @@ func (h *Helm) GetImageTags(appName string) map[string]string {
 	return application.ImageTags
 }
 
-func (h *Helm) generateFetchers() error {
-	h.CleanUp()
-
-	logFields := map[string]interface{}{
-		"overlay": h.Overlay,
-	}
-	// as the helm template is per crd instanced, all necessary applications are known
-	for name, application := range h.Applications {
-		logFields["application"] = name
-
-		logFields["logID"] = "HELM-Imjm7vrslYIIzIa"
-		h.logger.WithFields(logFields).Info("Creating fetcher directory")
-		fetcherDirectoryPath := filepath.Join(h.ToolsDirectoryPath, name, fetcherDirectoryName, h.Overlay)
-		_ = os.MkdirAll(fetcherDirectoryPath, os.ModePerm)
-
-		logFields["logID"] = "HELM-8vzi64f69T7E4y2"
-		h.logger.WithFields(logFields).Info("Generating fetcher")
-		fetcherFilePath := filepath.Join(fetcherDirectoryPath, fetcherFileName)
-		fetcher := NewFetcher(name, application.ChartName, application.ChartVersion, application.IndexName, application.IndexUrl)
-		if err := fetcher.writeToYaml(fetcherFilePath); err != nil {
-			return err
-		}
-
-		logFields["logID"] = "HELM-F1SpEvzx9DFTksX"
-		h.logger.WithFields(logFields).Info("Generating fetcher-kustomize")
-		kustomizationFilePath := filepath.Join(fetcherDirectoryPath, kustomizationFileName)
-		filePaths := []string{fetcherFileName}
-		if err := generateKustomization(kustomizationFilePath, []string{}, filePaths); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (h *Helm) fetchAllCharts() error {
-
-	for name, _ := range h.Applications {
-		logFields := map[string]interface{}{
-			"application": name,
-		}
-
-		logFields["logID"] = "HELM-QyuO17EOfqoEDP8"
-		h.logger.WithFields(logFields).Info("Fetching chart")
-		cdCommand := strings.Join([]string{"cd", h.ToolsDirectoryPath}, " ")
-		overlay := strings.Join([]string{fetcherDirectoryName, h.Overlay}, "/")
-		startCommand := strings.Join([]string{"./start.sh", name, overlay}, " ")
-		command := strings.Join([]string{cdCommand, startCommand}, " && ")
-
-		cmd := exec.Command("/bin/sh", "-c", command)
-		if err := errors.Wrapf(helper.Run(h.logger, *cmd), "Failed to fetch chart for application %s", name); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (h *Helm) PrepareTemplate(appName, releaseName, releaseNamespace string, writeValues func(path string) error) error {
 	logFields := map[string]interface{}{
 		"application": appName,
@@ -204,8 +125,7 @@ func (h *Helm) Template(appName, resultfilepath string) error {
 	}
 
 	cdCommand := strings.Join([]string{"cd", base}, " ")
-	overlay := strings.Join([]string{templatorDirectoryName, h.Overlay}, "/")
-	startCommand := strings.Join([]string{"./start.sh", appName, overlay}, " ")
+	startCommand := strings.Join([]string{"./start.sh", appName, h.Overlay}, " ")
 	startCommand = strings.Join([]string{startCommand, ">", result}, " ")
 	command := strings.Join([]string{cdCommand, startCommand}, " && ")
 
@@ -222,7 +142,7 @@ func (h *Helm) generateTemplator(appName, releaseName, releaseNamespace string, 
 
 	logFields["logID"] = "HELM-4cR49WgtuN1757N"
 	h.logger.WithFields(logFields).Info("Deleting old files for templator")
-	templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, appName, templatorDirectoryName, h.Overlay)
+	templatorDirectoryPath := filepath.Join(h.ToolsDirectoryPath, appName, h.Overlay)
 	_ = os.RemoveAll(templatorDirectoryPath)
 	logFields["logID"] = "HELM-aoqK04FN3QxbOQx"
 	h.logger.WithFields(logFields).Info("Creating folder for templator")
@@ -239,7 +159,7 @@ func (h *Helm) generateTemplator(appName, releaseName, releaseNamespace string, 
 	app := h.Applications[appName]
 	logFields["logID"] = "HELM-bRlJLZvwmDxrNIN"
 	h.logger.WithFields(logFields).Info("Generating templator")
-	templator := NewTemplator(appName, app.ChartName, app.ChartVersion, releaseName, releaseNamespace)
+	templator := NewTemplator(appName, app.ChartName, releaseName, releaseNamespace)
 	err := templator.writeToYaml(templatorFilePath)
 	if err != nil {
 		return err

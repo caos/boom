@@ -10,7 +10,6 @@ type Templator struct {
 	Kind             string    `yaml:"kind"`
 	Metadata         *Metadata `yaml:"metadata"`
 	ChartName        string    `yaml:"chartName"`
-	ChartVersion     string    `yaml:"chartVersion"`
 	ReleaseName      string    `yaml:"releaseName"`
 	ReleaseNamespace string    `yaml:"releaseNamespace"`
 	ValuesFile       string    `yaml:"valuesFile"`
@@ -20,7 +19,7 @@ type Metadata struct {
 	Name string `yaml:"name"`
 }
 
-func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace string) *Templator {
+func NewTemplator(name, chartName, releaseName, releaseNamespace string) *Templator {
 	return &Templator{
 		ApiVersion: "caos.ch/v1",
 		Kind:       "Templator",
@@ -28,7 +27,6 @@ func NewTemplator(name, chartName, chartVersion, releaseName, releaseNamespace s
 			Name: name,
 		},
 		ChartName:        chartName,
-		ChartVersion:     chartVersion,
 		ReleaseName:      releaseName,
 		ReleaseNamespace: releaseNamespace,
 		ValuesFile:       "values.yaml",

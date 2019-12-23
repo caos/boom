@@ -32,6 +32,7 @@ type ToolsetSpec struct {
 	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
 	CertManager            *CertManager            `json:"cert-manager,omitempty" yaml:"cert-manager"`
 	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
+	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

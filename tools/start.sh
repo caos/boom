@@ -30,6 +30,9 @@ case $1 in
     'ambassador')
         kustomizeIt $1 $2
     ;;
+    'kube-state-metrics')
+        kustomizeIt $1 $2
+    ;;
     *)
         echo "please select a valid tool:
 
@@ -40,6 +43,7 @@ case $1 in
             prometheus
             cert-manager
             ambassador
+            kube-state-metrics
         "
         exit 1
 esac
