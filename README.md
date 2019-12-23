@@ -69,6 +69,11 @@ As they are used, they also have to be installed into the image during the docke
 
 ## locally
 
+Before you can run locally you have to fetch all charts:
+```bash
+./tools/fetch-all.sh *toolset*
+```
+
 To decrypt the secretdata to run it locally:
 
 ```bash
