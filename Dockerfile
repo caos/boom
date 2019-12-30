@@ -3,7 +3,6 @@
 ####################################################################################################
 FROM golang:1.13.1-alpine3.10 AS dependencies
 
-ENV GO111MODULE on
 WORKDIR $GOPATH/src/github.com/caos/boom
 
 # Runtime dependencies
@@ -50,7 +49,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /boom cmd/boom/*.
 # ####################################################################################################
 FROM alpine:3.10
 
-RUN apk update && apk add bash ca-certificates bash
+RUN apk update && apk add bash ca-certificates
 COPY --from=dependencies /artifacts /usr/local/bin/
 COPY --from=build /boom /
 

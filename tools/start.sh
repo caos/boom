@@ -33,6 +33,9 @@ case $1 in
     'kube-state-metrics')
         kustomizeIt $1 $2
     ;;
+    'argocd')
+        kustomizeIt $1 $2
+    ;;
     *)
         echo "please select a valid tool:
 
@@ -44,6 +47,7 @@ case $1 in
             cert-manager
             ambassador
             kube-state-metrics
+            argocd
         "
         exit 1
 esac

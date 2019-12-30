@@ -33,6 +33,7 @@ type ToolsetSpec struct {
 	CertManager            *CertManager            `json:"cert-manager,omitempty" yaml:"cert-manager"`
 	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
 	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
+	Argocd                 *Argocd                 `json:"argocd,omitempty" yaml:"argocd"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

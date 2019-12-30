@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.38.0
 	github.com/caos/orbiter v0.3.1-0.20191203154843-66823839f90e
 	github.com/go-logr/logr v0.1.0
+	github.com/magiconair/properties v1.8.0
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1

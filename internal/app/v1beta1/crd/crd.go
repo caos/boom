@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
+	"github.com/caos/boom/internal/app/v1beta1/crd/argocd"
 	"github.com/caos/boom/internal/app/v1beta1/crd/certmanager"
 	"github.com/caos/boom/internal/app/v1beta1/crd/grafana"
 	"github.com/caos/boom/internal/app/v1beta1/crd/kubestatemetrics"
@@ -36,6 +37,7 @@ type Applications struct {
 	Grafana                *grafana.Grafana
 	CertManager            *certmanager.CertManager
 	KubeStateMetrics       *kubestatemetrics.KubeStateMetrics
+	Argocd                 *argocd.Argocd
 }
 
 func (c *Crd) CleanUp() error {
@@ -137,6 +139,10 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		return err
 	}
 
+	if err := c.applications.Argocd.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Argocd); err != nil {
+		return err
+	}
+
 	conf, datasource, err := c.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
 	if err != nil {
 		return err
@@ -171,6 +177,7 @@ func (c *Crd) NewApplications(toolsDirectoryPath string) (*Applications, error) 
 		Prometheus:             prometheus.New(c.logger, toolsDirectoryPath),
 		Grafana:                grafana.New(c.logger, toolsDirectoryPath),
 		KubeStateMetrics:       kubestatemetrics.New(c.logger, toolsDirectoryPath),
+		Argocd:                 argocd.New(c.logger, toolsDirectoryPath),
 	}
 
 	return applications, nil
