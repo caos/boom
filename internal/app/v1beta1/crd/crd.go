@@ -115,32 +115,46 @@ func (c *Crd) NewTemplate(new *toolsetsv1beta1.Toolset) bool {
 
 func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) error {
 
-	if err := c.applications.LoggingOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
-		return err
+	if toolsetCRDSpec.LoggingOperator != nil {
+		if err := c.applications.LoggingOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.LoggingOperator); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.PrometheusOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
-		return err
+	if toolsetCRDSpec.PrometheusOperator != nil {
+		if err := c.applications.PrometheusOperator.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusOperator); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.PrometheusNodeExporter.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
-		return err
+	if toolsetCRDSpec.PrometheusNodeExporter != nil {
+		if err := c.applications.PrometheusNodeExporter.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.PrometheusNodeExporter); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.CertManager.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.CertManager); err != nil {
-		return err
+	if toolsetCRDSpec.CertManager != nil {
+		if err := c.applications.CertManager.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.CertManager); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.Ambassador.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Ambassador); err != nil {
-		return err
+	if toolsetCRDSpec.Ambassador != nil {
+		if err := c.applications.Ambassador.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Ambassador); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.KubeStateMetrics.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.KubeStateMetrics); err != nil {
-		return err
+	if toolsetCRDSpec.KubeStateMetrics != nil {
+		if err := c.applications.KubeStateMetrics.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.KubeStateMetrics); err != nil {
+			return err
+		}
 	}
 
-	if err := c.applications.Argocd.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Argocd); err != nil {
-		return err
+	if toolsetCRDSpec.Argocd != nil {
+		if err := c.applications.Argocd.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Argocd); err != nil {
+			return err
+		}
 	}
 
 	conf, datasource, err := c.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
@@ -160,8 +174,10 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		Access: "proxy",
 	})
 
-	if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Grafana); err != nil {
-		return err
+	if toolsetCRDSpec.Grafana != nil {
+		if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Grafana); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -190,7 +206,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 
 	servicemonitors := make([]*servicemonitor.Config, 0)
 
-	if toolsetCRDSpec.Ambassador.Deploy {
+	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "ambassador-admin",
 			Path: "/metrics",
@@ -206,7 +222,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.CertManager.Deploy {
+	if toolsetCRDSpec.CertManager != nil && toolsetCRDSpec.CertManager.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			TargetPort: "9402",
 			Path:       "/metrics",
@@ -222,7 +238,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.PrometheusOperator.Deploy {
+	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "http",
 			Path: "/metrics",
@@ -238,7 +254,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.PrometheusNodeExporter.Deploy {
+	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "metrics",
 			Path: "/metrics",
@@ -254,7 +270,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.KubeStateMetrics.Deploy {
+	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
 			Port: "http",
 			Path: "/metrics",

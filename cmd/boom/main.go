@@ -120,18 +120,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd, err := kustomize.New("../../config/crd")
-	if err != nil {
-		setupLog.Error(err, "unable to locate crd")
-		os.Exit(1)
-	}
-
-	err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
-	if err != nil {
-		setupLog.Error(err, "unable to apply crd")
-		os.Exit(1)
-	}
-
 	var gitCrdError chan error
 	if gitCrdPath != "" {
 		if err := app.AddGitCrd(gitCrdURL, gitCrdPrivateKeyBytes, gitCrdPath); err != nil {
@@ -158,6 +146,18 @@ func main() {
 	}
 
 	if !localMode {
+		cmd, err := kustomize.New("/crd")
+		if err != nil {
+			setupLog.Error(err, "unable to locate crd")
+			os.Exit(1)
+		}
+
+		err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
+		if err != nil {
+			setupLog.Error(err, "unable to apply crd")
+			os.Exit(1)
+		}
+
 		mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 			Scheme:             scheme,
 			MetricsBindAddress: metricsAddr,
@@ -187,6 +187,18 @@ func main() {
 
 		setupLog.Info("starting manager")
 	} else {
+		cmd, err := kustomize.New("../../config/crd")
+		if err != nil {
+			setupLog.Error(err, "unable to locate crd")
+			os.Exit(1)
+		}
+
+		err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
+		if err != nil {
+			setupLog.Error(err, "unable to apply crd")
+			os.Exit(1)
+		}
+
 		<-gitCrdError
 	}
 
