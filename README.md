@@ -101,6 +101,6 @@ docker build -t controller:latest .
 To deploy the boom to a cluster:
 
 ```bash
-cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest
+cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
 kustomize build config/default | kubectl apply -f -
 ```
