@@ -26,7 +26,7 @@ Upcoming tools:
 - ArgoCD
 - Flux
 
-## How it works
+## How does it work
 
 The operator works by reading a configuration (crd) located in a GIT Repository. Alternativly this `crd` can be read from the k8s api.
 In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly creadted `k8s` cluster.
@@ -54,7 +54,7 @@ spec:
     deploy: true
 ```
 
-## How to use
+## How to use it
 
 > Due to the github restriciton that even public images need to be authenticated, you need to make sure that you have `pull secret`
 
