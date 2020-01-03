@@ -1,106 +1,96 @@
-This project is in alpha state
------  
+# boom: the base tooling operator
 
-# boom
-Operator to deploy defined toolsets into K8s-clusters
+![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)
+![release](https://github.com/caos/boom/workflows/Release/badge.svg)
 
-# Internal logic
+> This project is in alpha state. The API will continue breaking until version 1.0.0 is released
 
-## Folder structure
+## What is it
 
-The boom will extend the existing tools folder with different subfolders for the necessary applications.
-For each crd there will be an subfolder for each application where the generated values.yaml and kustomization.yaml are stored.
-As a result of this files there will be an results.yaml under the subfolder results/*crd-name*/.
+`boom` is designed to ensure that someone can create a reproducable "platform" with tools which are tested for their interoperability.
 
-Like this:
+Currently we include the following tools:
 
-* tools
-  * logging-operator
-    * *crd-name*
-      * templator.yaml
-      * kustomization.yaml
-      * values.yaml
-    * results
-      * *crd-name*
-        * results.yaml
-  * start.sh
-  * fetch-all.sh
-  * *helm*
-  * *charts*
-  * kustomize
+- Ambassador
+- Cert-Manager
+  - Will be removed when the `Ambassador Edge Stack` reaches GA
+- Prometheus Operator
+- Grafana
+- logging-operator
+- kube-state-metrics
+- prometheus-node-exporter
 
-also are there the differnt tools for templating, the charts folder consists of all fetchet charts localy, the kustomize folder has the necessary shell scripts for the templators and the helm folder is the helm-home folder.
-The charts will get fetched during the docker build phase with running of the fetch-all.sh.
+Upcoming tools:
 
-To start the different steps:
+- Loki
+- ArgoCD
+- Flux
 
-```bash
-# fetch chart for local
-./fetch-all.sh *toolset*
-# template chart with values.yaml
-./start.sh *application* *crd-name*
-# apply results to cluster
-kubectl apply -f *application*/results/*crd-name*/results.yaml
+## How it works
+
+The operator works by reading a configuration (crd) located in a GIT Repository. Alternativly this `crd` can be read from the k8s api.
+In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly creadted `k8s` cluster.
+
+```yaml
+apiVersion: boom.caos.ch/v1beta1
+kind: Toolset
+metadata:
+  name: caos
+spec:
+  name: basisset
+  prometheus-operator:
+    deploy: true
+  logging-operator:
+    deploy: true
+  prometheus-node-exporter:
+    deploy: true
+  kube-state-metrics:
+    deploy: true
+  grafana:
+    deploy: true
+  cert-manager:
+    deploy: true
+  ambassador:
+    deploy: true
 ```
 
-## toolsets
+## How to use
 
-To add any new toolset or change existing ones look into the toolsets folder.
-The structure in this folder is *important* as it is as follows:
+> Due to the github restriciton that even public images need to be authenticated, you need to make sure that you have `pull secret`
 
-* tools
-  * toolsets
-    * *toolset-name*
-        * *application-name*.yaml
-
-It is *important* as the boom has logic which works over this structure to build the knowledge which toolsets are existing and out of which applications do they consist.
-
-## used tools
-
-The following cli-tools are used from the boom:
-
-* helm
-* kubectl
-* kustomize
-
-As they are used, they also have to be installed into the image during the docker build.
-
-# To let it run
-
-## locally
-
-Before you can run locally you have to fetch all charts:
-```bash
-./tools/fetch-all.sh *toolset*
-```
-
-To decrypt the secretdata to run it locally:
+### GitOps
 
 ```bash
-gopass caos-secrets/technical/boom/ansible-vault > ansible-vault-secret && \
-ansible-vault decrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-boom-tools-read && \
-rm ansible-vault-secret
+cd examples/gitops && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
+kustomize build config/default | kubectl apply -f -
 ```
 
-To encrypt it again:
-
-```bash
-gopass caos-secrets/technical/boom/ansible-vault > ansible-vault-secret && \
-ansible-vault encrypt --vault-password-file ansible-vault-secret config/manager/secret/id_rsa-boom-tools-read && \
-rm ansible-vault-secret
-```
-
-To build it:
-
-```bash
-docker build -t controller:latest .
-```
-
-## cluster
+### k8s API
 
 To deploy the boom to a cluster:
 
 ```bash
-cd config/manager && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
+cd examples/k8s && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
 kustomize build config/default | kubectl apply -f -
 ```
+
+## License
+
+As usual Apache-2.0 see [here](./LICENSE)
+
+## Inspiration
+
+### Name
+
+The inspiration for the name `boom` originates from the `Orbiter Boom Sensor System` used by `NASA`. `OBSS` or in short `booom` is a package of tools which are used to inspect the `orbiter` for damages in the thermal shielding. As our application automation tool is called `orbiter` we thaught this is a name which fits great.
+
+More information regarding the `boom` can be found here ![Wikipedia OBSS](https://en.wikipedia.org/wiki/Orbiter_Boom_Sensor_System)
+
+Our project `orbiter` is located here ![CAOS orbiter](https://github.com/caos/orbiter)
+
+### Further Inspiration
+
+Thanks to `rancher` with `rio` as well for the inspiration.
+And also to ex. `coreos` with `tectonic`.
+
+Both platform influenced this project.
