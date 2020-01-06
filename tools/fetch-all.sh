@@ -30,20 +30,25 @@ indexProtocol=https
 doHelm init --client-only >& /dev/null
 
 for file in toolsets/$1/*; do
-   eval $(parse_yaml $file)
+   if [[ -f $file ]]; then
+      eval $(parse_yaml $file)
 
-   if [ -z "$chart_index_name" ]; then
-      indexName=stable
-   else
-      doHelm repo add ${chart_index_name} ${indexProtocol}://${chart_index_url} >& /dev/null
-      indexName=$chart_index_name
+      if [ -z "$chart_index_name" ]; then
+         indexName=stable
+      else
+         doHelm repo add ${chart_index_name} ${indexProtocol}://${chart_index_url} >& /dev/null
+         indexName=$chart_index_name
+      fi
+
+      echo "fetching chart: $chart_name-$chart_version"
+      doHelm repo update >& /dev/null
+      echo "doHelm fetch --untar --version=${chart_version} --untardir ${chartHome} ${indexName}/${chart_name} >& /dev/null"
+      doHelm fetch --untar --version=${chart_version} --untardir ${chartHome} ${indexName}/${chart_name} >& /dev/null
+      echo "done fetching $chart_name-$chart_version"
+
+      chart_name=""
+      chart_version=""
+      chart_index_name=""
+      chart_index_url=""
    fi
-
-   echo "fetching chart: $chart_name-$chart_version"
-   doHelm repo update >& /dev/null
-   doHelm fetch --untar --version=${chart_version} --untardir ${chartHome} ${indexName}/${chart_name} >& /dev/null
-   echo "done fetching $chart_name-$chart_version"
-
-   chart_index_name=""
-   chart_index_url=""
 done
