@@ -89,11 +89,21 @@ func (a *Ambassador) Reconcile(overlay string, specNamespace string, helm *templ
 }
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador, namespace string) *Values {
+	values := defaultValues(imageTags)
+	if spec.ReplicaCount != 0 {
+		values.ReplicaCount = spec.ReplicaCount
+	}
+
+	return values
+}
+
+func defaultValues(imageTags map[string]string) *Values {
 	adminAnnotations := map[string]string{"app.kubernetes.io/use": "admin-service"}
 
-	values := &Values{
-		ReplicaCount: 3,
-		DaemonSet:    false,
+	return &Values{
+		FullnameOverride: "ambassador",
+		ReplicaCount:     3,
+		DaemonSet:        false,
 		Autoscaling: &Autoscaling{
 			Enabled:     false,
 			MinReplicas: 2,
@@ -166,12 +176,6 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Ambassador,
 			Configuration: defaultExporterConfig(),
 		},
 	}
-
-	if spec.ReplicaCount != 0 {
-		values.ReplicaCount = spec.ReplicaCount
-	}
-
-	return values
 }
 
 func defaultServiceAnnotations() map[string]string {

@@ -1,3 +1,5 @@
+namespace: caos-system
+
 resources:
 - role.yaml
 - role_binding.yaml

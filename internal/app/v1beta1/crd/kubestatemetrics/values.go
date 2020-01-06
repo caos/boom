@@ -73,6 +73,7 @@ type Collectors struct {
 }
 
 type Values struct {
+	FullnameOverride  string             `yaml:"fullnameOverride,omitempty"`
 	PrometheusScrape  bool               `yaml:"prometheusScrape"`
 	Image             *Image             `yaml:"image"`
 	Replicas          int                `yaml:"replicas"`

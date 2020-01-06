@@ -10,13 +10,32 @@ type NamespaceSelector struct {
 }
 
 type Endpoint struct {
-	Port            string     `yaml:"port,omitempty"`
-	TargetPort      string     `yaml:"targetPort,omitempty"`
-	BearerTokenFile string     `yaml:"bearerTokenFile,omitempty"`
-	Interval        string     `yaml:"interval,omitempty"`
-	Path            string     `yaml:"path,omitempty"`
-	Scheme          string     `yaml:"scheme,omitempty"`
-	TLSConfig       *TLSConfig `yaml:"tlsConfig,omitempty"`
+	Port               string              `yaml:"port,omitempty"`
+	TargetPort         string              `yaml:"targetPort,omitempty"`
+	BearerTokenFile    string              `yaml:"bearerTokenFile,omitempty"`
+	Interval           string              `yaml:"interval,omitempty"`
+	Path               string              `yaml:"path,omitempty"`
+	Scheme             string              `yaml:"scheme,omitempty"`
+	TLSConfig          *TLSConfig          `yaml:"tlsConfig,omitempty"`
+	MetricsRelabelings []*MetricRelabeling `yaml:"metricsRelabelings,omitempty"`
+	Relabelings        []*Relabeling       `yaml:"relabelings,omitempty"`
+	HonorLabels        bool                `yaml:"honorLabels,omitempty"`
+}
+
+type MetricRelabeling struct {
+	Action       string   `yaml:"action,omitempty"`
+	Regex        string   `yaml:"regex,omitempty"`
+	SourceLabels []string `yaml:"sourceLabels,omitempty"`
+	TargetLabel  string   `yaml:"targetLabel,omitempty"`
+	Replacement  string   `yaml:"replacement,omitempty"`
+}
+
+type Relabeling struct {
+	Action       string   `yaml:"action,omitempty"`
+	Regex        string   `yaml:"regex,omitempty"`
+	SourceLabels []string `yaml:"sourceLabels,omitempty"`
+	TargetLabel  string   `yaml:"targetLabel,omitempty"`
+	Replacement  string   `yaml:"replacement,omitempty"`
 }
 
 type TLSConfig struct {

@@ -131,8 +131,8 @@ type PrometheusOperatorValues struct {
 }
 
 type Values struct {
-	NameOverride              string                    `yaml:"nameOverride"`
-	FullnameOverride          string                    `yaml:"fullnameOverride"`
+	NameOverride              string                    `yaml:"nameOverride,omitempty"`
+	FullnameOverride          string                    `yaml:"fullnameOverride,omitempty"`
 	CommonLabels              map[string]string         `yaml:"commonLabels"`
 	DefaultRules              *DefaultRules             `yaml:"defaultRules"`
 	AdditionalPrometheusRules []interface{}             `yaml:"additionalPrometheusRules"`

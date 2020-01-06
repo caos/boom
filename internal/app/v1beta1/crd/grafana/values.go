@@ -168,7 +168,7 @@ type Sidecar struct {
 	Datasources     *DatasourcesSidecar `yaml:"datasources"`
 }
 type DashboardProviders struct {
-	Providers *Providersyaml `yaml:"dashboardprovider.yaml"`
+	Providers *Providersyaml `yaml:"dashboardproviders.yaml"`
 }
 type Providersyaml struct {
 	APIVersion int64       `yaml:"apiVersion"`
@@ -176,14 +176,16 @@ type Providersyaml struct {
 }
 type Provider struct {
 	Name            string            `yaml:"name"`
-	OrgID           string            `yaml:"ordId"`
+	OrgID           int               `yaml:"ordId"`
 	Folder          string            `yaml:"folder"`
 	Type            string            `yaml:"type"`
 	DisableDeletion bool              `yaml:"disableDeletion"`
 	Editable        bool              `yaml:"editable"`
 	Options         map[string]string `yaml:"options"`
 }
+
 type Values struct {
+	FullnameOverride        string                   `yaml:"fullnameOverride,omitempty"`
 	Rbac                    *Rbac                    `yaml:"rbac"`
 	ServiceAccount          *ServiceAccount          `yaml:"serviceAccount"`
 	Replicas                int                      `yaml:"replicas"`

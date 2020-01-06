@@ -1,12 +1,12 @@
 package v1beta1
 
 type Grafana struct {
-	Deploy      bool          `json:"deploy,omitempty"`
-	Prefix      string        `json:"prefix,omitempty"`
-	Namespace   string        `json:"namespace,omitempty"`
-	Admin       *Admin        `json:"admin,omitempty"`
-	Datasources []*Datasource `json:"datasources,omitempty"`
-	Dashboards  []*Dashboard  `json:"dashboards,omitempty"`
+	Deploy             bool          `json:"deploy,omitempty"`
+	Prefix             string        `json:"prefix,omitempty"`
+	Namespace          string        `json:"namespace,omitempty"`
+	Admin              *Admin        `json:"admin,omitempty"`
+	Datasources        []*Datasource `json:"datasources,omitempty"`
+	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty"`
 }
 type Admin struct {
 	ExistingSecret string `json:"existingSecret,omitempty"`
@@ -21,11 +21,7 @@ type Datasource struct {
 	IsDefault bool   `json:"isDefault,omitempty"`
 }
 
-type Dashboard struct {
-	ConfigMap string           `json:"configMap,omitempty"`
-	FileNames []*DashboardFile `json:"files,omitempty"`
-}
-type DashboardFile struct {
-	Name     string `json:"name,omitempty"`
-	FileName string `json:"filename,omitempty"`
+type Provider struct {
+	ConfigMaps []string `json:"configMap,omitempty"`
+	Folder     string   `json:"folder,omitempty"`
 }

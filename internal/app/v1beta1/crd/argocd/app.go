@@ -96,7 +96,8 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Argocd, nam
 
 func defaultValues(imageTags map[string]string) *Values {
 	values := &Values{
-		InstallCRDs: true,
+		FullnameOverride: "argocd",
+		InstallCRDs:      true,
 		Global: &Global{
 			Image: &Image{
 				Repository:      "argoproj/argocd",

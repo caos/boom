@@ -227,8 +227,8 @@ type Configs struct {
 }
 
 type Values struct {
-	NameOverride     string      `yaml:"nameOverride"`
-	FullnameOverride string      `yaml:"fullnameOverride"`
+	NameOverride     string      `yaml:"nameOverride,omitempty"`
+	FullnameOverride string      `yaml:"fullnameOverride,omitempty"`
 	InstallCRDs      bool        `yaml:"installCRDs"`
 	Global           *Global     `yaml:"global"`
 	Controller       *Controller `yaml:"controller"`

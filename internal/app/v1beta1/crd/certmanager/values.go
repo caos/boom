@@ -82,6 +82,7 @@ type Prometheus struct {
 }
 
 type Values struct {
+	FullnameOverride         string            `yaml:"fullnameOverride,omitempty"`
 	Global                   *Global           `yaml:"global"`
 	ReplicaCount             int               `yaml:"replicaCount"`
 	Strategy                 struct{}          `yaml:"strategy"`

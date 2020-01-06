@@ -148,6 +148,7 @@ func addCrds(filePath string, toolsDirectoryPath string) error {
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.CertManager, namespace string) *Values {
 	values := &Values{
+		FullnameOverride: "cert-manager",
 		Global: &Global{
 			IsOpenshift: false,
 			Rbac: &Rbac{

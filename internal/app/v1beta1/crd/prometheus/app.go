@@ -19,12 +19,13 @@ var (
 )
 
 type Config struct {
-	Prefix          string
-	Namespace       string
-	MonitorLabels   map[string]string
-	ServiceMonitors []*servicemonitor.Config
-	ReplicaCount    int
-	StorageSpec     *ConfigStorageSpec
+	Prefix                  string
+	Namespace               string
+	MonitorLabels           map[string]string
+	ServiceMonitors         []*servicemonitor.Config
+	ReplicaCount            int
+	StorageSpec             *ConfigStorageSpec
+	AdditionalScrapeConfigs []*AdditionalScrapeConfig
 }
 
 type ConfigStorageSpec struct {
@@ -196,28 +197,37 @@ func specToValues(imageTags map[string]string, config *Config) (*Values, error) 
 		promValues.AdditionalServiceMonitors = additionalServiceMonitors
 	}
 
+	if config.AdditionalScrapeConfigs != nil {
+		promValues.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
+	}
+
+	rules, _ := getRules()
+
 	values := &Values{
+		AdditionalPrometheusRules: []*AdditionalPrometheusRules{rules},
+		FullnameOverride:          "operated",
+		KubeTargetVersionOverride: "v1.14.9",
 		DefaultRules: &DefaultRules{
-			Create: true,
+			Create: false,
 			Rules: &Rules{
-				Alertmanager:                true,
-				Etcd:                        true,
-				General:                     true,
-				K8S:                         true,
-				KubeApiserver:               true,
-				KubePrometheusNodeAlerting:  true,
-				KubePrometheusNodeRecording: true,
-				KubernetesAbsent:            true,
-				KubernetesApps:              true,
-				KubernetesResources:         true,
-				KubernetesStorage:           true,
-				KubernetesSystem:            true,
-				KubeScheduler:               true,
-				Network:                     true,
-				Node:                        true,
-				Prometheus:                  true,
-				PrometheusOperator:          true,
-				Time:                        true,
+				Alertmanager:                false,
+				Etcd:                        false,
+				General:                     false,
+				K8S:                         false,
+				KubeApiserver:               false,
+				KubePrometheusNodeAlerting:  false,
+				KubePrometheusNodeRecording: false,
+				KubernetesAbsent:            false,
+				KubernetesApps:              false,
+				KubernetesResources:         false,
+				KubernetesStorage:           false,
+				KubernetesSystem:            false,
+				KubeScheduler:               false,
+				Network:                     false,
+				Node:                        false,
+				Prometheus:                  false,
+				PrometheusOperator:          false,
+				Time:                        false,
 			},
 		},
 		Global: &Global{
@@ -299,6 +309,9 @@ func specToValues(imageTags map[string]string, config *Config) (*Values, error) 
 				SelfMonitor: false,
 			},
 			CreateCustomResource: true,
+			KubeletService: &prometheusoperator.KubeletService{
+				Enabled: false,
+			},
 		},
 		Prometheus: promValues,
 	}

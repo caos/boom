@@ -47,6 +47,7 @@ type Toleration struct {
 }
 
 type Values struct {
+	FullnameOverride      string            `yaml:"fullnameOverride,omitempty"`
 	Image                 *Image            `yaml:"image"`
 	Service               *Service          `yaml:"service"`
 	Prometheus            *Prometheus       `yaml:"prometheus"`

@@ -92,6 +92,7 @@ func (k *KubeStateMetrics) Reconcile(overlay, specNamespace string, helm *templa
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.KubeStateMetrics) *Values {
 	values := &Values{
+		FullnameOverride: "kube-state-metrics",
 		PrometheusScrape: true,
 		Image: &Image{
 			Repository: "quay.io/coreos/kube-state-metrics",

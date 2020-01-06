@@ -57,7 +57,7 @@ func GetPrefix(overlay, application, prefix string) string {
 		return strings.Join([]string{overlay, Defaults[defaultValue].defaultPrefix}, "-")
 	}
 
-	return overlay
+	return ""
 }
 
 func GetResultFileDirectory(overlay, path, application string) string {

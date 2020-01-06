@@ -1,7 +1,7 @@
-package app
+package crd
 
 import (
-	"strings"
+	"path/filepath"
 
 	"github.com/caos/boom/internal/app/v1beta1/crd/ambassador"
 	"github.com/caos/boom/internal/app/v1beta1/crd/argocd"
@@ -10,7 +10,6 @@ import (
 	"github.com/caos/boom/internal/app/v1beta1/crd/kubestatemetrics"
 	"github.com/caos/boom/internal/app/v1beta1/crd/loggingoperator"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus"
-	"github.com/caos/boom/internal/app/v1beta1/crd/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusnodeexporter"
 	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/template"
@@ -174,6 +173,7 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		Access: "proxy",
 	})
 
+	toolsetCRDSpec.Grafana.DashboardProviders = c.GetGrafanaDashboards(filepath.Join(toolsDirectoryPath, "toolsets", toolsetCRDSpec.Name, "dashboards"), toolsetCRDSpec)
 	if toolsetCRDSpec.Grafana != nil {
 		if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Grafana); err != nil {
 			return err
@@ -197,123 +197,4 @@ func (c *Crd) NewApplications(toolsDirectoryPath string) (*Applications, error) 
 	}
 
 	return applications, nil
-}
-
-func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) (*prometheus.Config, string, error) {
-
-	monitorlabels := make(map[string]string, 0)
-	monitorlabels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
-
-	servicemonitors := make([]*servicemonitor.Config, 0)
-
-	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			Port: "ambassador-admin",
-			Path: "/metrics",
-		}
-		labels := map[string]string{"service": "ambassador-admin"}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "ambassador-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
-
-	if toolsetCRDSpec.CertManager != nil && toolsetCRDSpec.CertManager.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			TargetPort: "9402",
-			Path:       "/metrics",
-		}
-		labels := map[string]string{"app": "cert-manager"}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "cert-manager-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
-
-	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			Port: "http",
-			Path: "/metrics",
-		}
-		labels := map[string]string{"app": "prometheus-operator-operator"}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "prometheus-operator-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
-
-	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			Port: "metrics",
-			Path: "/metrics",
-		}
-		labels := map[string]string{"app": "prometheus-node-exporter"}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "prometheus-node-exporter-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
-
-	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			Port: "http",
-			Path: "/metrics",
-		}
-
-		labels := map[string]string{
-			"app.kubernetes.io/name": "kube-state-metrics",
-		}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "kube-state-metrics-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
-
-	if len(servicemonitors) > 0 {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			Port: "web",
-			Path: "/metrics",
-		}
-		labels := map[string]string{"app": "prometheus-operator-prometheus", "release": "caos"}
-
-		smconfig := &servicemonitor.Config{
-			Name:                  "prometheus-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-
-		prom := &prometheus.Config{
-			Prefix:          "caos",
-			Namespace:       "caos-system",
-			MonitorLabels:   monitorlabels,
-			ServiceMonitors: servicemonitors,
-		}
-		datasource := strings.Join([]string{"http://", prom.Prefix, "-prometheus-operator-prometheus.", prom.Namespace, ":9090"}, "")
-
-		return prom, datasource, nil
-	}
-
-	return nil, "", nil
 }

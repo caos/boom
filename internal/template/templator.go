@@ -6,22 +6,22 @@ import (
 )
 
 type Templator struct {
-	ApiVersion       string    `yaml:"apiVersion"`
+	APIVersion       string    `yaml:"apiVersion"`
 	Kind             string    `yaml:"kind"`
 	Metadata         *Metadata `yaml:"metadata"`
-	ChartName        string    `yaml:"chartName"`
-	ReleaseName      string    `yaml:"releaseName"`
-	ReleaseNamespace string    `yaml:"releaseNamespace"`
-	ValuesFile       string    `yaml:"valuesFile"`
+	ChartName        string    `yaml:"chartName,omitempty"`
+	ReleaseName      string    `yaml:"releaseName,omitempty"`
+	ReleaseNamespace string    `yaml:"releaseNamespace,omitempty"`
+	ValuesFile       string    `yaml:"valuesFile,omitempty"`
 }
 
 type Metadata struct {
-	Name string `yaml:"name"`
+	Name string `yaml:"name,omitempty"`
 }
 
 func NewTemplator(name, chartName, releaseName, releaseNamespace string) *Templator {
 	return &Templator{
-		ApiVersion: "caos.ch/v1",
+		APIVersion: "caos.ch/v1",
 		Kind:       "Templator",
 		Metadata: &Metadata{
 			Name: name,

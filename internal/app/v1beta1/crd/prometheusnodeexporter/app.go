@@ -90,6 +90,7 @@ func (p *PrometheusNodeExporter) Reconcile(overlay, specNamespace string, helm *
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusNodeExporter) *Values {
 	values := &Values{
+		FullnameOverride: "node-exporter",
 		Image: &Image{
 			Repository: "quay.io/prometheus/node-exporter",
 			Tag:        imageTags["quay.io/prometheus/node-exporter"],

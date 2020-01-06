@@ -133,7 +133,7 @@ type Values struct {
 	SecurityContext       *SecurityContext    `yaml:"securityContext"`
 	Image                 *Image              `yaml:"image"`
 	NameOverride          string              `yaml:"nameOverride"`
-	FullnameOverride      string              `yaml:"fullnameOverride"`
+	FullnameOverride      string              `yaml:"fullnameOverride,omitempty"`
 	DNSPolicy             string              `yaml:"dnsPolicy"`
 	HostNetwork           bool                `yaml:"hostNetwork"`
 	Service               *Service            `yaml:"service"`

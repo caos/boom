@@ -92,7 +92,8 @@ func (l *LoggingOperator) Reconcile(overlay, specNamespace string, helm *templat
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.LoggingOperator) *Values {
 	values := &Values{
-		ReplicaCount: 1,
+		FullnameOverride: "logging-operator",
+		ReplicaCount:     1,
 		Image: Image{
 			Repository: "banzaicloud/logging-operator",
 			Tag:        imageTags["banzaicloud/logging-operator"],

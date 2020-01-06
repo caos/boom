@@ -47,6 +47,15 @@ spec:
                 replicaCount:
                   type: integer
               type: object
+            argocd:
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
             cert-manager:
               properties:
                 deploy:
@@ -69,20 +78,15 @@ spec:
                     userKey:
                       type: string
                   type: object
-                dashboards:
+                dashboardproviders:
                   items:
                     properties:
                       configMap:
-                        type: string
-                      files:
                         items:
-                          properties:
-                            filename:
-                              type: string
-                            name:
-                              type: string
-                          type: object
+                          type: string
                         type: array
+                      folder:
+                        type: string
                     type: object
                   type: array
                 datasources:

@@ -1,7 +1,9 @@
 package grafana
 
 import (
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
@@ -69,6 +71,15 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 			return err
 		}
 
+		folders := make([]string, 0)
+		for _, provider := range spec.DashboardProviders {
+			folders = append(folders, provider.Folder)
+		}
+
+		if err := applyKustomize(folders); err != nil {
+			return err
+		}
+
 		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
@@ -88,6 +99,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 
 func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *Values {
 	values := &Values{
+		FullnameOverride: "grafana",
 		Rbac: &Rbac{
 			Create:         true,
 			PspEnabled:     true,
@@ -234,19 +246,49 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *V
 		}
 	}
 
-	if spec.Dashboards != nil {
-		for _, dConfigMap := range spec.Dashboards {
-			values.DashboardsConfigMaps[dConfigMap.ConfigMap] = dConfigMap.ConfigMap
-
-			values.Dashboards.Dashboards = make(map[string]map[string]*DashboardFile, 0)
-			for _, dashboard := range dConfigMap.FileNames {
-				filePath := filepath.Join("dashboards", dashboard.FileName)
-				values.Dashboards.Dashboards[dConfigMap.ConfigMap][dashboard.Name] = &DashboardFile{
-					File: filePath,
-				}
+	if spec.DashboardProviders != nil {
+		providers := make([]*Provider, 0)
+		dashboards := make(map[string]string, 0)
+		for _, provider := range spec.DashboardProviders {
+			for _, configmap := range provider.ConfigMaps {
+				providers = append(providers, getProvider(configmap))
+				dashboards[configmap] = configmap
 			}
 		}
+		values.DashboardProviders = &DashboardProviders{
+			Providers: &Providersyaml{
+				APIVersion: 1,
+				Providers:  providers,
+			},
+		}
+		values.DashboardsConfigMaps = dashboards
 	}
 
 	return values
+}
+
+func applyKustomize(folders []string) error {
+	for _, folder := range folders {
+		command := strings.Join([]string{"kustomize build", folder, "| kubectl apply -f -"}, " ")
+
+		cmd := exec.Command("/bin/sh", "-c", command)
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getProvider(appName string) *Provider {
+	return &Provider{
+		Name:            appName,
+		Folder:          "",
+		Type:            "file",
+		DisableDeletion: false,
+		Editable:        true,
+		Options: map[string]string{
+			"path": filepath.Join("/var/lib/grafana/dashboards", appName),
+		},
+	}
 }
