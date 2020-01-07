@@ -59,7 +59,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 		return err
 	}
 
-	if spec.Deploy || !reflect.DeepEqual(g.spec, spec) {
+	if spec.Deploy && !reflect.DeepEqual(g.spec, spec) {
 		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, g.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
