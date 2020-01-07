@@ -24,3 +24,5 @@ tools/*
 
 /*.go
 !main.go
+
+examples/gitops/privatrepo/secret

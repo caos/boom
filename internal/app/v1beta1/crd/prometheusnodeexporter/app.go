@@ -122,7 +122,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.PrometheusN
 			Create:     true,
 			PspEnabled: true,
 		},
-		HostNetwork: true,
+		HostNetwork: false,
 		Tolerations: []*Toleration{&Toleration{
 			Effect:   "NoSchedule",
 			Operator: "Exists",

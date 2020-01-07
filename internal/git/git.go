@@ -25,13 +25,16 @@ type Git struct {
 
 func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git, error) {
 
-	signer, err := ssh.ParsePrivateKey(privateKey)
-	if err != nil {
-		return nil, err
-	}
+	var auth *gitssh.PublicKeys
+	if privateKey != nil {
+		signer, err := ssh.ParsePrivateKey(privateKey)
+		if err != nil {
+			return nil, err
+		}
 
-	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
-	auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+		auth = &gitssh.PublicKeys{User: "git", Signer: signer}
+		auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	}
 
 	g := &Git{
 		logger:    logger,
@@ -88,12 +91,25 @@ func (g *Git) cloneRepo() (*git.Repository, error) {
 
 	ctx := context.TODO()
 	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	if g.auth != nil {
+		repo, err := git.PlainCloneContext(toCtx, g.localPath, false, &git.CloneOptions{
+			URL:          g.url,
+			SingleBranch: true,
+			Depth:        1,
+			Progress:     os.Stdout,
+			Auth:         g.auth,
+		})
+		cancel()
+		if err != nil {
+			return nil, err
+		}
+		return repo, nil
+	}
 	repo, err := git.PlainCloneContext(toCtx, g.localPath, false, &git.CloneOptions{
 		URL:          g.url,
 		SingleBranch: true,
 		Depth:        1,
 		Progress:     os.Stdout,
-		Auth:         g.auth,
 	})
 	cancel()
 	if err != nil {

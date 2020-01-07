@@ -177,7 +177,7 @@ type Providersyaml struct {
 type Provider struct {
 	Name            string            `yaml:"name"`
 	OrgID           int               `yaml:"ordId"`
-	Folder          string            `yaml:"folder"`
+	Folder          string            `yaml:"folder,omitempty"`
 	Type            string            `yaml:"type"`
 	DisableDeletion bool              `yaml:"disableDeletion"`
 	Editable        bool              `yaml:"editable"`

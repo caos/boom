@@ -3,6 +3,7 @@ package grafana
 import (
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/caos/orbiter/logging"
@@ -58,7 +59,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 		return err
 	}
 
-	if spec.Deploy {
+	if spec.Deploy || !reflect.DeepEqual(g.spec, spec) {
 		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, g.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
@@ -102,7 +103,7 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *V
 		FullnameOverride: "grafana",
 		Rbac: &Rbac{
 			Create:         true,
-			PspEnabled:     true,
+			PspEnabled:     false,
 			PspUseAppArmor: true,
 			Namespaced:     false,
 		},
@@ -283,7 +284,6 @@ func applyKustomize(folders []string) error {
 func getProvider(appName string) *Provider {
 	return &Provider{
 		Name:            appName,
-		Folder:          "",
 		Type:            "file",
 		DisableDeletion: false,
 		Editable:        true,
