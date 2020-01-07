@@ -1,0 +1,23 @@
+namespace: caos-system
+
+bases:
+- ../../base
+
+secretGenerator:
+- files:
+  - secret/example.rsa
+  name: privaterepo-secret
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+# - manager.yaml
+- tools.yaml
+  
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: boom
+  newName: docker.pkg.github.com/caos/boom/boom
+  newTag: v0.7.0
