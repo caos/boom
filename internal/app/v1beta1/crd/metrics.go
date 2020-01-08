@@ -20,7 +20,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 			Port: "ambassador-admin",
 			Path: "/metrics",
 		}
-		labels := map[string]string{"service": "ambassador-admin"}
+		labels := map[string]string{"app.kubernetes.io/name": "ambassador"}
 
 		smconfig := &servicemonitor.Config{
 			Name:                  "ambassador-servicemonitor",
@@ -31,21 +31,21 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		servicemonitors = append(servicemonitors, smconfig)
 	}
 
-	if toolsetCRDSpec.CertManager != nil && toolsetCRDSpec.CertManager.Deploy {
-		endpoint := &servicemonitor.ConfigEndpoint{
-			TargetPort: "9402",
-			Path:       "/metrics",
-		}
-		labels := map[string]string{"app": "cert-manager"}
+	// if toolsetCRDSpec.CertManager != nil && toolsetCRDSpec.CertManager.Deploy {
+	// 	endpoint := &servicemonitor.ConfigEndpoint{
+	// 		TargetPort: "http",
+	// 		Path:       "/metrics",
+	// 	}
+	// 	labels := map[string]string{"app": "cert-manager"}
 
-		smconfig := &servicemonitor.Config{
-			Name:                  "cert-manager-servicemonitor",
-			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-			MonitorMatchingLabels: monitorlabels,
-			ServiceMatchingLabels: labels,
-		}
-		servicemonitors = append(servicemonitors, smconfig)
-	}
+	// 	smconfig := &servicemonitor.Config{
+	// 		Name:                  "cert-manager-servicemonitor",
+	// 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+	// 		MonitorMatchingLabels: monitorlabels,
+	// 		ServiceMatchingLabels: labels,
+	// 	}
+	// 	servicemonitors = append(servicemonitors, smconfig)
+	// }
 
 	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy {
 		endpoint := &servicemonitor.ConfigEndpoint{
@@ -117,6 +117,66 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 			MonitorMatchingLabels: monitorlabels,
 			ServiceMatchingLabels: labels,
 			JobName:               "kube-state-metrics",
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+	}
+
+	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy {
+		//argocd-application-controller
+		endpoint := &servicemonitor.ConfigEndpoint{
+			Port: "metrics",
+			Path: "/metrics",
+		}
+
+		labels := map[string]string{
+			"app.kubernetes.io/part-of":   "argocd",
+			"app.kubernetes.io/component": "application-controller",
+		}
+
+		smconfig := &servicemonitor.Config{
+			Name:                  "application-controller-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+			JobName:               "application-controller",
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+		// argocd-repo-server
+		endpoint = &servicemonitor.ConfigEndpoint{
+			Port: "metrics",
+			Path: "/metrics",
+		}
+
+		labels = map[string]string{
+			"app.kubernetes.io/part-of":   "argocd",
+			"app.kubernetes.io/component": "repo-server",
+		}
+
+		smconfig = &servicemonitor.Config{
+			Name:                  "argocd-repo-server-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+			JobName:               "argocd-repo-server",
+		}
+		servicemonitors = append(servicemonitors, smconfig)
+		// argocd-server
+		endpoint = &servicemonitor.ConfigEndpoint{
+			Port: "metrics",
+			Path: "/metrics",
+		}
+
+		labels = map[string]string{
+			"app.kubernetes.io/part-of":   "argocd",
+			"app.kubernetes.io/component": "server",
+		}
+
+		smconfig = &servicemonitor.Config{
+			Name:                  "argocd-server-servicemonitor",
+			Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+			MonitorMatchingLabels: monitorlabels,
+			ServiceMatchingLabels: labels,
+			JobName:               "argocd-server",
 		}
 		servicemonitors = append(servicemonitors, smconfig)
 	}
