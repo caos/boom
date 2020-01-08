@@ -48,7 +48,7 @@
               "expr": "(\n  instance:node_cpu_utilisation:rate1m{job=\"node-exporter\"}\n*\n  instance:node_num_cpu:sum{job=\"node-exporter\"}\n/ ignoring (instance) group_left\n  sum without (instance) (instance:node_num_cpu:sum{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}}",
+              "legendFormat": "{{instance}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -124,7 +124,7 @@
               "expr": "(\n  instance:node_load1_per_cpu:ratio{job=\"node-exporter\"}\n/ ignoring (instance) group_left\n  count without (instance) (instance:node_load1_per_cpu:ratio{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}}",
+              "legendFormat": "{{instance}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -212,7 +212,7 @@
               "expr": "(\n  instance:node_memory_utilisation:ratio{job=\"node-exporter\"}\n/ ignoring (instance) group_left\n  count without (instance) (instance:node_memory_utilisation:ratio{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}}",
+              "legendFormat": "{{instance}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -288,7 +288,7 @@
               "expr": "instance:node_vmstat_pgmajfault:rate1m{job=\"node-exporter\"}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}}",
+              "legendFormat": "{{instance}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -740,7 +740,7 @@
               "expr": "(\n  sum without (device) (\n    max without (fstype, mountpoint) (\n      node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\"} - node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\"}\n    )\n  ) \n/ ignoring (instance) group_left\n  sum without (instance, device) (\n    max without (fstype, mountpoint) (\n      node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\"}\n    )\n  )\n)  \n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}}",
+              "legendFormat": "{{instance}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
