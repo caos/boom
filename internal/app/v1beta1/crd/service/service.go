@@ -4,6 +4,7 @@ type Config struct {
 	Name       string
 	Namespace  string
 	Labels     map[string]string
+	PortName   string
 	Port       int
 	TargetPort int
 	Protocol   string
@@ -46,7 +47,7 @@ func New(conf *Config) *Service {
 		Spec: &Spec{
 			Selector: conf.Selector,
 			Ports: []*Port{&Port{
-				Name:       "http",
+				Name:       conf.PortName,
 				Protocol:   conf.Protocol,
 				Port:       conf.Port,
 				TargetPort: conf.TargetPort,

@@ -386,7 +386,7 @@
               "expr": "instance:node_network_receive_bytes_excluding_lo:rate1m{job=\"node-exporter\"}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} Receive",
+              "legendFormat": "{{instance}} Receive",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             },
@@ -394,7 +394,7 @@
               "expr": "instance:node_network_transmit_bytes_excluding_lo:rate1m{job=\"node-exporter\"}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} Transmit",
+              "legendFormat": "{{instance}} Transmit",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -480,7 +480,7 @@
               "expr": "instance:node_network_receive_drop_excluding_lo:rate1m{job=\"node-exporter\"}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} Receive",
+              "legendFormat": "{{instance}} Receive",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             },
@@ -488,7 +488,7 @@
               "expr": "instance:node_network_transmit_drop_excluding_lo:rate1m{job=\"node-exporter\"}",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} Transmit",
+              "legendFormat": "{{instance}} Transmit",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -576,7 +576,7 @@
               "expr": "(\n  instance_device:node_disk_io_time_seconds:rate1m{job=\"node-exporter\"}\n/ ignoring (instance, device) group_left\n  count without (instance, device) (instance_device:node_disk_io_time_seconds:rate1m{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} {{`{{device}}`}}",
+              "legendFormat": "{{instance}} {{`{{device}}`}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -652,7 +652,7 @@
               "expr": "(\n  instance_device:node_disk_io_time_weighted_seconds:rate1m{job=\"node-exporter\"}\n/ ignoring (instance, device) group_left\n  count without (instance, device) (instance_device:node_disk_io_time_weighted_seconds:rate1m{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{`{{instance}}`}} {{`{{device}}`}}",
+              "legendFormat": "{{instance}} {{`{{device}}`}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
