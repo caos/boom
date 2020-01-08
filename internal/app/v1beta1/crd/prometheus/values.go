@@ -127,6 +127,7 @@ type RelabelConfig struct {
 	TargetLabel  string   `yaml:"target_label,omitempty"`
 	Replacement  string   `yaml:"replacement,omitempty"`
 }
+
 type MetricRelabelConfig struct {
 	Regex  string `yaml:"regex,omitempty"`
 	Action string `yaml:"action,omitempty"`
@@ -162,7 +163,7 @@ type PrometheusSpec struct {
 	Query                                   *Query                    `yaml:"query,omitempty"`
 	RuleNamespaceSelector                   *NamespaceSelector        `yaml:"ruleNamespaceSelector,omitempty"`
 	RuleSelectorNilUsesHelmValues           bool                      `yaml:"ruleSelectorNilUsesHelmValues,omitempty"`
-	RuleSelector                            struct{}                  `yaml:"ruleSelector,omitempty"`
+	RuleSelector                            *RuleSelector             `yaml:"ruleSelector,omitempty"`
 	ServiceMonitorSelectorNilUsesHelmValues bool                      `yaml:"serviceMonitorSelectorNilUsesHelmValues,omitempty"`
 	ServiceMonitorSelector                  *MonitorSelector          `yaml:"serviceMonitorSelector,omitempty"`
 	ServiceMonitorNamespaceSelector         *NamespaceSelector        `yaml:"serviceMonitorNamespaceSelector,omitempty"`
@@ -200,7 +201,9 @@ type ServiceAccount struct {
 	Create bool   `yaml:"create,omitempty"`
 	Name   string `yaml:"name,omitempty"`
 }
-
+type RuleSelector struct {
+	MatchLabels map[string]string `yaml:"matchLabels"`
+}
 type PrometheusValues struct {
 	Enabled                   bool                     `yaml:"enabled,omitempty"`
 	Annotations               map[string]string        `yaml:"annotations,omitempty"`
@@ -260,8 +263,9 @@ type DisabledTool struct {
 }
 
 type AdditionalPrometheusRules struct {
-	Name   string   `yaml:"name,omitempty"`
-	Groups []*Group `yaml:"groups,omitempty"`
+	Name             string            `yaml:"name,omitempty"`
+	Groups           []*Group          `yaml:"groups,omitempty"`
+	AdditionalLabels map[string]string `yaml:"additionalLabels,omitempty"`
 }
 
 type Group struct {

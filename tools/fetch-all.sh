@@ -42,7 +42,6 @@ for file in toolsets/$1/*; do
 
       echo "fetching chart: $chart_name-$chart_version"
       doHelm repo update >& /dev/null
-      echo "doHelm fetch --untar --version=${chart_version} --untardir ${chartHome} ${indexName}/${chart_name} >& /dev/null"
       doHelm fetch --untar --version=${chart_version} --untardir ${chartHome} ${indexName}/${chart_name} >& /dev/null
       echo "done fetching $chart_name-$chart_version"
 

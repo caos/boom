@@ -156,26 +156,24 @@ func (c *Crd) ReconcileApplications(overlay, toolsDirectoryPath string, toolsetC
 		}
 	}
 
-	conf, datasource, err := c.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	promConf, datasourceURL, err := c.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
 	if err != nil {
 		return err
 	}
-	if conf != nil {
-		if err := c.applications.Prometheus.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, conf); err != nil {
+	if promConf != nil {
+		if err := c.applications.Prometheus.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, promConf); err != nil {
 			return err
 		}
 	}
 
-	toolsetCRDSpec.Grafana.Datasources = append(toolsetCRDSpec.Grafana.Datasources, &toolsetsv1beta1.Datasource{
-		Name:   "prometheus",
-		Type:   "prometheus",
-		Url:    datasource,
-		Access: "proxy",
-	})
-
-	toolsetCRDSpec.Grafana.DashboardProviders = c.GetGrafanaDashboards(filepath.Join(toolsDirectoryPath, "toolsets", toolsetCRDSpec.Name, "dashboards"), toolsetCRDSpec)
 	if toolsetCRDSpec.Grafana != nil {
-		if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, toolsetCRDSpec.Grafana); err != nil {
+		dashboardsFolder := filepath.Join(toolsDirectoryPath, "toolsets", toolsetCRDSpec.Name, "dashboards")
+		grafanaConfig := c.GetGrafanaConfig(dashboardsFolder, toolsetCRDSpec)
+		if promConf != nil {
+			grafanaConfig.AddDatasourceURL("prometheus", "prometheus", datasourceURL)
+		}
+
+		if err := c.applications.Grafana.Reconcile(overlay, toolsetCRDSpec.Namespace, c.helm, grafanaConfig); err != nil {
 			return err
 		}
 	}

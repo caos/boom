@@ -152,6 +152,7 @@ func (c *Crd) ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 			MonitorLabels:           monitorlabels,
 			ServiceMonitors:         servicemonitors,
 			AdditionalScrapeConfigs: adconfigs,
+			KubeVersion:             toolsetCRDSpec.KubeVersion,
 		}
 
 		datasource := ""

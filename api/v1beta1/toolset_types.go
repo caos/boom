@@ -26,6 +26,7 @@ import (
 type ToolsetSpec struct {
 	Name                   string                  `json:"name,omitempty"`
 	Namespace              string                  `json:"namespace,omitempty"`
+	KubeVersion            string                  `json:"kubeVersion,omitempty" yaml:"kubeVersion"`
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
 	LoggingOperator        *LoggingOperator        `json:"logging-operator,omitempty" yaml:"logging-operator"`
 	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`

@@ -9,8 +9,9 @@ import (
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 
-	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/app/v1beta1/crd/defaults"
+	"github.com/caos/boom/internal/app/v1beta1/crd/grafanastandalone"
+	"github.com/caos/boom/internal/app/v1beta1/crd/prometheusoperator"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/template"
@@ -23,7 +24,7 @@ var (
 type Grafana struct {
 	ApplicationDirectoryPath string
 	logger                   logging.Logger
-	spec                     *toolsetsv1beta1.Grafana
+	config                   *Config
 }
 
 func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
@@ -35,19 +36,19 @@ func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
 	return lo
 }
 
-func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, spec *toolsetsv1beta1.Grafana) error {
+func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, config *Config) error {
 
 	logFields := map[string]interface{}{
 		"application": applicationName,
-		"logID":       "CRD-tS3NCOfewXYGvDE",
+		"logID":       "CRD-ehpIBYPdrZPAynI",
 	}
 	g.logger.WithFields(logFields).Info("Reconciling")
 
 	resultFilePath := defaults.GetResultFilePath(overlay, g.ApplicationDirectoryPath, applicationName)
-	prefix := defaults.GetPrefix(overlay, applicationName, spec.Prefix)
-	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, spec.Namespace)
+	prefix := defaults.GetPrefix(overlay, applicationName, config.Prefix)
+	namespace := defaults.GetNamespace(overlay, applicationName, specNamespace, config.Namespace)
 
-	values := specToValues(helm.GetImageTags(applicationName), spec)
+	values := specToValues(helm.GetImageTags(applicationName), config)
 	writeValues := func(path string) error {
 		if err := errors.Wrapf(helper.StructToYaml(values, path), "Failed to write values file overlay %s application %s", overlay, applicationName); err != nil {
 			return err
@@ -59,7 +60,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 		return err
 	}
 
-	if spec.Deploy && !reflect.DeepEqual(g.spec, spec) {
+	if config.Deploy && !reflect.DeepEqual(g.config, config) {
 		if err := defaults.PrepareForResultOutput(defaults.GetResultFileDirectory(overlay, g.ApplicationDirectoryPath, applicationName)); err != nil {
 			return err
 		}
@@ -73,7 +74,7 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 		}
 
 		folders := make([]string, 0)
-		for _, provider := range spec.DashboardProviders {
+		for _, provider := range config.DashboardProviders {
 			folders = append(folders, provider.Folder)
 		}
 
@@ -86,151 +87,158 @@ func (g *Grafana) Reconcile(overlay, specNamespace string, helm *template.Helm, 
 			return err
 		}
 
-		g.spec = spec
-	} else if !spec.Deploy && g.spec != nil {
+		g.config = config
+	} else if !config.Deploy && g.config != nil {
 		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 		if err := errors.Wrapf(helper.Run(g.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
 		}
 
-		g.spec = nil
+		g.config = nil
 	}
 	return nil
 }
 
-func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *Values {
-	values := &Values{
-		FullnameOverride: "grafana",
-		Rbac: &Rbac{
-			Create:         true,
-			PspEnabled:     false,
-			PspUseAppArmor: true,
-			Namespaced:     false,
-		},
-		ServiceAccount: &ServiceAccount{
-			Create: true,
-		},
-		Replicas: 1,
-		DeploymentStrategy: &DeploymentStrategy{
-			Type: "RollingUpdate",
-		},
-		ReadinessProbe: &ReadinessProbe{
-			HTTPGet: &HTTPGet{
-				Port: 3000,
-				Path: "/api/health",
-			},
-		},
-		LivenessProbe: &LivenessProbe{
-			HTTPGet: &HTTPGet{
-				Port: 3000,
-				Path: "/api/health",
-			},
-			InitialDelaySeconds: 60,
-			TimeoutSeconds:      30,
-			FailureThreshold:    10,
-		},
-		Image: &Image{
-			Repository: "grafana/grafana",
-			Tag:        imageTags["grafana/grafana"],
-			PullPolicy: "IfNotPresent",
-		},
-		TestFramework: &TestFramework{
-			Enabled: true,
-			Image:   "dduportal/bats",
-			Tag:     imageTags["dduportal/bats"],
-		},
-		SecurityContext: &SecurityContext{
-			RunAsUser: 472,
-			FsGroup:   472,
-		},
-		DownloadDashboardsImage: &DownloadDashboardsImage{
-			Repository: "appropriate/curl",
-			Tag:        imageTags["appropriate/curl"],
-			PullPolicy: "IfNotPresent",
-		},
-		DownloadDashboards: &DownloadDashboards{},
-		PodPortName:        "grafana",
-		Service: &Service{
-			Type:       "ClusterIP",
-			Port:       80,
-			TargetPort: 3000,
-			PortName:   "service",
-		},
+func specToValues(imageTags map[string]string, config *Config) *Values {
+	grafana := &GrafanaValues{
+		FullnameOverride:         "grafana",
+		Enabled:                  true,
+		DefaultDashboardsEnabled: true,
+		AdminPassword:            "admin",
 		Ingress: &Ingress{
 			Enabled: false,
 		},
-		Persistence: &Persistence{
-			Type:        "pvc",
-			Enabled:     false,
-			AccessModes: []string{"ReadWriteOnce"},
-			Size:        "10Gi",
-			Finalizers:  []string{"kubernetes.io/pvc-protection"},
-		},
-		InitChownData: &InitChownData{
-			Enabled: true,
-			Image: &Image{
-				Repository: "busybox",
-				Tag:        imageTags["busybox"],
-				PullPolicy: "IfNotPresent",
+		Sidecar: &Sidecar{
+			Dashboards: &Dashboards{
+				Enabled: true,
+				Label:   "grafana_dashboard",
+			},
+			Datasources: &Datasources{
+				Enabled: true,
+				Label:   "grafana_datasource",
 			},
 		},
-		AdminUser:     "admin",
-		AdminPassword: "admin",
-		Admin: &Admin{
-			ExistingSecret: "",
-			UserKey:        "admin-user",
-			PasswordKey:    "admin-password",
+		ServiceMonitor: &ServiceMonitor{
+			SelfMonitor: false,
 		},
-		// Datasources             *Datasources             `yaml:"datasources"`
-		// Dashboards              *Dashboards              `yaml:"dashboards"`
-		// DashboardsConfigMaps    map[string]string        `yaml:"dashboardsConfigMaps"`
-		GrafanaIni: &GrafanaIni{
-			Paths: &Paths{
-				Data:         "/var/lib/grafana/data",
-				Logs:         "/var/log/grafana",
-				Plugins:      "/var/lib/grafana/plugins",
-				Provisioning: "/etc/grafana/provisioning",
-			},
-			Analytics: &Analytics{
-				CheckForUpdates: true,
-			},
-			Log: &Log{
-				Mode: "console",
-			},
-			GrafanaNet: &GrafanaNet{
-				URL: "https://grafana.net",
+	}
+
+	values := &Values{
+		DefaultRules: &DefaultRules{
+			Create: false,
+			Rules: &Rules{
+				Alertmanager:                false,
+				Etcd:                        false,
+				General:                     false,
+				K8S:                         false,
+				KubeApiserver:               false,
+				KubePrometheusNodeAlerting:  false,
+				KubePrometheusNodeRecording: false,
+				KubernetesAbsent:            false,
+				KubernetesApps:              false,
+				KubernetesResources:         false,
+				KubernetesStorage:           false,
+				KubernetesSystem:            false,
+				KubeScheduler:               false,
+				Network:                     false,
+				Node:                        false,
+				Prometheus:                  false,
+				PrometheusOperator:          false,
+				Time:                        false,
 			},
 		},
-		Ldap: &Ldap{
+		Global: &Global{
+			Rbac: &Rbac{
+				Create:     false,
+				PspEnabled: false,
+			},
+		},
+		FullnameOverride:          "grafana",
+		KubeTargetVersionOverride: config.KubeVersion,
+		Alertmanager: &DisabledTool{
 			Enabled: false,
 		},
-		SMTP: &SMTP{
-			ExistingSecret: "",
-			UserKey:        "user",
-			PasswordKey:    "password",
+		Grafana: grafana,
+		KubeAPIServer: &DisabledTool{
+			Enabled: false,
 		},
-		Sidecar: &Sidecar{
-			Image:           "kiwigrid/k8s-sidecar:0.1.20",
-			ImagePullPolicy: "IfNotPresent",
-			Dashboards: &DashboardsSidecar{
+		Kubelet: &DisabledTool{
+			Enabled: false,
+		},
+		KubeControllerManager: &DisabledTool{
+			Enabled: false,
+		},
+		CoreDNS: &DisabledTool{
+			Enabled: false,
+		},
+		KubeDNS: &DisabledTool{
+			Enabled: false,
+		},
+		KubeEtcd: &DisabledTool{
+			Enabled: false,
+		},
+		KubeScheduler: &DisabledTool{
+			Enabled: false,
+		},
+		KubeProxy: &DisabledTool{
+			Enabled: false,
+		},
+		KubeStateMetricsScrap: &DisabledTool{
+			Enabled: false,
+		},
+		KubeStateMetrics: &DisabledTool{
+			Enabled: false,
+		},
+		NodeExporter: &DisabledTool{
+			Enabled: false,
+		},
+		PrometheusNodeExporter: &DisabledTool{
+			Enabled: false,
+		},
+		PrometheusOperator: &prometheusoperator.PrometheusOperatorValues{
+			Enabled: false,
+			TLSProxy: &prometheusoperator.TLSProxy{
+				Enabled: false,
+				Image: &prometheusoperator.Image{
+					Repository: "squareup/ghostunnel",
+					Tag:        imageTags["squareup/ghostunnel"],
+					PullPolicy: "IfNotPresent",
+				},
+			},
+			AdmissionWebhooks: &prometheusoperator.AdmissionWebhooks{
+				FailurePolicy: "Fail",
+				Enabled:       false,
+				Patch: &prometheusoperator.Patch{
+					Enabled: false,
+					Image: &prometheusoperator.Image{
+						Repository: "jettech/kube-webhook-certgen",
+						Tag:        imageTags["jettech/kube-webhook-certgen"],
+						PullPolicy: "IfNotPresent",
+					},
+					PriorityClassName: "",
+				},
+			},
+			ServiceAccount: &prometheusoperator.ServiceAccount{
+				Create: false,
+			},
+			ServiceMonitor: &prometheusoperator.ServiceMonitor{
+				Interval:    "",
+				SelfMonitor: false,
+			},
+			CreateCustomResource: true,
+			KubeletService: &prometheusoperator.KubeletService{
 				Enabled: false,
 			},
-			Datasources: &DatasourcesSidecar{
-				Enabled: false,
-			},
+		},
+		Prometheus: &DisabledTool{
+			Enabled: false,
 		},
 	}
 
-	if spec.Admin != nil {
-		values.Admin.ExistingSecret = spec.Admin.ExistingSecret
-		values.Admin.UserKey = spec.Admin.UserKey
-		values.Admin.PasswordKey = spec.Admin.PasswordKey
-	}
-
-	if spec.Datasources != nil {
-		datasources := make([]*Datasource, 0)
-		for _, datasource := range spec.Datasources {
-			valuesDatasource := &Datasource{
+	if config.Datasources != nil {
+		datasources := make([]*grafanastandalone.Datasource, 0)
+		for _, datasource := range config.Datasources {
+			valuesDatasource := &grafanastandalone.Datasource{
 				Name:      datasource.Name,
 				Type:      datasource.Type,
 				URL:       datasource.Url,
@@ -239,30 +247,25 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *V
 			}
 			datasources = append(datasources, valuesDatasource)
 		}
-		values.Datasources = &Datasources{
-			Datasources: &Datasourcesyaml{
-				APIVersion:  1,
-				Datasources: datasources,
-			},
-		}
+		values.Grafana.AdditionalDataSources = datasources
 	}
 
-	if spec.DashboardProviders != nil {
+	if config.DashboardProviders != nil {
 		providers := make([]*Provider, 0)
 		dashboards := make(map[string]string, 0)
-		for _, provider := range spec.DashboardProviders {
+		for _, provider := range config.DashboardProviders {
 			for _, configmap := range provider.ConfigMaps {
 				providers = append(providers, getProvider(configmap))
 				dashboards[configmap] = configmap
 			}
 		}
-		values.DashboardProviders = &DashboardProviders{
+		values.Grafana.DashboardProviders = &DashboardProviders{
 			Providers: &Providersyaml{
 				APIVersion: 1,
 				Providers:  providers,
 			},
 		}
-		values.DashboardsConfigMaps = dashboards
+		values.Grafana.DashboardsConfigMaps = dashboards
 	}
 
 	return values

@@ -26,6 +26,7 @@ type Config struct {
 	ReplicaCount            int
 	StorageSpec             *ConfigStorageSpec
 	AdditionalScrapeConfigs []*AdditionalScrapeConfig
+	KubeVersion             string
 }
 
 type ConfigStorageSpec struct {
@@ -91,14 +92,14 @@ func (p *Prometheus) Reconcile(overlay, specNamespace string, helm *template.Hel
 			return err
 		}
 
-		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
+		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
 		}
 
 		p.config = config
 	} else if config == nil && p.config != nil {
-		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath)
+		kubectlCmd := kubectl.New("delete").AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
 		if err := errors.Wrapf(helper.Run(p.logger, kubectlCmd.Build()), "Failed to apply file %s", resultFilePath); err != nil {
 			return err
 		}
@@ -110,6 +111,8 @@ func (p *Prometheus) Reconcile(overlay, specNamespace string, helm *template.Hel
 }
 
 func specToValues(imageTags map[string]string, config *Config) (*Values, error) {
+
+	ruleLabels := map[string]string{"prometheus": "caos", "instance-name": "operated"}
 	promValues := &PrometheusValues{
 		Enabled: true,
 		ServiceAccount: &ServiceAccount{
@@ -160,6 +163,10 @@ func specToValues(imageTags map[string]string, config *Config) (*Values, error) 
 				RunAsUser:    1000,
 				FsGroup:      2000,
 			},
+
+			RuleSelector: &RuleSelector{
+				MatchLabels: ruleLabels,
+			},
 		},
 	}
 
@@ -201,34 +208,35 @@ func specToValues(imageTags map[string]string, config *Config) (*Values, error) 
 		promValues.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
 
-	rules, _ := getRules()
+	rules, _ := getRules(ruleLabels)
 
 	values := &Values{
-		AdditionalPrometheusRules: []*AdditionalPrometheusRules{rules},
+		KubeTargetVersionOverride: config.KubeVersion,
 		FullnameOverride:          "operated",
-		KubeTargetVersionOverride: "v1.14.9",
+		AdditionalPrometheusRules: []*AdditionalPrometheusRules{rules},
 		DefaultRules: &DefaultRules{
-			Create: false,
+			Create: true,
 			Rules: &Rules{
-				Alertmanager:                false,
-				Etcd:                        false,
-				General:                     false,
-				K8S:                         false,
-				KubeApiserver:               false,
-				KubePrometheusNodeAlerting:  false,
-				KubePrometheusNodeRecording: false,
-				KubernetesAbsent:            false,
-				KubernetesApps:              false,
-				KubernetesResources:         false,
-				KubernetesStorage:           false,
-				KubernetesSystem:            false,
-				KubeScheduler:               false,
-				Network:                     false,
-				Node:                        false,
-				Prometheus:                  false,
-				PrometheusOperator:          false,
-				Time:                        false,
+				Alertmanager:                true,
+				Etcd:                        true,
+				General:                     true,
+				K8S:                         true,
+				KubeApiserver:               true,
+				KubePrometheusNodeAlerting:  true,
+				KubePrometheusNodeRecording: true,
+				KubernetesAbsent:            true,
+				KubernetesApps:              true,
+				KubernetesResources:         true,
+				KubernetesStorage:           true,
+				KubernetesSystem:            true,
+				KubeScheduler:               true,
+				Network:                     true,
+				Node:                        true,
+				Prometheus:                  true,
+				PrometheusOperator:          true,
+				Time:                        true,
 			},
+			Labels: ruleLabels,
 		},
 		Global: &Global{
 			Rbac: &Rbac{
