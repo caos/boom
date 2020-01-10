@@ -8,46 +8,4 @@ function kustomizeIt {
     $TOOLS_HOME/$1/$2
 }
 
-case $1 in
-    'logging-operator')
-        kustomizeIt $1 $2
-    ;;
-    'prometheus-operator')
-        kustomizeIt $1 $2
-    ;;
-    'prometheus-node-exporter')
-        kustomizeIt $1 $2
-    ;;
-    'grafana')
-        kustomizeIt $1 $2
-    ;;
-    'prometheus')
-        kustomizeIt $1 $2
-    ;;
-    'cert-manager')
-        kustomizeIt $1 $2
-    ;;
-    'ambassador')
-        kustomizeIt $1 $2
-    ;;
-    'kube-state-metrics')
-        kustomizeIt $1 $2
-    ;;
-    'argocd')
-        kustomizeIt $1 $2
-    ;;
-    *)
-        echo "please select a valid tool:
-
-            logging-operator
-            prometheus-operator
-            prometheus-node-exporter
-            grafana
-            prometheus
-            cert-manager
-            ambassador
-            kube-state-metrics
-            argocd
-        "
-        exit 1
-esac
+kustomizeIt $1 $2

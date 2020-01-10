@@ -1,49 +1,32 @@
 package app
 
 import (
-	"path/filepath"
-
-	"github.com/caos/boom/internal/toolset"
 	"github.com/caos/orbiter/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type App struct {
-	Toolsets           *toolset.Toolsets
-	ToolsDirectoryPath string
-	CrdDirectoryPath   string
-	GitCrds            []GitCrd
-	Crds               map[string]Crd
-	logger             logging.Logger
+	ToolsDirectoryPath      string
+	CrdDirectoryPath        string
+	DashboardsDirectoryPath string
+	GitCrds                 []GitCrd
+	Crds                    map[string]Crd
+	logger                  logging.Logger
 }
 
-func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, toolsetsPath string) (*App, error) {
+func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
 
 	app := &App{
-		ToolsDirectoryPath: toolsDirectoryPath,
-		CrdDirectoryPath:   crdDirectoryPath,
-		logger:             logger,
+		ToolsDirectoryPath:      toolsDirectoryPath,
+		CrdDirectoryPath:        crdDirectoryPath,
+		DashboardsDirectoryPath: dashboardsDirectoryPath,
+		logger:                  logger,
 	}
 
 	app.Crds = make(map[string]Crd, 0)
 	app.GitCrds = make([]GitCrd, 0)
 
-	err := app.ReloadCurrentToolsets(app.ToolsDirectoryPath, toolsetsPath)
-	if err != nil {
-		return nil, err
-	}
-
 	return app, nil
-}
-
-func (a *App) ReloadCurrentToolsets(toolsDirectoryPath string, toolsetsPath string) error {
-	toolsetsFilePath := filepath.Join(toolsDirectoryPath, toolsetsPath)
-	toolsets, err := toolset.NewToolsetsFromYaml(a.logger, toolsetsFilePath)
-	if err != nil {
-		return err
-	}
-	a.Toolsets = toolsets
-	return nil
 }
 
 func (a *App) CleanUp() error {
@@ -70,7 +53,7 @@ func (a *App) CleanUp() error {
 }
 
 func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
-	c, err := NewGitCrd(a.logger, a.CrdDirectoryPath, url, privateKey, crdPath, a.ToolsDirectoryPath, a.Toolsets)
+	c, err := NewGitCrd(a.logger, a.CrdDirectoryPath, url, privateKey, crdPath, a.ToolsDirectoryPath, a.DashboardsDirectoryPath)
 	if err != nil {
 		return err
 	}
@@ -83,7 +66,8 @@ func (a *App) ReconcileGitCrds() error {
 		a.logger.WithFields(map[string]interface{}{
 			"logID": "APP-aZAeIqcAmHzflSB",
 		}).Info("Started reconciling of GitCRDs")
-		err := crdGit.Reconcile(a.ToolsDirectoryPath, a.Toolsets)
+
+		err := crdGit.Reconcile()
 		if err != nil {
 			return err
 		}
@@ -91,23 +75,23 @@ func (a *App) ReconcileGitCrds() error {
 	return nil
 }
 
-func (a *App) ReconcileCrd(version, namespacedName string, getToolset func(obj runtime.Object) error) error {
+func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
 	a.logger.WithFields(map[string]interface{}{
 		"logID": "APP-aZAeIqcAmHzflSB",
 		"name":  namespacedName,
 	}).Info("Started reconciling of CRD")
+
+	var err error
 	crd, ok := a.Crds[namespacedName]
 	if !ok {
-		newCrd, err := NewCrd(a.logger, version, getToolset, a.ToolsDirectoryPath, a.Toolsets)
+		crd, err = NewCrd(a.logger, version, getToolsetCRD, a.ToolsDirectoryPath, a.DashboardsDirectoryPath)
 		if err != nil {
 			return err
 		}
 
-		a.Crds[namespacedName] = newCrd
-	} else {
-		if err := crd.ReconcileWithFunc(getToolset, a.ToolsDirectoryPath, a.Toolsets); err != nil {
-			return err
-		}
+		a.Crds[namespacedName] = crd
+		return nil
 	}
-	return nil
+
+	return crd.ReconcileWithFunc(getToolsetCRD)
 }

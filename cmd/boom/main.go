@@ -59,9 +59,10 @@ type Orb struct {
 
 func main() {
 	var metricsAddr string
-	var toolsDirectoryPath, toolsetsPath string
+	var toolsDirectoryPath, dashboardsDirectoryPath string
 	var gitOrbConfig, gitCrdPath, gitCrdURL, gitCrdPrivateKey, gitCrdDirectoryPath string
 	var enableLeaderElection, localMode bool
+	var intervalSeconds int
 	verbose := flag.Bool("verbose", false, "Print logs for debugging")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
@@ -76,7 +77,9 @@ func main() {
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd.yaml", "The path to the CRD in the cloned git-repo ")
 
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "../../tools", "The local path where the tools folder should be")
-	flag.StringVar(&toolsetsPath, "toolsq-toolset-path", "toolsets", "The path to the fold structue which defines the toolsets and their versions")
+	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "../../dashboards", "The local path where the dashboards folder should be")
+
+	flag.IntVar(&intervalSeconds, "intervalSeconds", 10, "defines the interval in which the reconiliation of the gitCrds runs")
 	flag.Parse()
 
 	var gitCrdPrivateKeyBytes []byte
@@ -114,7 +117,7 @@ func main() {
 
 	ctrl.SetLogger(kubebuilder.New(logger))
 
-	app, err := app.New(logger, toolsDirectoryPath, gitCrdDirectoryPath, toolsetsPath)
+	app, err := app.New(logger, toolsDirectoryPath, gitCrdDirectoryPath, dashboardsDirectoryPath)
 	if err != nil {
 		setupLog.Error(err, "unable to start app")
 		os.Exit(1)
@@ -140,7 +143,7 @@ func main() {
 					gitCrdError <- goErr
 				}
 				recLogger.Info("Iteration done")
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()
 	}

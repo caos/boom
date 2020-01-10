@@ -1,0 +1,89 @@
+package grafana
+
+import (
+	"strings"
+
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+)
+
+type ConfigDatasource struct {
+	Name      string
+	Type      string
+	Url       string
+	Access    string
+	IsDefault bool
+}
+
+type ConfigProvider struct {
+	ConfigMaps []string
+	Folder     string
+}
+
+type Config struct {
+	Deploy             bool
+	Prefix             string
+	Namespace          string
+	Datasources        []*ConfigDatasource
+	DashboardProviders []*ConfigProvider
+	KubeVersion        string
+}
+
+func newConfig(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
+	dashboardProviders := make([]*ConfigProvider, 0)
+	if spec.Grafana.DashboardProviders != nil {
+		for _, provider := range spec.Grafana.DashboardProviders {
+			confProvider := &ConfigProvider{
+				ConfigMaps: provider.ConfigMaps,
+				Folder:     provider.Folder,
+			}
+			dashboardProviders = append(dashboardProviders, confProvider)
+		}
+	}
+
+	datasources := make([]*ConfigDatasource, 0)
+	if spec.Grafana.Datasources != nil {
+		for _, datasource := range spec.Grafana.Datasources {
+			confDatasource := &ConfigDatasource{
+				Name:      datasource.Name,
+				Type:      datasource.Type,
+				Url:       datasource.Url,
+				Access:    datasource.Access,
+				IsDefault: datasource.IsDefault,
+			}
+			datasources = append(datasources, confDatasource)
+		}
+	}
+
+	conf := &Config{
+		Deploy:             spec.Grafana.Deploy,
+		Prefix:             spec.Grafana.Prefix,
+		Namespace:          spec.Grafana.Namespace,
+		DashboardProviders: dashboardProviders,
+		Datasources:        datasources,
+		KubeVersion:        kubeVersion,
+	}
+
+	providers := getGrafanaDashboards("../../dashboards", spec)
+
+	for _, provider := range providers {
+		conf.AddDashboardProvider(provider)
+	}
+
+	datasource := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
+	conf.AddDatasourceURL("prometheus", "prometheus", datasource)
+
+	return conf
+}
+
+func (c *Config) AddDashboardProvider(provider *ConfigProvider) {
+	c.DashboardProviders = append(c.DashboardProviders, provider)
+}
+
+func (c *Config) AddDatasourceURL(name, datatype, url string) {
+	c.Datasources = append(c.Datasources, &ConfigDatasource{
+		Name:   name,
+		Type:   datatype,
+		Url:    url,
+		Access: "proxy",
+	})
+}

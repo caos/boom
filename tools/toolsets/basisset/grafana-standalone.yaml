@@ -1,8 +1,0 @@
-chart:
-  name: grafana
-  version: 4.0.2
-imageTags:
-  grafana/grafana: "6.4.2"
-  dduportal/bats: "0.4.0"
-  appropriate/curl: "latest"
-  busybox: "1.30"
