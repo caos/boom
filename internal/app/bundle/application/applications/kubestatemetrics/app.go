@@ -1,6 +1,8 @@
 package kubestatemetrics
 
 import (
+	"reflect"
+
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -27,20 +29,31 @@ func New(logger logging.Logger) *KubeStateMetrics {
 
 	return lo
 }
+func (k *KubeStateMetrics) GetName() name.Application {
+	return applicationName
+}
 
 func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.KubeStateMetrics.Deploy
 }
 
-func (a *KubeStateMetrics) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return toolsetCRDSpec.KubeStateMetrics != a.spec
+func (k *KubeStateMetrics) Initial() bool {
+	return k.spec == nil
 }
 
-func (a *KubeStateMetrics) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.KubeStateMetrics
+func (k *KubeStateMetrics) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+	return !reflect.DeepEqual(toolsetCRDSpec.KubeStateMetrics, k.spec)
 }
 
-func (k *KubeStateMetrics) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec)  interface{} {
+func (k *KubeStateMetrics) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
+	k.spec = toolsetCRDSpec.KubeStateMetrics
+}
+
+func (k *KubeStateMetrics) GetNamespace() string {
+	return "caos-system"
+}
+
+func (k *KubeStateMetrics) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	// spec := toolset.CertManager
 	values := defaultValues(k.GetImageTags())
 

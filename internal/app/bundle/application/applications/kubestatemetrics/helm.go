@@ -14,4 +14,3 @@ func (k *KubeStateMetrics) GetImageTags() map[string]string {
 		"quay.io/coreos/kube-state-metrics": "v1.8.0",
 	}
 }
-

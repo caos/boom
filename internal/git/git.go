@@ -89,6 +89,8 @@ func (g *Git) cloneRepo() (*git.Repository, error) {
 		"to":    g.localPath,
 	}).Info("Cloning plain")
 
+	os.RemoveAll(g.localPath)
+
 	ctx := context.TODO()
 	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	if g.auth != nil {

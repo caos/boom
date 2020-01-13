@@ -11,19 +11,21 @@ import (
 	"github.com/caos/boom/internal/app/bundle/application/applications/prometheus"
 	"github.com/caos/boom/internal/app/bundle/application/applications/prometheusnodeexporter"
 	"github.com/caos/boom/internal/app/bundle/application/applications/prometheusoperator"
-	"github.com/caos/boom/internal/app/bundle/application/chart"
 	"github.com/caos/boom/internal/app/name"
+	"github.com/caos/boom/internal/app/templator/helm"
 	"github.com/caos/orbiter/logging"
 )
 
 type Application interface {
+	Initial() bool
 	Changed(toolsetCRDSpec *v1beta1.ToolsetSpec) bool
 	SetAppliedSpec(toolsetCRDSpec *v1beta1.ToolsetSpec)
 }
 
 type HelmApplication interface {
-	GetChartInfo() *chart.Chart
+	Application
 	GetImageTags() map[string]string
+	helm.Templator
 }
 
 func New(logger logging.Logger, appName name.Application) Application {
@@ -42,11 +44,12 @@ func New(logger logging.Logger, appName name.Application) Application {
 		return prometheusoperator.New(logger)
 	case loggingoperator.GetName():
 		return loggingoperator.New(logger)
-	case prometheus.GetName():
-		return prometheus.New(logger)
 	case prometheusnodeexporter.GetName():
 		return prometheusnodeexporter.New(logger)
+	case prometheus.GetName():
+		return prometheus.New(logger)
 	}
+
 	return nil
 }
 
@@ -68,6 +71,8 @@ func Deploy(appName name.Application, toolsetCRDSpec *v1beta1.ToolsetSpec) bool 
 		return loggingoperator.Deploy(toolsetCRDSpec)
 	case prometheusnodeexporter.GetName():
 		return prometheusnodeexporter.Deploy(toolsetCRDSpec)
+	case prometheus.GetName():
+		return prometheus.Deploy(toolsetCRDSpec)
 	}
 
 	return false

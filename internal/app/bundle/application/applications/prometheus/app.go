@@ -1,6 +1,8 @@
 package prometheus
 
 import (
+	"reflect"
+
 	"github.com/caos/orbiter/logging"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -28,25 +30,40 @@ func New(logger logging.Logger) *Prometheus {
 		logger: logger,
 	}
 }
+func (p *Prometheus) GetName() name.Application {
+	return applicationName
+}
 
 func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+	config := ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	if config == nil {
+		return false
+	}
 	return true
 }
 
+func (p *Prometheus) Initial() bool {
+	return p.config == nil
+}
+
 func (p *Prometheus) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	config, _ := ScrapeMetricsCrdsConfig(toolsetCRDSpec)
-	return config != p.config
+	config := ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	return !reflect.DeepEqual(config, p.config)
 }
 
 func (p *Prometheus) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
 	if toolsetCRDSpec == nil {
 		return
 	}
-	p.config, _ = ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	p.config = ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+}
+
+func (p *Prometheus) GetNamespace() string {
+	return "caos-system"
 }
 
 func (p *Prometheus) SpecToHelmValues(toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
-	config, _ := ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	config := ScrapeMetricsCrdsConfig(toolsetCRDSpec)
 
 	values := defaultValues(p.GetImageTags())
 

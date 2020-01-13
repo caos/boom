@@ -1,6 +1,8 @@
 package prometheusnodeexporter
 
 import (
+	"reflect"
+
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -27,20 +29,31 @@ func New(logger logging.Logger) *PrometheusNodeExporter {
 
 	return pne
 }
+func (pne *PrometheusNodeExporter) GetName() name.Application {
+	return applicationName
+}
 
 func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.PrometheusNodeExporter.Deploy
 }
 
-func (a *PrometheusNodeExporter) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return toolsetCRDSpec.PrometheusNodeExporter != a.spec
+func (pne *PrometheusNodeExporter) Initial() bool {
+	return pne.spec == nil
 }
 
-func (a *PrometheusNodeExporter) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.PrometheusNodeExporter
+func (pne *PrometheusNodeExporter) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+	return !reflect.DeepEqual(toolsetCRDSpec.PrometheusNodeExporter, pne.spec)
 }
 
-func (p *PrometheusNodeExporter) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec)  interface{} {
+func (pne *PrometheusNodeExporter) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
+	pne.spec = toolsetCRDSpec.PrometheusNodeExporter
+}
+
+func (pne *PrometheusNodeExporter) GetNamespace() string {
+	return "caos-system"
+}
+
+func (p *PrometheusNodeExporter) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	// spec := toolset.PrometheusNodeExporter
 	values := defaultValues(p.GetImageTags())
 

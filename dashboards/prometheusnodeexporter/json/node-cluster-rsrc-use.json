@@ -576,7 +576,7 @@
               "expr": "(\n  instance_device:node_disk_io_time_seconds:rate1m{job=\"node-exporter\"}\n/ ignoring (instance, device) group_left\n  count without (instance, device) (instance_device:node_disk_io_time_seconds:rate1m{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}} {{`{{device}}`}}",
+              "legendFormat": "{{instance}} {{device}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }
@@ -652,7 +652,7 @@
               "expr": "(\n  instance_device:node_disk_io_time_weighted_seconds:rate1m{job=\"node-exporter\"}\n/ ignoring (instance, device) group_left\n  count without (instance, device) (instance_device:node_disk_io_time_weighted_seconds:rate1m{job=\"node-exporter\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}} {{`{{device}}`}}",
+              "legendFormat": "{{instance}} {{device}}",
               "legendLink": "/dashboard/file/node-rsrc-use.json",
               "step": 10
             }

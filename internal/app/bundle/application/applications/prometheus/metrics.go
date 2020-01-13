@@ -11,44 +11,55 @@ import (
 	"github.com/caos/boom/internal/app/bundle/application/applications/prometheusoperator"
 )
 
-func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) (*Config, error) {
+func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Config {
 
 	monitorlabels := make(map[string]string, 0)
 	monitorlabels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
 
 	servicemonitors := make([]*servicemonitor.Config, 0)
 
-	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy {
+	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy &&
+		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Ambassador) {
 		servicemonitors = append(servicemonitors, ambassador.GetServicemonitor(monitorlabels))
 	}
 
-	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy {
+	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy &&
+		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.PrometheusOperator) {
 		servicemonitors = append(servicemonitors, prometheusoperator.GetServicemonitor(monitorlabels))
 	}
 
-	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy {
+	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
+		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.PrometheusNodeExporter) {
 		servicemonitors = append(servicemonitors, prometheusnodeexporter.GetServicemonitor(monitorlabels))
 	}
 
-	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy {
+	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
+		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.KubeStateMetrics) {
 		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitor(monitorlabels))
 	}
 
-	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy {
+	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
+		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Argocd) {
 		servicemonitors = append(servicemonitors, argocd.GetServicemonitors(monitorlabels)...)
 	}
 
-	servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(monitorlabels))
-	servicemonitors = append(servicemonitors, GetServicemonitor(monitorlabels))
-
-	prom := &Config{
-		Prefix:                  "",
-		Namespace:               "caos-system",
-		MonitorLabels:           monitorlabels,
-		ServiceMonitors:         servicemonitors,
-		AdditionalScrapeConfigs: getScrapeConfigs(),
-		KubeVersion:             toolsetCRDSpec.KubeVersion,
+	if toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.APIServer {
+		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(monitorlabels))
 	}
 
-	return prom, nil
+	if len(servicemonitors) > 0 {
+		servicemonitors = append(servicemonitors, GetServicemonitor(monitorlabels))
+
+		prom := &Config{
+			Prefix:                  "",
+			Namespace:               "caos-system",
+			MonitorLabels:           monitorlabels,
+			ServiceMonitors:         servicemonitors,
+			AdditionalScrapeConfigs: getScrapeConfigs(),
+			KubeVersion:             toolsetCRDSpec.KubeVersion,
+		}
+
+		return prom
+	}
+	return nil
 }

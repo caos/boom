@@ -55,9 +55,6 @@ COPY --from=dependencies /artifacts /usr/local/bin/
 COPY --from=build /boom /
 COPY --from=build /gen /
 
-COPY tools/kustomize tools/kustomize
-COPY tools/start.sh tools/start.sh
-
 COPY config/crd /crd
 
 RUN ./gen

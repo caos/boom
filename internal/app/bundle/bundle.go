@@ -7,10 +7,12 @@ import (
 	"github.com/caos/boom/internal/app/name"
 	"github.com/caos/boom/internal/app/templator"
 	"github.com/caos/boom/internal/app/templator/helm"
+	helperTemp "github.com/caos/boom/internal/app/templator/helper"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/orbiter/logging"
+	"github.com/pkg/errors"
 )
-
-var namespace = "caos-system"
 
 type Bundle struct {
 	baseDirectoryPath       string
@@ -22,7 +24,7 @@ type Bundle struct {
 
 func New(logger logging.Logger, crdName, baseDirectoryPath, dashboardsDirectoryPath string) *Bundle {
 	apps := make(map[name.Application]application.Application, 0)
-	templator := templator.New(logger, crdName, baseDirectoryPath, helm.GetName())
+	templator := helperTemp.NewTemplator(logger, crdName, baseDirectoryPath, helm.GetName())
 
 	b := &Bundle{
 		baseDirectoryPath:       baseDirectoryPath,
@@ -40,12 +42,11 @@ func New(logger logging.Logger, crdName, baseDirectoryPath, dashboardsDirectoryP
 }
 
 func (b *Bundle) CleanUp() error {
-	return b.Templator.CleanUp()
+	return b.Templator.CleanUp().GetStatus()
 }
 
 func (b *Bundle) addApplication(appName name.Application) *Bundle {
 	app := application.New(b.logger, appName)
-	b.Templator.AddApplication(appName, app)
 	b.Applications[appName] = app
 	return b
 }
@@ -70,27 +71,27 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 
 	b.logger.WithFields(logFields).Info("Reconciling")
 
-	b.Templator.PrepareTemplate(appName, spec)
-
 	deploy := application.Deploy(appName, spec)
-	// resultsfilepath := b.Templator.GetResultsFilePath(appName)
-
+	var command string
 	if deploy {
-		b.Templator.Template(appName)
-		// kubectlCmd := kubectl.New("apply").AddParameter("-f", resultsfilepath).AddParameter("-n", namespace)
-		// if err := errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultsfilepath); err != nil {
-		// 	return err
-		// }
-
-		app.SetAppliedSpec(spec)
-	} else if !deploy && app.Changed(spec) {
-		// kubectlCmd := kubectl.New("delete").AddParameter("-f", resultsfilepath).AddParameter("-n", namespace)
-		// if err := errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to delete with file %s", resultsfilepath); err != nil {
-		// 	return err
-		// }
-
-		app.SetAppliedSpec(nil)
+		command = "apply"
+	} else if !deploy && app.Changed(spec) && !app.Initial() {
+		command = "delete"
 	}
 
+	resultFunc := func(resultFilePath string) error {
+		kubectlCmd := kubectl.New(command).AddParameter("-f", resultFilePath).AddParameter("-n", "caos-system")
+		return errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath)
+	}
+	if command == "" {
+		resultFunc = func(resultFilePath string) error { return nil }
+	}
+
+	err := b.Templator.Template(app, spec, resultFunc).GetStatus()
+	if err != nil {
+		return err
+	}
+
+	app.SetAppliedSpec(spec)
 	return nil
 }

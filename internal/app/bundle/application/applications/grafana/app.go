@@ -3,6 +3,7 @@ package grafana
 import (
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/caos/orbiter/logging"
@@ -32,28 +33,48 @@ func New(logger logging.Logger) *Grafana {
 		logger: logger,
 	}
 }
+func (g *Grafana) GetName() name.Application {
+	return applicationName
+}
 
 func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.Grafana.Deploy
 }
 
-func (a *Grafana) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return toolsetCRDSpec.Grafana != a.spec
+func (g *Grafana) Initial() bool {
+	return g.spec == nil
 }
 
-func (a *Grafana) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.Grafana
+func (g *Grafana) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+	return !reflect.DeepEqual(toolsetCRDSpec.Grafana, g.spec)
 }
 
-func (g *Grafana) HelmPreApplySteps(resultFilePath string, spec *v1beta1.ToolsetSpec) {
-	// folders := make([]string, 0)
-	// for _, provider := range config.DashboardProviders {
-	// 	folders = append(folders, provider.Folder)
-	// }
+func (g *Grafana) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
+	g.spec = toolsetCRDSpec.Grafana
+}
 
-	// if err := applyKustomize(folders); err != nil {
-	// 	return err
-	// }
+func (g *Grafana) GetNamespace() string {
+	return "caos-system"
+}
+
+func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
+	config := newConfig(spec.KubeVersion, spec)
+
+	folders := make([]string, 0)
+	for _, provider := range config.DashboardProviders {
+		folders = append(folders, provider.Folder)
+	}
+
+	outs, err := getKustomizeOutput(folders)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]interface{}, len(outs))
+	for k, v := range outs {
+		ret[k] = v
+	}
+	return ret, nil
 }
 
 func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
@@ -235,17 +256,19 @@ func defaultValues(imageTags map[string]string) *Values {
 	}
 }
 
-func applyKustomize(folders []string) error {
-	for _, folder := range folders {
-		command := strings.Join([]string{"kustomize build", folder, "| kubectl apply -f -"}, " ")
+func getKustomizeOutput(folders []string) ([]string, error) {
+	ret := make([]string, len(folders))
+	for n, folder := range folders {
+		command := strings.Join([]string{"kustomize build", folder}, " ")
 
 		cmd := exec.Command("/bin/sh", "-c", command)
-		err := cmd.Run()
+		out, err := cmd.Output()
 		if err != nil {
-			return err
+			return nil, err
 		}
+		ret[n] = string(out)
 	}
-	return nil
+	return ret, nil
 }
 
 func getProvider(appName string) *Provider {

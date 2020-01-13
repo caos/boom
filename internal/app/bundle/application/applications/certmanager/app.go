@@ -3,6 +3,7 @@ package certmanager
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/caos/orbiter/logging"
 
@@ -33,33 +34,52 @@ func New(logger logging.Logger) *CertManager {
 
 	return c
 }
+func (c *CertManager) GetName() name.Application {
+	return applicationName
+}
 
 func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.CertManager.Deploy
 }
 
-func (a *CertManager) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return toolsetCRDSpec.CertManager != a.spec
+func (c *CertManager) Initial() bool {
+	return c.spec == nil
 }
 
-func (a *CertManager) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.CertManager
+func (c *CertManager) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+	return !reflect.DeepEqual(toolsetCRDSpec.CertManager, c.spec)
 }
 
-func (c *CertManager) HelmPreApplySteps(resultFilePath string, spec *v1beta1.ToolsetSpec) {
+func (c *CertManager) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
+	c.spec = toolsetCRDSpec.CertManager
+}
 
-	if err := addService(resultFilePath, "TODO"); err != nil {
-		return
+func (c *CertManager) GetNamespace() string {
+	return "caos-system"
+}
+
+func (c *CertManager) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
+
+	crdDirectoryPath := filepath.Join("..", "..", "tools")
+
+	crds, err := getCrds(crdDirectoryPath)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]interface{}, len(crds))
+	for n, crd := range crds {
+		ret[n] = crd
 	}
 
-	// if err := addCrds(resultFilePath, c.toolsDirectoryPath); err != nil {
-	// 	return
-	// }
+	svc := getService(c.GetNamespace())
+	ret = append(ret, svc)
+
+	return ret, nil
 }
 
-func addService(filePath string, namespace string) error {
+func getService(namespace string) *service.Service {
 	name := "cert-manager"
-	service := service.New(&service.Config{
+	svc := service.New(&service.Config{
 		Name:       name,
 		Namespace:  namespace,
 		Labels:     map[string]string{"app": "cert-manager"},
@@ -69,15 +89,13 @@ func addService(filePath string, namespace string) error {
 		Selector:   map[string]string{"app": "cert-manager"},
 	})
 
-	if err := helper.AddStructToYaml(filePath, service); err != nil {
-		return err
-	}
-	return nil
+	return svc
 }
 
-func addCrds(filePath string, toolsDirectoryPath string) error {
+func getCrds(toolsDirectoryPath string) ([]string, error) {
 	chartsPath := filepath.Join(toolsDirectoryPath, "charts", applicationName.String(), "crds")
 
+	ret := make([]string, 0)
 	var files []string
 	err := filepath.Walk(chartsPath, func(path string, info os.FileInfo, err error) error {
 		if path != chartsPath {
@@ -86,16 +104,18 @@ func addCrds(filePath string, toolsDirectoryPath string) error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, file := range files {
-		err := helper.AddYamlToYaml(filePath, file)
+		fileStr, err := helper.YamlToString(file)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		ret = append(ret, fileStr)
 	}
-	return nil
+
+	return ret, nil
 }
 
 func (c *CertManager) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
@@ -104,6 +124,10 @@ func (c *CertManager) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) int
 
 	if spec.ReplicaCount != 0 {
 		values.ReplicaCount = spec.ReplicaCount
+	}
+
+	values.Global.LeaderElection = &LeaderElection{
+		Namespace: c.GetNamespace(),
 	}
 
 	return values
@@ -121,9 +145,6 @@ func defaultValues(imageTags map[string]string) *Values {
 				Enabled: false,
 			},
 			LogLevel: 2,
-			LeaderElection: &LeaderElection{
-				Namespace: "TODO",
-			},
 		},
 		ReplicaCount: 1,
 		Image: &Image{
