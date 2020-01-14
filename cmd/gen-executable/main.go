@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/caos/boom/internal/app/templator/helm/charts"
+	"github.com/caos/boom/internal/templator/helm/charts"
 
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
