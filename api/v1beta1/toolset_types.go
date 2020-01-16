@@ -24,7 +24,6 @@ import (
 
 // ToolsetSpec defines the desired state of Toolset
 type ToolsetSpec struct {
-	Name                   string                  `json:"name,omitempty"`
 	Namespace              string                  `json:"namespace,omitempty"`
 	KubeVersion            string                  `json:"kubeVersion,omitempty" yaml:"kubeVersion"`
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
@@ -35,6 +34,7 @@ type ToolsetSpec struct {
 	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
 	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
 	Argocd                 *Argocd                 `json:"argocd,omitempty" yaml:"argocd"`
+	Metrics                *Metrics                `json:"metrics,omitempty" yaml:"metrics"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

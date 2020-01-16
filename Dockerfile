@@ -43,6 +43,7 @@ FROM dependencies AS build
 
 # RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o /boom cmd/boom/*.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /gen cmd/gen-executable/*.go
 
 # ####################################################################################################
 # Run binary
@@ -52,14 +53,10 @@ FROM alpine:3.10
 RUN apk update && apk add bash ca-certificates
 COPY --from=dependencies /artifacts /usr/local/bin/
 COPY --from=build /boom /
-
-COPY tools/kustomize tools/kustomize
-COPY tools/toolsets tools/toolsets
-COPY tools/start.sh tools/start.sh
-COPY tools/fetch-all.sh tools/fetch-all.sh
+COPY --from=build /gen /
 
 COPY config/crd /crd
 
-RUN cd /tools && ./fetch-all.sh basisset
+RUN ./gen
 
 ENTRYPOINT ["/boom"]

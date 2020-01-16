@@ -27,6 +27,14 @@ func YamlToStruct(path string, struc interface{}) error {
 	return yaml.Unmarshal(data, struc)
 }
 
+func YamlToString(path string) (string, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 func AddStructToYaml(path string, struc interface{}) error {
 	f, err := os.OpenFile(path,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

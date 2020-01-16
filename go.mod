@@ -6,10 +6,11 @@ require (
 	cloud.google.com/go v0.38.0
 	github.com/caos/orbiter v0.3.1-0.20191203154843-66823839f90e
 	github.com/go-logr/logr v0.1.0
-	github.com/magiconair/properties v1.8.0
+	github.com/golang/mock v1.3.1
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.7

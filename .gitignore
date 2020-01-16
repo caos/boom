@@ -17,10 +17,6 @@ bin
 debug
 
 tools/*
-!tools/kustomize
-!tools/toolsets
-!tools/start.sh
-!tools/fetch-all.sh
 
 /*.go
 !main.go
