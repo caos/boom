@@ -5,6 +5,8 @@ import (
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
 	helperTemp "github.com/caos/boom/internal/templator/helper"
@@ -126,22 +128,22 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 
 	b.logger.WithFields(logFields).Info("Reconciling")
 
-	// deploy := app.Deploy(spec)
-	// var command string
-	// if deploy {
-	// 	command = "apply"
-	// } else if !deploy && app.Changed(spec) && !app.Initial() {
-	// 	command = "delete"
-	// }
+	deploy := app.Deploy(spec)
+	var command string
+	if deploy {
+		command = "apply"
+	} else if !deploy && app.Changed(spec) && !app.Initial() {
+		command = "delete"
+	}
 
-	// resultFunc := func(resultFilePath, namespace string) error {
-	// 	kubectlCmd := kubectl.New(command).AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-	// 	return errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath)
-	// }
+	resultFunc := func(resultFilePath, namespace string) error {
+		kubectlCmd := kubectl.New(command).AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
+		return errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath)
+	}
 
-	// if command == "" {
-	resultFunc := func(resultFilePath, namespace string) error { return nil }
-	// }
+	if command == "" {
+		resultFunc = func(resultFilePath, namespace string) error { return nil }
+	}
 
 	b.status = b.Templator.Template(app, spec, resultFunc).GetStatus()
 	if b.status != nil {

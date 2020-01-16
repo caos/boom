@@ -125,7 +125,7 @@ func getKustomizeOutput(folders []string) ([]string, error) {
 	ret := make([]string, len(folders))
 	for n, folder := range folders {
 
-		cmd, err := kustomize.New(folder)
+		cmd, err := kustomize.New(folder, false)
 		if err != nil {
 			return nil, err
 		}
