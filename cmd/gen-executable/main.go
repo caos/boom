@@ -4,8 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/caos/boom/internal/templator/helm/charts"
-
+	"github.com/caos/boom/internal/templator/helm/chart/fetch"
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
@@ -31,7 +30,7 @@ func main() {
 
 	ctrl.SetLogger(kubebuilder.New(logger))
 
-	if err := charts.FetchAll(logger, toolsDirectoryPath); err != nil {
+	if err := fetch.All(logger, toolsDirectoryPath); err != nil {
 		setupLog.Error(err, "unable to fetch charts")
 		os.Exit(1)
 	}

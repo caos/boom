@@ -12,20 +12,29 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
 	"github.com/caos/boom/internal/name"
-	"github.com/caos/boom/internal/templator/helm"
+	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
 
 type Application interface {
 	Initial() bool
-	Changed(toolsetCRDSpec *v1beta1.ToolsetSpec) bool
-	SetAppliedSpec(toolsetCRDSpec *v1beta1.ToolsetSpec)
+	Changed(*v1beta1.ToolsetSpec) bool
+	Deploy(*v1beta1.ToolsetSpec) bool
+	SetAppliedSpec(*v1beta1.ToolsetSpec)
+	GetName() name.Application
+	GetNamespace() string
 }
 
 type HelmApplication interface {
 	Application
+	GetChartInfo() *chart.Chart
 	GetImageTags() map[string]string
-	helm.Templator
+	SpecToHelmValues(spec *v1beta1.ToolsetSpec) interface{}
+}
+
+type YAMLApplication interface {
+	Application
+	GetYaml() interface{}
 }
 
 func New(logger logging.Logger, appName name.Application) Application {
@@ -51,29 +60,4 @@ func New(logger logging.Logger, appName name.Application) Application {
 	}
 
 	return nil
-}
-
-func Deploy(appName name.Application, toolsetCRDSpec *v1beta1.ToolsetSpec) bool {
-	switch appName {
-	case ambassador.GetName():
-		return ambassador.Deploy(toolsetCRDSpec)
-	case argocd.GetName():
-		return argocd.Deploy(toolsetCRDSpec)
-	case certmanager.GetName():
-		return certmanager.Deploy(toolsetCRDSpec)
-	case grafana.GetName():
-		return grafana.Deploy(toolsetCRDSpec)
-	case kubestatemetrics.GetName():
-		return kubestatemetrics.Deploy(toolsetCRDSpec)
-	case prometheusoperator.GetName():
-		return prometheusoperator.Deploy(toolsetCRDSpec)
-	case loggingoperator.GetName():
-		return loggingoperator.Deploy(toolsetCRDSpec)
-	case prometheusnodeexporter.GetName():
-		return prometheusnodeexporter.Deploy(toolsetCRDSpec)
-	case prometheus.GetName():
-		return prometheus.Deploy(toolsetCRDSpec)
-	}
-
-	return false
 }

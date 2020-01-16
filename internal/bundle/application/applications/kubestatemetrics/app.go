@@ -35,7 +35,7 @@ func (k *KubeStateMetrics) GetName() name.Application {
 	return applicationName
 }
 
-func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+func (k *KubeStateMetrics) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.KubeStateMetrics.Deploy
 }
 

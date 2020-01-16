@@ -11,9 +11,9 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/certmanager/helm"
 	"github.com/caos/boom/internal/bundle/application/resources/service"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/boom/internal/helper"
 )
 
 const (
@@ -40,7 +40,7 @@ func (c *CertManager) GetName() name.Application {
 	return applicationName
 }
 
-func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+func (a *CertManager) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.CertManager.Deploy
 }
 

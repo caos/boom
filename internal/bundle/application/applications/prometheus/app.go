@@ -36,7 +36,7 @@ func (p *Prometheus) GetName() name.Application {
 	return applicationName
 }
 
-func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+func (p *Prometheus) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
 	if config == nil {
 		return false

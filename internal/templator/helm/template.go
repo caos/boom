@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 
 	"github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm/helmcommand"
-	"github.com/caos/boom/internal/helper"
 )
 
-func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, resultFunc func(resultFilePath string) error) templator.Templator {
+func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, resultFunc func(resultFilePath, namespace string) error) templator.Templator {
 	if h.status != nil {
 		return h
 	}
@@ -63,11 +63,11 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 	}
 
 	// func to apply
-	h.status = resultFunc(resultAbsFilePath)
+	h.status = resultFunc(resultAbsFilePath, app.GetNamespace())
 	return h
 }
 
-func (h *Helm) runHelmTemplate(overlay string, app Templator, spec *v1beta1.ToolsetSpec) (string, error) {
+func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec) (string, error) {
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
 		"overlay":     overlay,

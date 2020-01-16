@@ -4,6 +4,7 @@ import (
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm"
+	"github.com/caos/boom/internal/templator/yaml"
 	"github.com/caos/orbiter/logging"
 )
 
@@ -11,6 +12,8 @@ func NewTemplator(logger logging.Logger, overlay string, baseDirectoryPath strin
 	switch templatorName {
 	case helm.GetName():
 		return helm.New(logger, overlay, baseDirectoryPath)
+	case yaml.GetName():
+		return yaml.New(logger, overlay, baseDirectoryPath)
 	}
 
 	return nil

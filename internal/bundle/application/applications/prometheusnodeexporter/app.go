@@ -35,7 +35,7 @@ func (pne *PrometheusNodeExporter) GetName() name.Application {
 	return applicationName
 }
 
-func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+func (pne *PrometheusNodeExporter) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.PrometheusNodeExporter.Deploy
 }
 

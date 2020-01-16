@@ -4,10 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
-	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 )
@@ -20,11 +18,8 @@ func GetName() name.Templator {
 	return templatorName
 }
 
-type Templator interface {
-	GetName() name.Application
-	SpecToHelmValues(spec *v1beta1.ToolsetSpec) interface{}
-	GetChartInfo() *chart.Chart
-	GetNamespace() string
+func GetPrio() name.Templator {
+	return templatorName
 }
 
 type Helm struct {
@@ -63,16 +58,12 @@ func (h *Helm) GetStatus() error {
 	return h.status
 }
 
-func checkTemplatorInterface(templatorInterface interface{}) (Templator, error) {
-	templator, isTemplator := templatorInterface.(Templator)
+func checkTemplatorInterface(templatorInterface interface{}) (templator.HelmApplication, error) {
+	app, isTemplator := templatorInterface.(templator.HelmApplication)
 	if !isTemplator {
-		logFields := map[string]interface{}{
-			"application": templator.GetName().String(),
-		}
-		logFields["logID"] = "HELM-gHHLU2a49osYzgl"
 		err := errors.Errorf("Helm templating interface not implemented")
 		return nil, err
 	}
 
-	return templator, nil
+	return app, nil
 }

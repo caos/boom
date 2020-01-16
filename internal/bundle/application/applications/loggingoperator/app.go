@@ -35,7 +35,7 @@ func (l *LoggingOperator) GetName() name.Application {
 	return applicationName
 }
 
-func Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
+func (lo *LoggingOperator) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.LoggingOperator.Deploy
 }
 

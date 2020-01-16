@@ -1,7 +1,6 @@
 package bundles
 
 import (
-	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd"
 	"github.com/caos/boom/internal/bundle/application/applications/certmanager"
@@ -11,15 +10,32 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
+	"github.com/caos/boom/internal/name"
+)
+
+const (
+	Caos  name.Bundle = "caos"
+	Empty name.Bundle = "empty"
 )
 
 func GetAll() []name.Application {
 	apps := make([]name.Application, 0)
-	apps = append(apps, GetBasisset()...)
+	apps = append(apps, GetCaos()...)
 	return apps
 }
 
-func GetBasisset() []name.Application {
+func Get(bundle name.Bundle) []name.Application {
+	switch bundle {
+	case Caos:
+		return GetCaos()
+	case Empty:
+		return make([]name.Application, 0)
+	}
+
+	return nil
+}
+
+func GetCaos() []name.Application {
 
 	apps := make([]name.Application, 0)
 	apps = append(apps, ambassador.GetName())

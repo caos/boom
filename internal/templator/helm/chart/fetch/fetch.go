@@ -8,7 +8,7 @@ import (
 	"github.com/caos/orbiter/logging"
 )
 
-func FetchAll(logger logging.Logger, basePath string) error {
+func All(logger logging.Logger, basePath string) error {
 	allApps := bundles.GetAll()
 
 	logFields := map[string]interface{}{

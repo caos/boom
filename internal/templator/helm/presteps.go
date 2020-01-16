@@ -2,12 +2,12 @@ package helm
 
 import (
 	"github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/templator"
 )
 
 type TemplatorPreSteps interface {
-	Templator
+	templator.HelmApplication
 	HelmPreApplySteps(*v1beta1.ToolsetSpec) ([]interface{}, error)
 }
 
