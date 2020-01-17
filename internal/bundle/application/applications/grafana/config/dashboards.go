@@ -55,4 +55,3 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 	// providers = append(providers, provider)
 	return providers
 }
-

@@ -3,7 +3,6 @@ package bundles
 import (
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd"
-	"github.com/caos/boom/internal/bundle/application/applications/certmanager"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
@@ -41,7 +40,6 @@ func GetCaos() []name.Application {
 	apps = append(apps, ambassador.GetName())
 	apps = append(apps, argocd.GetName())
 	apps = append(apps, prometheusoperator.GetName())
-	apps = append(apps, certmanager.GetName())
 	apps = append(apps, kubestatemetrics.GetName())
 	apps = append(apps, prometheusnodeexporter.GetName())
 	apps = append(apps, grafana.GetName())

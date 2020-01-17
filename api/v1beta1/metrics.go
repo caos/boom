@@ -7,5 +7,5 @@ type Metrics struct {
 	PrometheusNodeExporter bool `json:"prometheus-node-exporter"`
 	APIServer              bool `json:"api-server"`
 	PrometheusOperator     bool `json:"prometheus-operator"`
-	LoggingOperator        bool `json"logging-operator"`
+	LoggingOperator        bool `json:"logging-operator"`
 }

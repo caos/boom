@@ -5,78 +5,89 @@ func DefaultValues(imageTags map[string]string) *Values {
 
 	return &Values{
 		FullnameOverride: "ambassador",
-		ReplicaCount:     3,
-		DaemonSet:        false,
-		Autoscaling: &Autoscaling{
-			Enabled:     false,
-			MinReplicas: 2,
-			MaxReplicas: 5,
+		AdminService: &AdminService{
+			Annotations: adminAnnotations,
+			Create:      true,
+			Port:        8877,
+			Type:        "ClusterIP",
 		},
-		Env: map[string]string{
-			"STATSD_ENABLED": "true",
-			"STATSD_HOST":    "localhost",
+		AuthService: &AuthService{
+			Create: true,
+		},
+		Autoscaling: &Autoscaling{
+			Enabled: false,
+		},
+		Crds: &Crds{
+			Create:  true,
+			Enabled: true,
+			Keep:    true,
+		},
+		DaemonSet: false,
+		DeploymentStrategy: &DeploymentStrategy{
+			Type: "RollingUpdate",
+		},
+		DNSPolicy:   "ClusterFirst",
+		HostNetwork: false,
+		Image: &Image{
+			PullPolicy: "IfNotPresent",
+			Repository: "quay.io/datawire/aes",
+			Tag:        imageTags["quay.io/datawire/aes"],
+		},
+		LicenseKey: &LicenseKey{
+			CreateSecret: true,
+		},
+		LivenessProbe: &LivenessProbe{
+			FailureThreshold:    3,
+			InitialDelaySeconds: 30,
+			PeriodSeconds:       3,
+		},
+		PrometheusExporter: &PrometheusExporter{
+			Enabled:    false,
+			PullPolicy: "IfNotPresent",
+			Repository: "prom/statsd-exporter",
+			Tag:        imageTags["prom/statsd-exporter"],
+		},
+		RateLimit: &RateLimit{
+			Create: true,
+		},
+		Rbac: &Rbac{
+			Create: true,
+		},
+		ReadinessProbe: &ReadinessProbe{
+			FailureThreshold:    3,
+			InitialDelaySeconds: 30,
+			PeriodSeconds:       3,
+		},
+		Redis: &Redis{
+			Create: true,
+			Annotations: &RedisAnnotations{
+				Deployment: map[string]string{},
+				Service:    map[string]string{},
+			},
+		},
+		ReplicaCount: 3,
+		Scope: &Scope{
+			SingleNamespace: false,
 		},
 		SecurityContext: &SecurityContext{
 			RunAsUser: 8888,
 		},
-		Image: &Image{
-			Repository: "quay.io/datawire/ambassador",
-			Tag:        imageTags["quay.io/datawire/ambassador"],
-			PullPolicy: "IfNotPresent",
-		},
-		DNSPolicy:   "ClusterFirst",
-		HostNetwork: false,
 		Service: &Service{
-			Type: "NodePort",
 			Ports: []*Port{
 				&Port{
 					Name:       "http",
 					Port:       80,
 					TargetPort: 8080,
-					NodePort:   30080,
-				}, &Port{
+				},
+				&Port{
 					Name:       "https",
 					Port:       443,
 					TargetPort: 8443,
-					NodePort:   30443,
 				},
 			},
-			Annotations: make(map[string]string, 0),
-		},
-		AdminService: &AdminService{
-			Create:      true,
-			Type:        "ClusterIP",
-			Port:        8877,
-			Annotations: adminAnnotations,
-		},
-		Rbac: &Rbac{
-			Create: true,
-		},
-		Scope: &Scope{
-			SingleNamespace: false,
 		},
 		ServiceAccount: &ServiceAccount{
 			Create: true,
-		},
-		Crds: &Crds{
-			Enabled: true,
-			Create:  true,
-			Keep:    true,
-		},
-		Pro: &Pro{
-			Enabled: false,
-			Image: &Image{
-				Repository: "quay.io/datawire/ambassador_pro",
-				Tag:        imageTags["quay.io/datawire/ambassador_pro"],
-				PullPolicy: "IfNotPresent",
-			},
-		},
-		PrometheusExporter: &PrometheusExporter{
-			Enabled:       true,
-			Repository:    "prom/statsd-exporter",
-			Tag:           imageTags["prom/statsd-exporter"],
-			PullPolicy:    "IfNotPresent",
-			Configuration: defaultExporterConfig(),
 		},
 	}
 }

@@ -54,7 +54,6 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 		}
 	}
 
-
 	conf := &Config{
 		Deploy:             spec.Grafana.Deploy,
 		Prefix:             spec.Grafana.Prefix,

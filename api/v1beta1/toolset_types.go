@@ -30,7 +30,6 @@ type ToolsetSpec struct {
 	LoggingOperator        *LoggingOperator        `json:"logging-operator,omitempty" yaml:"logging-operator"`
 	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
 	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
-	CertManager            *CertManager            `json:"cert-manager,omitempty" yaml:"cert-manager"`
 	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
 	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
 	Argocd                 *Argocd                 `json:"argocd,omitempty" yaml:"argocd"`

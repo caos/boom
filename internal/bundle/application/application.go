@@ -4,7 +4,6 @@ import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd"
-	"github.com/caos/boom/internal/bundle/application/applications/certmanager"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
@@ -43,8 +42,6 @@ func New(logger logging.Logger, appName name.Application) Application {
 		return ambassador.New(logger)
 	case argocd.GetName():
 		return argocd.New(logger)
-	case certmanager.GetName():
-		return certmanager.New(logger)
 	case grafana.GetName():
 		return grafana.New(logger)
 	case kubestatemetrics.GetName():

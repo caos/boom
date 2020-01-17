@@ -43,9 +43,6 @@ var (
 			PrometheusNodeExporter: &v1beta1.PrometheusNodeExporter{
 				Deploy: true,
 			},
-			CertManager: &v1beta1.CertManager{
-				Deploy: true,
-			},
 			Grafana: &v1beta1.Grafana{
 				Deploy: true,
 			},
@@ -71,9 +68,6 @@ var (
 				Deploy: true,
 			},
 			PrometheusNodeExporter: &v1beta1.PrometheusNodeExporter{
-				Deploy: true,
-			},
-			CertManager: &v1beta1.CertManager{
 				Deploy: true,
 			},
 			Grafana: &v1beta1.Grafana{

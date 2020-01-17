@@ -56,17 +56,6 @@ spec:
                 prefix:
                   type: string
               type: object
-            cert-manager:
-              properties:
-                deploy:
-                  type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
-                replicaCount:
-                  type: integer
-              type: object
             grafana:
               properties:
                 admin:
@@ -173,6 +162,8 @@ spec:
                 replicaCount:
                   type: integer
               type: object
+            kubeVersion:
+              type: string
             logging-operator:
               properties:
                 deploy:
@@ -182,8 +173,31 @@ spec:
                 prefix:
                   type: string
               type: object
-            name:
-              type: string
+            metrics:
+              properties:
+                ambassador:
+                  type: boolean
+                api-server:
+                  type: boolean
+                argocd:
+                  type: boolean
+                kube-state-metrics:
+                  type: boolean
+                logging-operator:
+                  type: boolean
+                prometheus-node-exporter:
+                  type: boolean
+                prometheus-operator:
+                  type: boolean
+              required:
+              - ambassador
+              - api-server
+              - argocd
+              - kube-state-metrics
+              - logging-operator
+              - prometheus-node-exporter
+              - prometheus-operator
+              type: object
             namespace:
               type: string
             prometheus-node-exporter:

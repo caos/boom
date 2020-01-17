@@ -1,160 +1,139 @@
 package helm
 
+type AdminService struct {
+	Annotations map[string]string `yaml:"annotations"`
+	Create      bool              `yaml:"create"`
+	Port        int               `yaml:"port"`
+	Type        string            `yaml:"type"`
+}
+type AuthService struct {
+	Create                 bool        `yaml:"create"`
+	OptionalConfigurations interface{} `yaml:"optional_configurations"`
+}
 type Resource struct {
 	Name                     string `yaml:"name"`
 	TargetAverageUtilization int    `yaml:"targetAverageUtilization"`
 }
-
-type Metric struct {
-	Type     string    `yaml:"type"`
+type Metrics []struct {
 	Resource *Resource `yaml:"resource"`
+	Type     string    `yaml:"type"`
 }
-
 type Autoscaling struct {
-	Enabled     bool      `yaml:"enabled"`
-	MinReplicas int       `yaml:"minReplicas"`
-	MaxReplicas int       `yaml:"maxReplicas"`
-	Metrics     []*Metric `yaml:"metrics"`
+	Enabled     bool     `yaml:"enabled"`
+	MaxReplicas int      `yaml:"maxReplicas"`
+	Metrics     *Metrics `yaml:"metrics"`
+	MinReplicas int      `yaml:"minReplicas"`
 }
-
+type Crds struct {
+	Create  bool `yaml:"create"`
+	Enabled bool `yaml:"enabled"`
+	Keep    bool `yaml:"keep"`
+}
+type DeploymentStrategy struct {
+	Type string `yaml:"type"`
+}
+type Image struct {
+	PullPolicy string `yaml:"pullPolicy"`
+	Repository string `yaml:"repository"`
+	Tag        string `yaml:"tag"`
+}
+type LicenseKey struct {
+	CreateSecret bool        `yaml:"createSecret"`
+	Value        interface{} `yaml:"value"`
+}
+type LivenessProbe struct {
+	FailureThreshold    int `yaml:"failureThreshold"`
+	InitialDelaySeconds int `yaml:"initialDelaySeconds"`
+	PeriodSeconds       int `yaml:"periodSeconds"`
+}
+type PrometheusExporter struct {
+	Enabled    bool     `yaml:"enabled"`
+	PullPolicy string   `yaml:"pullPolicy"`
+	Repository string   `yaml:"repository"`
+	Resources  struct{} `yaml:"resources"`
+	Tag        string   `yaml:"tag"`
+}
+type RateLimit struct {
+	Create bool `yaml:"create"`
+}
+type Rbac struct {
+	Create              bool     `yaml:"create"`
+	PodSecurityPolicies struct{} `yaml:"podSecurityPolicies"`
+}
+type ReadinessProbe struct {
+	FailureThreshold    int `yaml:"failureThreshold"`
+	InitialDelaySeconds int `yaml:"initialDelaySeconds"`
+	PeriodSeconds       int `yaml:"periodSeconds"`
+}
+type RedisAnnotations struct {
+	Deployment map[string]string `yaml:"deployment"`
+	Service    map[string]string `yaml:"service"`
+}
+type Redis struct {
+	Annotations *RedisAnnotations `yaml:"annotations"`
+	Create      bool              `yaml:"create"`
+	Resources   struct{}          `yaml:"resources"`
+}
+type Scope struct {
+	SingleNamespace bool `yaml:"singleNamespace"`
+}
 type SecurityContext struct {
 	RunAsUser int `yaml:"runAsUser"`
 }
-
-type Image struct {
-	Repository string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
-	PullPolicy string `yaml:"pullPolicy"`
-}
-
 type Port struct {
 	Name       string `yaml:"name"`
 	Port       int    `yaml:"port"`
 	TargetPort int    `yaml:"targetPort"`
-	NodePort   int    `yaml:"nodePort"`
 }
-
 type Service struct {
-	Type        string            `yaml:"type"`
-	Ports       []*Port           `yaml:"ports"`
-	Annotations map[string]string `yaml:"annotations"`
+	Annotations interface{} `yaml:"annotations"`
+	Ports       []*Port     `yaml:"ports"`
+	Type        string      `yaml:"type"`
 }
-
-type AdminService struct {
-	Create      bool              `yaml:"create"`
-	Type        string            `yaml:"type"`
-	Port        int               `yaml:"port"`
-	Annotations map[string]string `yaml:"annotations"`
-}
-
-type Rbac struct {
-	Create              bool `yaml:"create"`
-	PodSecurityPolicies struct {
-	} `yaml:"podSecurityPolicies"`
-}
-
-type Scope struct {
-	SingleNamespace bool `yaml:"singleNamespace"`
-}
-
 type ServiceAccount struct {
 	Create bool        `yaml:"create"`
 	Name   interface{} `yaml:"name"`
 }
-type Crds struct {
-	Enabled bool `yaml:"enabled"`
-	Create  bool `yaml:"create"`
-	Keep    bool `yaml:"keep"`
-}
-
-type Pro struct {
-	Enabled bool   `yaml:"enabled"`
-	Image   *Image `yaml:"image"`
-	Ports   struct {
-		Auth      int `yaml:"auth"`
-		Ratelimit int `yaml:"ratelimit"`
-	} `yaml:"ports"`
-	LogLevel   string `yaml:"logLevel"`
-	LicenseKey struct {
-		Value  string `yaml:"value"`
-		Secret struct {
-			Enabled bool `yaml:"enabled"`
-			Create  bool `yaml:"create"`
-		} `yaml:"secret"`
-	} `yaml:"licenseKey"`
-	Env struct {
-	} `yaml:"env"`
-	Resources struct {
-	} `yaml:"resources"`
-	AuthService struct {
-		Enabled                bool        `yaml:"enabled"`
-		OptionalConfigurations interface{} `yaml:"optional_configurations"`
-	} `yaml:"authService"`
-	RateLimit struct {
-		Enabled bool `yaml:"enabled"`
-		Redis   struct {
-			Annotations struct {
-				Deployment struct {
-				} `yaml:"deployment"`
-				Service struct {
-				} `yaml:"service"`
-			} `yaml:"annotations"`
-			Resources struct {
-			} `yaml:"resources"`
-		} `yaml:"redis"`
-	} `yaml:"rateLimit"`
-	DevPortal struct {
-		Enabled bool `yaml:"enabled"`
-	} `yaml:"devPortal"`
-}
-
-type PrometheusExporter struct {
-	Enabled    bool   `yaml:"enabled"`
-	Repository string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
-	PullPolicy string `yaml:"pullPolicy"`
-	Resources  struct {
-	} `yaml:"resources"`
-	Configuration string `yaml:"configuration"`
-}
-
-type Namespace struct {
-	Name string `yaml:"name,omitempty"`
-}
 
 type Values struct {
-	ReplicaCount          int                 `yaml:"replicaCount"`
-	DaemonSet             bool                `yaml:"daemonSet"`
-	Autoscaling           *Autoscaling        `yaml:"autoscaling"`
-	PodDisruptionBudget   struct{}            `yaml:"podDisruptionBudget"`
-	Namespace             *Namespace          `yaml:"namespace"`
-	Env                   map[string]string   `yaml:"env"`
-	ImagePullSecrets      []interface{}       `yaml:"imagePullSecrets"`
-	SecurityContext       *SecurityContext    `yaml:"securityContext"`
-	Image                 *Image              `yaml:"image"`
-	NameOverride          string              `yaml:"nameOverride"`
-	FullnameOverride      string              `yaml:"fullnameOverride,omitempty"`
-	DNSPolicy             string              `yaml:"dnsPolicy"`
-	HostNetwork           bool                `yaml:"hostNetwork"`
-	Service               *Service            `yaml:"service"`
 	AdminService          *AdminService       `yaml:"adminService"`
-	Rbac                  *Rbac               `yaml:"rbac"`
-	Scope                 *Scope              `yaml:"scope"`
-	ServiceAccount        *ServiceAccount     `yaml:"serviceAccount"`
-	InitContainers        []interface{}       `yaml:"initContainers"`
-	SidecarContainers     []interface{}       `yaml:"sidecarContainers"`
-	Volumes               []interface{}       `yaml:"volumes"`
-	VolumeMounts          []interface{}       `yaml:"volumeMounts"`
-	PodLabels             map[string]string   `yaml:"podLabels"`
-	PodAnnotations        map[string]string   `yaml:"podAnnotations"`
-	DeploymentAnnotations map[string]string   `yaml:"deploymentAnnotations"`
-	Resources             struct{}            `yaml:"resources"`
-	PriorityClassName     string              `yaml:"priorityClassName"`
-	NodeSelector          struct{}            `yaml:"nodeSelector"`
-	Tolerations           []interface{}       `yaml:"tolerations"`
 	Affinity              struct{}            `yaml:"affinity"`
 	AmbassadorConfig      string              `yaml:"ambassadorConfig"`
+	AuthService           *AuthService        `yaml:"authService"`
+	Autoscaling           *Autoscaling        `yaml:"autoscaling"`
 	Crds                  *Crds               `yaml:"crds"`
-	Pro                   *Pro                `yaml:"pro"`
+	DaemonSet             bool                `yaml:"daemonSet"`
+	DeploymentAnnotations map[string]string   `yaml:"deploymentAnnotations"`
+	DeploymentStrategy    *DeploymentStrategy `yaml:"deploymentStrategy"`
+	DNSPolicy             string              `yaml:"dnsPolicy"`
+	Env                   map[string]string   `yaml:"env"`
+	FullnameOverride      string              `yaml:"fullnameOverride"`
+	HostNetwork           bool                `yaml:"hostNetwork"`
+	Image                 *Image              `yaml:"image"`
+	ImagePullSecrets      []interface{}       `yaml:"imagePullSecrets"`
+	InitContainers        []interface{}       `yaml:"initContainers"`
+	LicenseKey            *LicenseKey         `yaml:"licenseKey"`
+	LivenessProbe         *LivenessProbe      `yaml:"livenessProbe"`
+	NameOverride          string              `yaml:"nameOverride"`
+	NodeSelector          struct{}            `yaml:"nodeSelector"`
+	PodAnnotations        map[string]string   `yaml:"podAnnotations"`
+	PodDisruptionBudget   struct{}            `yaml:"podDisruptionBudget"`
+	PodLabels             map[string]string   `yaml:"podLabels"`
+	PriorityClassName     string              `yaml:"priorityClassName"`
 	PrometheusExporter    *PrometheusExporter `yaml:"prometheusExporter"`
+	RateLimit             *RateLimit          `yaml:"rateLimit"`
+	Rbac                  *Rbac               `yaml:"rbac"`
+	ReadinessProbe        *ReadinessProbe     `yaml:"readinessProbe"`
+	Redis                 *Redis              `yaml:"redis"`
+	RedisURL              interface{}         `yaml:"redisURL"`
+	ReplicaCount          int                 `yaml:"replicaCount"`
+	Resources             struct{}            `yaml:"resources"`
+	Scope                 *Scope              `yaml:"scope"`
+	SecurityContext       *SecurityContext    `yaml:"securityContext"`
+	Service               *Service            `yaml:"service"`
+	ServiceAccount        *ServiceAccount     `yaml:"serviceAccount"`
+	SidecarContainers     []interface{}       `yaml:"sidecarContainers"`
+	Tolerations           []interface{}       `yaml:"tolerations"`
+	VolumeMounts          []interface{}       `yaml:"volumeMounts"`
+	Volumes               []interface{}       `yaml:"volumes"`
 }

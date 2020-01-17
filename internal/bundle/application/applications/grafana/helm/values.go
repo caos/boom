@@ -98,28 +98,28 @@ type DefaultRules struct {
 }
 
 type Values struct {
-	DefaultRules              *DefaultRules                                `yaml:"defaultRules,omitempty"`
-	Global                    *Global                                      `yaml:"global,omitempty"`
-	KubeTargetVersionOverride string                                       `yaml:"kubeTargetVersionOverride,omitempty"`
-	NameOverride              string                                       `yaml:"nameOverride,omitempty"`
-	FullnameOverride          string                                       `yaml:"fullnameOverride,omitempty"`
-	CommonLabels              map[string]string                            `yaml:"commonLabels,omitempty"`
-	Alertmanager              *DisabledTool                                `yaml:"alertmanager,omitempty"`
-	Grafana                   *GrafanaValues                               `yaml:"grafana,omitempty"`
-	KubeAPIServer             *DisabledTool                                `yaml:"kubeApiServer,omitempty"`
-	Kubelet                   *DisabledTool                                `yaml:"kubelet,omitempty"`
-	KubeControllerManager     *DisabledTool                                `yaml:"kubeControllerManager,omitempty"`
-	CoreDNS                   *DisabledTool                                `yaml:"coreDns,omitempty"`
-	KubeDNS                   *DisabledTool                                `yaml:"kubeDns,omitempty"`
-	KubeEtcd                  *DisabledTool                                `yaml:"kubeEtcd,omitempty"`
-	KubeScheduler             *DisabledTool                                `yaml:"kubeScheduler,omitempty"`
-	KubeProxy                 *DisabledTool                                `yaml:"kubeProxy,omitempty"`
-	KubeStateMetricsScrap     *DisabledTool                                `yaml:"kubeStateMetrics,omitempty"`
-	KubeStateMetrics          *DisabledTool                                `yaml:"kube-state-metrics,omitempty"`
-	NodeExporter              *DisabledTool                                `yaml:"nodeExporter,omitempty"`
-	PrometheusNodeExporter    *DisabledTool                                `yaml:"prometheus-node-exporter,omitempty"`
+	DefaultRules              *DefaultRules                                    `yaml:"defaultRules,omitempty"`
+	Global                    *Global                                          `yaml:"global,omitempty"`
+	KubeTargetVersionOverride string                                           `yaml:"kubeTargetVersionOverride,omitempty"`
+	NameOverride              string                                           `yaml:"nameOverride,omitempty"`
+	FullnameOverride          string                                           `yaml:"fullnameOverride,omitempty"`
+	CommonLabels              map[string]string                                `yaml:"commonLabels,omitempty"`
+	Alertmanager              *DisabledTool                                    `yaml:"alertmanager,omitempty"`
+	Grafana                   *GrafanaValues                                   `yaml:"grafana,omitempty"`
+	KubeAPIServer             *DisabledTool                                    `yaml:"kubeApiServer,omitempty"`
+	Kubelet                   *DisabledTool                                    `yaml:"kubelet,omitempty"`
+	KubeControllerManager     *DisabledTool                                    `yaml:"kubeControllerManager,omitempty"`
+	CoreDNS                   *DisabledTool                                    `yaml:"coreDns,omitempty"`
+	KubeDNS                   *DisabledTool                                    `yaml:"kubeDns,omitempty"`
+	KubeEtcd                  *DisabledTool                                    `yaml:"kubeEtcd,omitempty"`
+	KubeScheduler             *DisabledTool                                    `yaml:"kubeScheduler,omitempty"`
+	KubeProxy                 *DisabledTool                                    `yaml:"kubeProxy,omitempty"`
+	KubeStateMetricsScrap     *DisabledTool                                    `yaml:"kubeStateMetrics,omitempty"`
+	KubeStateMetrics          *DisabledTool                                    `yaml:"kube-state-metrics,omitempty"`
+	NodeExporter              *DisabledTool                                    `yaml:"nodeExporter,omitempty"`
+	PrometheusNodeExporter    *DisabledTool                                    `yaml:"prometheus-node-exporter,omitempty"`
 	PrometheusOperator        *prometheusoperatorhelm.PrometheusOperatorValues `yaml:"prometheusOperator,omitempty"`
-	Prometheus                *DisabledTool                                `yaml:"prometheus,omitempty"`
+	Prometheus                *DisabledTool                                    `yaml:"prometheus,omitempty"`
 }
 
 type Global struct {
