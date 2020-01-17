@@ -173,6 +173,15 @@ spec:
                 prefix:
                   type: string
               type: object
+            loki:
+              properties:
+                deploy:
+                  type: boolean
+                namespace:
+                  type: string
+                prefix:
+                  type: string
+              type: object
             metrics:
               properties:
                 ambassador:

@@ -1,5 +1,5 @@
 ---
-apiVersion: toolsop.caos.ch/v1beta1
+apiVersion: boom.caos.ch/v1beta1
 kind: Toolset
 metadata:
   name: caos

@@ -69,8 +69,11 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 		conf.AddDashboardProvider(provider)
 	}
 
-	datasource := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
-	conf.AddDatasourceURL("prometheus", "prometheus", datasource)
+	datasourceProm := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
+	conf.AddDatasourceURL("prometheus", "prometheus", datasourceProm)
+
+	datasourceLoki := strings.Join([]string{"http://loki.caos-system:3100"}, "")
+	conf.AddDatasourceURL("loki", "loki", datasourceLoki)
 
 	return conf
 }

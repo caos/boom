@@ -91,7 +91,7 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 	logFields["logID"] = "HELM-siNod1Y2nYCVW0r"
 	h.logger.WithFields(logFields).Info("Generate templator files")
 
-	out, err := helmcommand.Template(h.templatorDirectoryPath, chartInfo.Name, "", app.GetNamespace(), valuesAbsFilePath)
+	out, err := helmcommand.Template(h.templatorDirectoryPath, chartInfo.Name, app.GetName().String(), app.GetNamespace(), valuesAbsFilePath)
 	if err != nil {
 		return "", err
 	}
