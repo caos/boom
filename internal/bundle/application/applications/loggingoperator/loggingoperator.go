@@ -6,18 +6,9 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/helm"
 	"github.com/caos/boom/internal/name"
-	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
-const (
-	applicationName name.Application = "logging-operator"
-)
-
-func GetName() name.Application {
-	return applicationName
-}
 
 type LoggingOperator struct {
 	logger logging.Logger
@@ -53,23 +44,4 @@ func (l *LoggingOperator) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.Toolset
 
 func (l *LoggingOperator) GetNamespace() string {
 	return "caos-system"
-}
-
-func (l *LoggingOperator) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
-	// spec := toolset.LoggingOperator
-	values := helm.DefaultValues(l.GetImageTags())
-
-	// if spec.ReplicaCount != 0 {
-	// 	values.ReplicaCount = spec.ReplicaCount
-	// }
-
-	return values
-}
-
-func (l *LoggingOperator) GetChartInfo() *chart.Chart {
-	return helm.GetChartInfo()
-}
-
-func (l *LoggingOperator) GetImageTags() map[string]string {
-	return helm.GetImageTags()
 }

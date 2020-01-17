@@ -3,20 +3,12 @@ package ambassador
 import (
 	"reflect"
 
+
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-
 	"github.com/caos/boom/internal/name"
 )
-
-const (
-	applicationName name.Application = "ambassador"
-)
-
-func GetName() name.Application {
-	return applicationName
-}
 
 type Ambassador struct {
 	logger logging.Logger
@@ -43,4 +35,12 @@ func (a *Ambassador) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 
 func (a *Ambassador) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
 	a.spec = toolsetCRDSpec.Ambassador
+}
+
+func (a *Ambassador) GetName() name.Application {
+	return GetName()
+}
+
+func (a *Ambassador) GetNamespace() string {
+	return "caos-system"
 }

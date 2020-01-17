@@ -99,10 +99,19 @@ func (b *Bundle) AddApplication(app application.Application) *Bundle {
 }
 
 func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
-	for appName := range b.Applications {
-		if err := b.ReconcileApplication(appName, spec).GetStatus(); err != nil {
-			b.status = err
-			return b
+	applicationCount := 0
+	// go through list of application until every application is reconciled
+	// and this orderNumber by orderNumber (default is 0)
+	for orderNumber := 0; applicationCount < len(b.Applications); orderNumber++ {
+		for appName := range b.Applications {
+			//if application has the same orderNumber as currently iterating the reconcile the application
+			if application.GetOrderNumber(appName) == orderNumber {
+				if err := b.ReconcileApplication(appName, spec).GetStatus(); err != nil {
+					b.status = err
+					return b
+				}
+				applicationCount++
+			}
 		}
 	}
 

@@ -79,7 +79,7 @@ func main() {
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "../../tools", "The local path where the tools folder should be")
 	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "../../dashboards", "The local path where the dashboards folder should be")
 
-	flag.IntVar(&intervalSeconds, "intervalSeconds", 10, "defines the interval in which the reconiliation of the gitCrds runs")
+	flag.IntVar(&intervalSeconds, "intervalSeconds", 60, "defines the interval in which the reconiliation of the gitCrds runs")
 	flag.Parse()
 
 	var gitCrdPrivateKeyBytes []byte

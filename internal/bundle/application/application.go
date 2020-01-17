@@ -58,3 +58,12 @@ func New(logger logging.Logger, appName name.Application) Application {
 
 	return nil
 }
+
+func GetOrderNumber(appName name.Application) int {
+	switch appName {
+	case prometheus.GetName():
+		return prometheus.GetOrderNumber()
+	}
+
+	return 0
+}

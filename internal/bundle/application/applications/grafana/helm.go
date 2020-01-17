@@ -2,62 +2,15 @@ package grafana
 
 import (
 	"path/filepath"
-	"reflect"
-
-	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
-	"github.com/caos/boom/internal/kustomize"
-	"github.com/caos/boom/internal/templator/helm/chart"
-
-	"github.com/caos/orbiter/logging"
 
 	"github.com/caos/boom/api/v1beta1"
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
-	"github.com/caos/boom/internal/name"
+	"github.com/caos/boom/internal/kustomize"
+	"github.com/caos/boom/internal/templator/helm/chart"
 )
-
-const (
-	applicationName name.Application = "grafana"
-)
-
-func GetName() name.Application {
-	return applicationName
-}
-
-type Grafana struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.Grafana
-}
-
-func New(logger logging.Logger) *Grafana {
-	return &Grafana{
-		logger: logger,
-	}
-}
-func (g *Grafana) GetName() name.Application {
-	return applicationName
-}
-
-func (g *Grafana) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return toolsetCRDSpec.Grafana.Deploy
-}
-
-func (g *Grafana) Initial() bool {
-	return g.spec == nil
-}
-
-func (g *Grafana) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return !reflect.DeepEqual(toolsetCRDSpec.Grafana, g.spec)
-}
-
-func (g *Grafana) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	g.spec = toolsetCRDSpec.Grafana
-}
-
-func (g *Grafana) GetNamespace() string {
-	return "caos-system"
-}
 
 func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
 	config := config.New(spec.KubeVersion, spec)
