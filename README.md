@@ -71,7 +71,7 @@ kubectl -n caos-system create secret docker-registry boomregistry --docker-serve
 
 #### Demo with a public crd repository
 
-To easy test the example we have created a `demo crd repo`, located here ![demo-orbiter-boom](https://github.com/caos/demo-orbiter-boom). It holds a `boom.yml` which can be applied to your cluster.
+To easy test the example we have created a `demo crd repo`, located here [demo-orbiter-boom](https://github.com/caos/demo-orbiter-boom). It holds a `boom.yml` which can be applied to your cluster.
 
 Apply `Boom` to your cluster:
 
