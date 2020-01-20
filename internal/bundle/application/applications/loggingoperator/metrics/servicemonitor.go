@@ -12,13 +12,13 @@ func GetServicemonitors(monitorlabels map[string]string) []*servicemonitor.Confi
 func getFluentd(monitorlabels map[string]string) *servicemonitor.Config {
 
 	endpoint := &servicemonitor.ConfigEndpoint{
-		Port:        "monitor",
+		Port:        "metrics",
 		HonorLabels: true,
 	}
 
 	labels := map[string]string{
-		"app.kubernetes.io/name":     "fluentd",
-		"app.kubernetes.io/instance": "logging",
+		"app.kubernetes.io/name":       "fluentd",
+		"app.kubernetes.io/managed-by": "logging",
 	}
 
 	return &servicemonitor.Config{
@@ -33,13 +33,14 @@ func getFluentd(monitorlabels map[string]string) *servicemonitor.Config {
 func getFluentbit(monitorlabels map[string]string) *servicemonitor.Config {
 
 	endpoint := &servicemonitor.ConfigEndpoint{
-		Port:        "monitor",
+		Port:        "metrics",
+		Path:        "/api/v1/metrics/prometheus",
 		HonorLabels: true,
 	}
 
 	labels := map[string]string{
-		"app.kubernetes.io/name":     "fluentbit",
-		"app.kubernetes.io/instance": "logging",
+		"app.kubernetes.io/name":       "fluentbit",
+		"app.kubernetes.io/managed-by": "logging",
 	}
 
 	return &servicemonitor.Config{
