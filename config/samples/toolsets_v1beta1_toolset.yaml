@@ -15,10 +15,10 @@ spec:
   grafana:
     deploy: true
   ambassador:
-    deploy: false
+    deploy: true
   kube-state-metrics:
     deploy: true
   argocd:
-    deploy: false
+    deploy: true
   prometheus:
     deploy: true

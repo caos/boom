@@ -43,7 +43,7 @@ spec:
           mountPath: /secrets/tools-secret
           readOnly: true
       imagePullSecrets: 
-      - name: read-boom-image
+      - name: boomregistry
       terminationGracePeriodSeconds: 10
       volumes:
       - name: "privaterepo-secret"
