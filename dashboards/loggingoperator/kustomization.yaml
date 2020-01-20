@@ -4,9 +4,9 @@ kind: Kustomization
 namespace: caos-system
 
 configMapGenerator:
-- name: logging-dashboard-rev3
+- name: grafana-dashboard-logging-dashboard-rev3
   files:
-  - logging-dashboard-rev3
+  - json/logging-dashboard-rev3.json
 
 generatorOptions:
  disableNameSuffixHash: true

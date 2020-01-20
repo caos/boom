@@ -50,7 +50,7 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.LoggingOperator) {
 		provider := &Provider{
 			ConfigMaps: []string{
-				"logging-dashboard-rev3",
+				"grafana-dashboard-logging-dashboard-rev3",
 			},
 			Folder: filepath.Join(dashboardsfolder, "loggingoperator"),
 		}
