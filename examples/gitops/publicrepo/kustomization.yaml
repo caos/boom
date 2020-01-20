@@ -1,0 +1,14 @@
+namespace: caos-system
+
+bases:
+- ../../base
+
+resources:
+- manager.yaml
+  
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: boom
+  newName: docker.pkg.github.com/caos/boom/boom
+  newTag: v0.8.1
