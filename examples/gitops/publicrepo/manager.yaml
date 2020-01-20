@@ -28,7 +28,7 @@ spec:
         args:
         - "--enable-leader-election"
         - "-git-crd-url"
-        - "git@github.com:stebenz/boom-crd.git"
+        - "https://github.com/stebenz/boom-crd.git"
         - "-git-crd-directory-path"
         - "/tmp/crd"
         - "-git-crd-path"
@@ -37,5 +37,5 @@ spec:
         imagePullPolicy: IfNotPresent
         name: manager
       imagePullSecrets: 
-      - name: read-boom-image
+      - name: boomregistry
       terminationGracePeriodSeconds: 10

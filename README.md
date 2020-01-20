@@ -34,25 +34,29 @@ The operator works by reading a configuration (crd) located in a GIT Repository.
 In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly creadted `k8s` cluster.
 
 ```yaml
+---
 apiVersion: boom.caos.ch/v1beta1
 kind: Toolset
 metadata:
   name: caos
+  namespace: caos-system
 spec:
-  name: basisset
+  kubeVersion: v1.17.0
   prometheus-operator:
     deploy: true
   logging-operator:
     deploy: true
   prometheus-node-exporter:
     deploy: true
-  kube-state-metrics:
-    deploy: true
   grafana:
     deploy: true
-  cert-manager:
-    deploy: true
   ambassador:
+    deploy: true
+  kube-state-metrics:
+    deploy: true
+  argocd:
+    deploy: true
+  prometheus:
     deploy: true
 ```
 
@@ -62,19 +66,30 @@ spec:
 
 ### GitOps
 
+ImagePullSecret create for github-packages as basic-auth is required.
+The used personal access token has to have the "repo" and "read:packages" permissions. 
 ```bash
-cd examples/gitops && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
-kustomize build config/default | kubectl apply -f -
+kubectl -n caos-system create secret docker-registry boomregistry --docker-server=docker.pkg.github.com --docker-username=${GITHUB_USERNAME} --docker-password=${GITHUB_ACCESS_TOKEN}
 ```
+
+#### example with a public repository:
+```bash
+kustomize build examples/gitops/publicrepo | kubectl apply -f -
+```
+
+#### example with a private repository:
+
+Your first have to create an ssh-key with is added as deploy key to your git repository and then save the private key as secret in examples/gitops/privaterepo/secret.
+Change the name of the key in the examples/gitops/privaterepo/kustomization.yaml with the filename of the saved key.
+
+```bash
+kustomize build examples/gitops/publicrepo | kubectl apply -f -
+```
+
 
 ### k8s API
 
-To deploy the boom to a cluster:
-
-```bash
-cd examples/k8s && kustomize edit set image controller=docker.pkg.github.com/caos/boom/boom:latest && cd ../..
-kustomize build config/default | kubectl apply -f -
-```
+example coming soon
 
 ## License
 
