@@ -1,5 +1,13 @@
 package logging
 
+type FlowConfig struct {
+	Name         string
+	Namespace    string
+	SelectLabels map[string]string
+	Outputs      []string
+	ParserType   string
+}
+
 type Parse struct {
 	Type string `yaml:"type"`
 }
@@ -18,7 +26,7 @@ type Filter struct {
 }
 
 type FlowSpec struct {
-	Filters    []*Filter         `yaml:"filters"`
+	Filters    []*Filter         `yaml:"filters,omitempty"`
 	Selectors  map[string]string `yaml:"selectors,omitempty"`
 	OutputRefs []string          `yaml:"outputRefs"`
 }
@@ -30,13 +38,13 @@ type Flow struct {
 	Spec       *FlowSpec `yaml:"spec"`
 }
 
-func NewFlow(name, namespace string, selectLabels map[string]string, outputs []string) *Flow {
+func NewFlow(conf *FlowConfig) *Flow {
 	return &Flow{
 		APIVersion: "logging.banzaicloud.io/v1beta1",
 		Kind:       "Flow",
 		Metadata: &Metadata{
-			Name:      name,
-			Namespace: namespace,
+			Name:      conf.Name,
+			Namespace: conf.Namespace,
 		},
 		Spec: &FlowSpec{
 			Filters: []*Filter{
@@ -44,18 +52,18 @@ func NewFlow(name, namespace string, selectLabels map[string]string, outputs []s
 					Parser: &Parser{
 						RemoveKeyNameField: true,
 						Parse: &Parse{
-							Type: "nginx",
+							Type: conf.ParserType,
 						},
 					},
 				},
-				&Filter{
-					TagNormaliser: &TagNormaliser{
-						Format: "${namespace_name}.${pod_name}.${container_name}",
-					},
-				},
+				// 	// &Filter{
+				// 	// 	TagNormaliser: &TagNormaliser{
+				// 	// 		Format: "${namespace_name}.${pod_name}.${container_name}",
+				// 	// 	},
+				// 	// },
 			},
-			Selectors:  selectLabels,
-			OutputRefs: outputs,
+			Selectors:  conf.SelectLabels,
+			OutputRefs: conf.Outputs,
 		},
 	}
 }

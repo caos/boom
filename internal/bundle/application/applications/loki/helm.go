@@ -2,51 +2,49 @@ package loki
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	amlogs "github.com/caos/boom/internal/bundle/application/applications/ambassador/logs"
+	aglogs "github.com/caos/boom/internal/bundle/application/applications/argocd/logs"
+	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/helm"
+	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
+	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
+
 	"github.com/caos/boom/internal/bundle/application/resources/logging"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
 func (l *Loki) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
 
-	monitorlabels := make(map[string]string, 0)
-	monitorlabels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
-
 	flows := make([]*logging.Flow, 0)
 	outputs := make([]*logging.Output, 0)
 	outputName := "output-loki"
-	outputs = append(outputs, logging.NewOutput(outputName, "caos-system", "https://loki.caos-system:3100"))
+	outputs = append(outputs, logging.NewOutput(outputName, "caos-system", "http://loki.caos-system:3100"))
 	outputNames := make([]string, 0)
 	outputNames = append(outputNames, outputName)
 
 	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy &&
 		(toolsetCRDSpec.Logs == nil || toolsetCRDSpec.Logs.Ambassador) {
-		flow := logging.NewFlow("flow-ambassador", "caos-system", map[string]string{"app.kubernetes.io/part-of": "ambassador"}, outputNames)
-		flows = append(flows, flow)
+		flows = append(flows, logging.NewFlow(amlogs.GetFlow(outputNames)))
 	}
 
 	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy &&
 		(toolsetCRDSpec.Logs == nil || toolsetCRDSpec.Logs.PrometheusOperator) {
-		flow := logging.NewFlow("flow-prometheus-operator", "caos-system", map[string]string{"app.kubernetes.io/part-of": "prometheus-operator"}, outputNames)
-		flows = append(flows, flow)
+		flows = append(flows, logging.NewFlow(pologs.GetFlow(outputNames)))
 	}
 
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
 		(toolsetCRDSpec.Logs == nil || toolsetCRDSpec.Logs.PrometheusNodeExporter) {
-		flow := logging.NewFlow("flow-prometheus-node-exporter", "caos-system", map[string]string{"app.kubernetes.io/part-of": "prometheus-node-exporter"}, outputNames)
-		flows = append(flows, flow)
+		flows = append(flows, logging.NewFlow(pnelogs.GetFlow(outputNames)))
 	}
 
 	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
 		(toolsetCRDSpec.Logs == nil || toolsetCRDSpec.Logs.KubeStateMetrics) {
-		flow := logging.NewFlow("flow-kube-state-metrics", "caos-system", map[string]string{"app.kubernetes.io/part-of": "kube-state-metrics"}, outputNames)
-		flows = append(flows, flow)
+		flows = append(flows, logging.NewFlow(ksmlogs.GetFlow(outputNames)))
 	}
 
 	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
 		(toolsetCRDSpec.Logs == nil || toolsetCRDSpec.Logs.Argocd) {
-		flow := logging.NewFlow("flow-argocd", "caos-system", map[string]string{"app.kubernetes.io/part-of": "argocd"}, outputNames)
-		flows = append(flows, flow)
+		flows = append(flows, logging.NewFlow(aglogs.GetFlow(outputNames)))
 	}
 
 	ret := make([]interface{}, 0)
@@ -58,7 +56,10 @@ func (l *Loki) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([
 			ret = append(ret, output)
 		}
 
-		ret = append(ret, logging.New("logging", "caos-system", "caos-system"))
+		nameLogging := "logging"
+		namespaceLogging := "caos-system"
+		ret = append(ret, logging.New(nameLogging, namespaceLogging, "caos-system"))
+
 	}
 
 	return ret, nil

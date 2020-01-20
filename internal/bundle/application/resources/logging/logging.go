@@ -17,9 +17,14 @@ type FluentdPvcSpec struct {
 	StorageClassName string     `yaml:"storageClassName,omitempty"`
 }
 type Fluentd struct {
+	Metrics        *Metrics        `yaml:"metrics,omitempty"`
 	FluentdPvcSpec *FluentdPvcSpec `yaml:"fluentdPvcSpec,omitempty"`
 }
+type Metrics struct {
+	Port int `yaml:"port"`
+}
 type Fluentbit struct {
+	Metrics *Metrics `yaml:"metrics,omitempty"`
 }
 type Spec struct {
 	Fluentd          *Fluentd   `yaml:"fluentd"`
@@ -47,8 +52,16 @@ func New(name string, namespace, controlNamespace string) *Logging {
 		},
 		Spec: &Spec{
 			ControlNamespace: controlNamespace,
-			Fluentd:          &Fluentd{},
-			Fluentbit:        &Fluentbit{},
+			Fluentd: &Fluentd{
+				Metrics: &Metrics{
+					Port: 8080,
+				},
+			},
+			Fluentbit: &Fluentbit{
+				Metrics: &Metrics{
+					Port: 8080,
+				},
+			},
 		},
 	}
 }
