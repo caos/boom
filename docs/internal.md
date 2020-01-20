@@ -45,7 +45,7 @@ The structure in this folder is *important* as it is as follows:
 * tools
   * toolsets
     * *toolset-name*
-        * *application-name*.yaml
+      * *application-name*.yaml
 
 It is *important* as the boom has logic which works over this structure to build the knowledge which toolsets are existing and out of which applications do they consist.
 
@@ -59,11 +59,12 @@ The following cli-tools are used from the boom:
 
 As they are used, they also have to be installed into the image during the docker build.
 
-# To let it run
+## To let it run
 
-## locally
+### locally
 
 Before you can run locally you have to fetch all charts:
+
 ```bash
 ./tools/fetch-all.sh *toolset*
 ```
@@ -90,7 +91,7 @@ To build it:
 docker build -t controller:latest .
 ```
 
-## cluster
+### cluster
 
 To deploy the boom to a cluster:
 

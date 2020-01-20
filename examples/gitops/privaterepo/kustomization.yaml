@@ -12,8 +12,7 @@ generatorOptions:
   disableNameSuffixHash: true
 
 resources:
-# - manager.yaml
-- tools.yaml
+- manager.yaml
   
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

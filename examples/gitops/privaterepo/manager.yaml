@@ -31,10 +31,8 @@ spec:
         - "/secrets/tools-secret/example.rsa"
         - "-git-crd-url"
         - "git@github.com:caos/gitopsexample.git"
-        - "-git-crd-directory-path"
-        - "/path/to/clone/directory/to/on/the/container"
         - "-git-crd-path"
-        - "path/to/the/crd/in/the/gitrepo/example.yaml"
+        - "boom.yml"
         image: boom:latest
         imagePullPolicy: IfNotPresent
         name: manager

@@ -13,19 +13,17 @@
 
 Currently we include the following tools:
 
-- Ambassador
-- Cert-Manager
-  - Will be removed when the `Ambassador Edge Stack` reaches GA
+- Ambassador Edge Stack
 - Prometheus Operator
 - Grafana
 - logging-operator
 - kube-state-metrics
 - prometheus-node-exporter
+- loki
+- ArgoCD
 
 Upcoming tools:
 
-- Loki
-- ArgoCD
 - Flux
 
 ## How does it work
@@ -34,7 +32,6 @@ The operator works by reading a configuration (crd) located in a GIT Repository.
 In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly creadted `k8s` cluster.
 
 ```yaml
----
 apiVersion: boom.caos.ch/v1beta1
 kind: Toolset
 metadata:
@@ -51,43 +48,49 @@ spec:
   grafana:
     deploy: true
   ambassador:
-    deploy: true
+    deploy: false
   kube-state-metrics:
     deploy: true
   argocd:
-    deploy: true
+    deploy: false
   prometheus:
     deploy: true
+  loki:
+    deploy: false
 ```
 
 ## How to use it
 
-> Due to the github restriciton that even public images need to be authenticated, you need to make sure that you have `pull secret`
+> Due to the github restriciton that even public images need to be authenticated, you need to make sure that you have `pull secret`. The used `personal access token` has to have the `repo` and `read:packages` permissions.
 
-### GitOps
-
-ImagePullSecret create for github-packages as basic-auth is required.
-The used personal access token has to have the "repo" and "read:packages" permissions. 
 ```bash
 kubectl -n caos-system create secret docker-registry boomregistry --docker-server=docker.pkg.github.com --docker-username=${GITHUB_USERNAME} --docker-password=${GITHUB_ACCESS_TOKEN}
 ```
 
-#### example with a public repository:
+### GitOps Mode
+
+#### Demo with a public crd repository
+
+To easy test the example we have created a `demo crd repo`, located here ![demo-orbiter-boom](https://github.com/caos/demo-orbiter-boom). It holds a `boom.yml` which can be applied to your cluster.
+
+Apply `Boom` to your cluster:
+
 ```bash
 kustomize build examples/gitops/publicrepo | kubectl apply -f -
 ```
 
-#### example with a private repository:
+#### Example with a private repository
 
-Your first have to create an ssh-key with is added as deploy key to your git repository and then save the private key as secret in examples/gitops/privaterepo/secret.
+Your first have to create an ssh-key which is added as deploy key to your git repository and then save the private key as secret in examples/gitops/privaterepo/secret.
 Change the name of the key in the examples/gitops/privaterepo/kustomization.yaml with the filename of the saved key.
 
+Apply `Boom` to your cluster:
+
 ```bash
 kustomize build examples/gitops/publicrepo | kubectl apply -f -
 ```
 
-
-### k8s API
+#### k8s API Mode
 
 example coming soon
 
@@ -96,20 +99,3 @@ example coming soon
 As usual Apache-2.0 see [here](./LICENSE)
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-## Inspiration
-
-### Name
-
-The inspiration for the name `boom` originates from the `Orbiter Boom Sensor System` used by `NASA`. `OBSS` or in short `booom` is a package of tools which are used to inspect the `orbiter` for damages in the thermal shielding. As our application automation tool is called `orbiter` we thaught this is a name which fits great.
-
-More information regarding the `boom` can be found here ![Wikipedia OBSS](https://en.wikipedia.org/wiki/Orbiter_Boom_Sensor_System)
-
-Our project `orbiter` is located here ![CAOS orbiter](https://github.com/caos/orbiter)
-
-### Further Inspiration
-
-Thanks to `rancher` with `rio` as well for the inspiration.
-And also to ex. `coreos` with `tectonic`.
-
-Both platform influenced this project.

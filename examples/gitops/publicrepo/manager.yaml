@@ -28,11 +28,9 @@ spec:
         args:
         - "--enable-leader-election"
         - "-git-crd-url"
-        - "https://github.com/stebenz/boom-crd.git"
-        - "-git-crd-directory-path"
-        - "/tmp/crd"
+        - "https://github.com/caos/demo-orbiter-boom.git"
         - "-git-crd-path"
-        - "crd.yaml"
+        - "boom.yml"
         image: boom:latest
         imagePullPolicy: IfNotPresent
         name: manager
