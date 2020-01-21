@@ -7,12 +7,12 @@ import (
 )
 
 func (k *KubeStateMetrics) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
-	// spec := toolset.CertManager
+	spec := toolset.KubeStateMetrics
 	values := helm.DefaultValues(k.GetImageTags())
 
-	// if spec.ReplicaCount != 0 {
-	// 	values.ReplicaCount = spec.ReplicaCount
-	// }
+	if spec.ReplicaCount != 0 {
+		values.Replicas = spec.ReplicaCount
+	}
 
 	return values
 }
