@@ -21,36 +21,36 @@ func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Confi
 	servicemonitors := make([]*servicemonitor.Config, 0)
 
 	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Ambassador) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Ambassador) {
 		servicemonitors = append(servicemonitors, ambassadormetrics.GetServicemonitor(monitorlabels))
 	}
 
 	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.PrometheusOperator) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusOperator) {
 		servicemonitors = append(servicemonitors, pometrics.GetServicemonitor(monitorlabels))
 	}
 
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.PrometheusNodeExporter) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusNodeExporter) {
 		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitor(monitorlabels))
 	}
 
 	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.KubeStateMetrics) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.KubeStateMetrics) {
 		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitor(monitorlabels))
 	}
 
 	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Argocd) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Argocd) {
 		servicemonitors = append(servicemonitors, argocdmetrics.GetServicemonitors(monitorlabels)...)
 	}
 
 	if toolsetCRDSpec.LoggingOperator != nil && toolsetCRDSpec.LoggingOperator.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.LoggingOperator) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.LoggingOperator) {
 		servicemonitors = append(servicemonitors, lometrics.GetServicemonitors(monitorlabels)...)
 	}
 
-	if toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.APIServer {
+	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.APIServer {
 		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(monitorlabels))
 	}
 

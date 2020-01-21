@@ -11,7 +11,7 @@ var orgID = 0
 func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []*Provider {
 	providers := make([]*Provider, 0)
 	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Ambassador) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Ambassador) {
 		provider := &Provider{
 			ConfigMaps: []string{
 				"grafana-dashboard-ambassador-envoy-global",
@@ -24,7 +24,7 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 	}
 
 	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.Argocd) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Argocd) {
 		provider := &Provider{
 			ConfigMaps: []string{
 				"grafana-dashboard-argocd",
@@ -35,7 +35,7 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 	}
 
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.PrometheusNodeExporter) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusNodeExporter) {
 		provider := &Provider{
 			ConfigMaps: []string{
 				"grafana-dashboard-node-cluster-rsrc-use",
@@ -47,7 +47,7 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 	}
 
 	if toolsetCRDSpec.LoggingOperator != nil && toolsetCRDSpec.LoggingOperator.Deploy &&
-		(toolsetCRDSpec.Metrics == nil || toolsetCRDSpec.Metrics.LoggingOperator) {
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.LoggingOperator) {
 		provider := &Provider{
 			ConfigMaps: []string{
 				"grafana-dashboard-logging-dashboard-rev3",

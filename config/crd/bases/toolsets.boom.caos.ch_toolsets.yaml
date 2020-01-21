@@ -40,10 +40,6 @@ spec:
                   type: boolean
                 loadBalancerIP:
                   type: string
-                namespace:
-                  type: string
-                prefix:
-                  type: string
                 replicaCount:
                   type: integer
               type: object
@@ -51,10 +47,6 @@ spec:
               properties:
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
               type: object
             grafana:
               properties:
@@ -95,10 +87,6 @@ spec:
                   type: array
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
               type: object
             kube-state-metrics:
               properties:
@@ -155,10 +143,6 @@ spec:
                   type: object
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
                 replicaCount:
                   type: integer
               type: object
@@ -168,10 +152,6 @@ spec:
               properties:
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
               type: object
             loki:
               properties:
@@ -205,55 +185,48 @@ spec:
                   - prometheus-node-exporter
                   - prometheus-operator
                   type: object
-                namespace:
-                  type: string
-                prefix:
-                  type: string
-              type: object
-            metrics:
-              properties:
-                ambassador:
-                  type: boolean
-                api-server:
-                  type: boolean
-                argocd:
-                  type: boolean
-                kube-state-metrics:
-                  type: boolean
-                logging-operator:
-                  type: boolean
-                prometheus-node-exporter:
-                  type: boolean
-                prometheus-operator:
-                  type: boolean
-              required:
-              - ambassador
-              - api-server
-              - argocd
-              - kube-state-metrics
-              - logging-operator
-              - prometheus-node-exporter
-              - prometheus-operator
               type: object
             namespace:
               type: string
+            prometheus:
+              properties:
+                deploy:
+                  type: boolean
+                metrics:
+                  properties:
+                    ambassador:
+                      type: boolean
+                    api-server:
+                      type: boolean
+                    argocd:
+                      type: boolean
+                    kube-state-metrics:
+                      type: boolean
+                    logging-operator:
+                      type: boolean
+                    prometheus-node-exporter:
+                      type: boolean
+                    prometheus-operator:
+                      type: boolean
+                  required:
+                  - ambassador
+                  - api-server
+                  - argocd
+                  - kube-state-metrics
+                  - logging-operator
+                  - prometheus-node-exporter
+                  - prometheus-operator
+                  type: object
+              type: object
             prometheus-node-exporter:
               properties:
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
               type: object
             prometheus-operator:
               properties:
                 deploy:
                   type: boolean
-                namespace:
-                  type: string
-                prefix:
-                  type: string
               type: object
           type: object
         status:

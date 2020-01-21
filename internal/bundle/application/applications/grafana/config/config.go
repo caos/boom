@@ -21,8 +21,6 @@ type Provider struct {
 
 type Config struct {
 	Deploy             bool
-	Prefix             string
-	Namespace          string
 	Datasources        []*Datasource
 	DashboardProviders []*Provider
 	KubeVersion        string
@@ -56,8 +54,6 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 
 	conf := &Config{
 		Deploy:             spec.Grafana.Deploy,
-		Prefix:             spec.Grafana.Prefix,
-		Namespace:          spec.Grafana.Namespace,
 		DashboardProviders: dashboardProviders,
 		Datasources:        datasources,
 		KubeVersion:        kubeVersion,

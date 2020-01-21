@@ -2,8 +2,6 @@ package v1beta1
 
 type Grafana struct {
 	Deploy             bool          `json:"deploy,omitempty"`
-	Prefix             string        `json:"prefix,omitempty"`
-	Namespace          string        `json:"namespace,omitempty"`
 	Admin              *Admin        `json:"admin,omitempty"`
 	Datasources        []*Datasource `json:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty"`

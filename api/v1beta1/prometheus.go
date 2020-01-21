@@ -1,5 +1,10 @@
 package v1beta1
 
+type Prometheus struct {
+	Deploy  bool     `json:"deploy,omitempty"`
+	Metrics *Metrics `json:"metrics,omitempty"`
+}
+
 type Metrics struct {
 	Ambassador             bool `json:"ambassador"`
 	Argocd                 bool `json:"argocd"`
