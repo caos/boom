@@ -3,7 +3,6 @@ package ambassador
 import (
 	"reflect"
 
-
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"

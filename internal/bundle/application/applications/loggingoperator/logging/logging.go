@@ -23,6 +23,7 @@ type Fluentd struct {
 type Metrics struct {
 	Port int `yaml:"port"`
 }
+
 type Fluentbit struct {
 	Metrics *Metrics `yaml:"metrics,omitempty"`
 }
@@ -42,16 +43,16 @@ type Logging struct {
 	Spec       *Spec     `yaml:"spec"`
 }
 
-func New(name string, namespace, controlNamespace string) *Logging {
+func New(conf *Config) *Logging {
 	return &Logging{
 		APIVersion: "logging.banzaicloud.io/v1beta1",
 		Kind:       "Logging",
 		Metadata: &Metadata{
-			Name:      name,
-			Namespace: namespace,
+			Name:      conf.Name,
+			Namespace: conf.Namespace,
 		},
 		Spec: &Spec{
-			ControlNamespace: controlNamespace,
+			ControlNamespace: conf.ControlNamespace,
 			Fluentd: &Fluentd{
 				Metrics: &Metrics{
 					Port: 8080,

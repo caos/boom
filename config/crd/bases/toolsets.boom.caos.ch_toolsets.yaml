@@ -177,6 +177,34 @@ spec:
               properties:
                 deploy:
                   type: boolean
+                logs:
+                  properties:
+                    ambassador:
+                      type: boolean
+                    argocd:
+                      type: boolean
+                    grafana:
+                      type: boolean
+                    kube-state-metrics:
+                      type: boolean
+                    logging-operator:
+                      type: boolean
+                    loki:
+                      type: boolean
+                    prometheus-node-exporter:
+                      type: boolean
+                    prometheus-operator:
+                      type: boolean
+                  required:
+                  - ambassador
+                  - argocd
+                  - grafana
+                  - kube-state-metrics
+                  - logging-operator
+                  - loki
+                  - prometheus-node-exporter
+                  - prometheus-operator
+                  type: object
                 namespace:
                   type: string
                 prefix:

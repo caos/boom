@@ -1,6 +1,6 @@
 package logs
 
-import "github.com/caos/boom/internal/bundle/application/resources/logging"
+import "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
 
 func GetFlow(outputs []string) *logging.FlowConfig {
 	lables := map[string]string{"app.kubernetes.io/instance": "ambassador", "app.kubernetes.io/name": "ambassador"}

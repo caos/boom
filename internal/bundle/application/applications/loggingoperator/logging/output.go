@@ -1,5 +1,11 @@
 package logging
 
+type ConfigOutput struct {
+	Name      string
+	Namespace string
+	URL       string
+}
+
 type Buffer struct {
 	Timekey       string `yaml:"timekey"`
 	TimekeyWait   string `yaml:"timekey_wait"`
@@ -22,17 +28,17 @@ type Output struct {
 	Spec       *OutputSpec `yaml:"spec"`
 }
 
-func NewOutput(name string, namespace string, url string) *Output {
+func NewOutput(conf *ConfigOutput) *Output {
 	return &Output{
 		APIVersion: "logging.banzaicloud.io/v1beta1",
 		Kind:       "Output",
 		Metadata: &Metadata{
-			Name:      name,
-			Namespace: namespace,
+			Name:      conf.Name,
+			Namespace: conf.Namespace,
 		},
 		Spec: &OutputSpec{
 			Loki: &Loki{
-				URL:                       url,
+				URL:                       conf.URL,
 				ConfigureKubernetesLabels: true,
 				Buffer: &Buffer{
 					Timekey:       "1m",
