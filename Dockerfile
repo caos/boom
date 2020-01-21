@@ -56,6 +56,7 @@ COPY --from=build /boom /
 COPY --from=build /gen /
 
 COPY config/crd /crd
+COPY dashboards /dashboards
 
 RUN ./gen
 

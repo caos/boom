@@ -66,30 +66,6 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 		}
 	}
 
-	//crd datasources
-	if toolset.Grafana.Datasources != nil {
-		for _, ds := range toolset.Grafana.Datasources {
-			valuesDatasource := &grafanastandalone.Datasource{
-				Name:      ds.Name,
-				Type:      ds.Type,
-				URL:       ds.Url,
-				Access:    ds.Access,
-				IsDefault: ds.IsDefault,
-			}
-			datasources = append(datasources, valuesDatasource)
-		}
-	}
-
-	//crd dashboards
-	if toolset.Grafana.DashboardProviders != nil {
-		for _, provider := range toolset.Grafana.DashboardProviders {
-			for _, configmap := range provider.ConfigMaps {
-				providers = append(providers, getProvider(configmap))
-				dashboards[configmap] = configmap
-			}
-		}
-	}
-
 	if len(providers) > 0 {
 		values.Grafana.DashboardProviders = &helm.DashboardProviders{
 			Providers: &helm.Providersyaml{

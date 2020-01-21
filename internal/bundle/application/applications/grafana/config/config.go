@@ -6,6 +6,10 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 )
 
+var (
+	DashboardsDirectoryPath string = "../../dashboards"
+)
+
 type Datasource struct {
 	Name      string
 	Type      string
@@ -59,7 +63,7 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 		KubeVersion:        kubeVersion,
 	}
 
-	providers := getGrafanaDashboards("../../dashboards", spec)
+	providers := getGrafanaDashboards(DashboardsDirectoryPath, spec)
 
 	for _, provider := range providers {
 		conf.AddDashboardProvider(provider)
