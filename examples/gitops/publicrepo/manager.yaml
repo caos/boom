@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: boom
+  name: caos-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom
+  namespace: caos-system
+  labels:
+    control-plane: boom
+spec:
+  selector:
+    matchLabels:
+      control-plane: boom
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: boom
+    spec:
+      containers:
+      - command:
+        - /boom
+        args:
+        - "--enable-leader-election"
+        - "-git-crd-url"
+        - "https://github.com/caos/demo-orbiter-boom.git"
+        - "-git-crd-path"
+        - "boom.yml"
+        image: boom:latest
+        imagePullPolicy: IfNotPresent
+        name: manager
+      imagePullSecrets: 
+      - name: boomregistry
+      terminationGracePeriodSeconds: 10
