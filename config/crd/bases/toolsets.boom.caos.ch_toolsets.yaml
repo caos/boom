@@ -62,7 +62,7 @@ spec:
                 dashboardproviders:
                   items:
                     properties:
-                      configMap:
+                      configMaps:
                         items:
                           type: string
                         type: array
@@ -90,57 +90,6 @@ spec:
               type: object
             kube-state-metrics:
               properties:
-                collectors:
-                  properties:
-                    certificatesigningrequests:
-                      type: boolean
-                    configmaps:
-                      type: boolean
-                    cronjobs:
-                      type: boolean
-                    daemonsets:
-                      type: boolean
-                    deployments:
-                      type: boolean
-                    endpoints:
-                      type: boolean
-                    horizontalpodautoscalers:
-                      type: boolean
-                    ingresses:
-                      type: boolean
-                    jobs:
-                      type: boolean
-                    limitranges:
-                      type: boolean
-                    namespaces:
-                      type: boolean
-                    nodes:
-                      type: boolean
-                    persistentvolumeclaims:
-                      type: boolean
-                    persistentvolumes:
-                      type: boolean
-                    poddisruptionbudgets:
-                      type: boolean
-                    pods:
-                      type: boolean
-                    replicasets:
-                      type: boolean
-                    replicationcontrollers:
-                      type: boolean
-                    resourcequotas:
-                      type: boolean
-                    secrets:
-                      type: boolean
-                    services:
-                      type: boolean
-                    statefulsets:
-                      type: boolean
-                    storageclasses:
-                      type: boolean
-                    verticalpodautoscalers:
-                      type: boolean
-                  type: object
                 deploy:
                   type: boolean
                 replicaCount:
@@ -185,6 +134,17 @@ spec:
                   - prometheus-node-exporter
                   - prometheus-operator
                   type: object
+                storage:
+                  properties:
+                    accessModes:
+                      items:
+                        type: string
+                      type: array
+                    size:
+                      type: string
+                    storageClass:
+                      type: string
+                  type: object
               type: object
             namespace:
               type: string
@@ -204,6 +164,8 @@ spec:
                       type: boolean
                     logging-operator:
                       type: boolean
+                    loki:
+                      type: boolean
                     prometheus-node-exporter:
                       type: boolean
                     prometheus-operator:
@@ -214,8 +176,20 @@ spec:
                   - argocd
                   - kube-state-metrics
                   - logging-operator
+                  - loki
                   - prometheus-node-exporter
                   - prometheus-operator
+                  type: object
+                storage:
+                  properties:
+                    accessModes:
+                      items:
+                        type: string
+                      type: array
+                    size:
+                      type: string
+                    storageClass:
+                      type: string
                   type: object
               type: object
             prometheus-node-exporter:

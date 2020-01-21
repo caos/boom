@@ -1,8 +1,15 @@
 package v1beta1
 
 type Prometheus struct {
-	Deploy  bool     `json:"deploy,omitempty"`
-	Metrics *Metrics `json:"metrics,omitempty"`
+	Deploy  bool         `json:"deploy,omitempty"`
+	Metrics *Metrics     `json:"metrics,omitempty"`
+	Storage *StorageSpec `json:"storage,omitempty"`
+}
+
+type StorageSpec struct {
+	StorageClass string   `json:"storageClass,omitempty"`
+	AccessModes  []string `json:"accessModes,omitempty"`
+	Size         string   `json:"size,omitempty"`
 }
 
 type Metrics struct {

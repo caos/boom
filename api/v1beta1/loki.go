@@ -1,8 +1,9 @@
 package v1beta1
 
 type Loki struct {
-	Deploy bool  `json:"deploy,omitempty"`
-	Logs   *Logs `json:"logs,omitempty"`
+	Deploy  bool         `json:"deploy,omitempty"`
+	Logs    *Logs        `json:"logs,omitempty"`
+	Storage *StorageSpec `json:"storage,omitempty"`
 }
 
 type Logs struct {

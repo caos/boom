@@ -85,11 +85,13 @@ type NetworkPolicy struct {
 	Enabled bool `yaml:"enabled"`
 }
 type Persistence struct {
-	Enabled     bool              `yaml:"enabled"`
-	AccessModes []string          `yaml:"accessModes"`
-	Size        string            `yaml:"size"`
-	Annotations map[string]string `yaml:"annotations"`
+	Enabled          bool              `yaml:"enabled"`
+	AccessModes      []string          `yaml:"accessModes"`
+	Size             string            `yaml:"size"`
+	Annotations      map[string]string `yaml:"annotations"`
+	StorageClassName string            `yaml:"storageClassName"`
 }
+
 type Rbac struct {
 	Create     bool `yaml:"create"`
 	PspEnabled bool `yaml:"pspEnabled"`

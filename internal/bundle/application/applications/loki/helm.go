@@ -13,12 +13,15 @@ func (l *Loki) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([
 }
 
 func (l *Loki) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
-	// spec := toolset.LoggingOperator
+	spec := toolset.Loki
 	values := helm.DefaultValues(l.GetImageTags())
 
-	// if spec.ReplicaCount != 0 {
-	// 	values.ReplicaCount = spec.ReplicaCount
-	// }
+	if spec.Storage != nil {
+		values.Persistence.Enabled = true
+		values.Persistence.AccessModes = spec.Storage.AccessModes
+		values.Persistence.Size = spec.Storage.Size
+		values.Persistence.StorageClassName = spec.Storage.StorageClass
+	}
 
 	return values
 }

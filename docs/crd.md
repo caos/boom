@@ -90,6 +90,10 @@ When the metrics spec is nil all metrics will get scraped.
 | `metrics.prometheus-operator`      | Bool if metrics should get scraped                                              | false                             |
 | `metrics.logging-operator`         | Bool if metrics should get scraped                                              | false                             |
 | `metrics.loki`                     | Bool if metrics should get scraped                                              | false                             |
+| `storage`                          | Spec to define how the persistency should be handled                            | nil                               |
+| `storage.size`                     | Defined size of the PVC                                                         |                                   |
+| `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
+| `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
 
 ### Loki
 
@@ -107,3 +111,7 @@ When the logs spec is nil all logs will get persisted in loki.
 | `logs.prometheus-operator`         | Bool if logs will get persisted                                                 | false                             |
 | `logs.logging-operator`            | Bool if logs will get persisted                                                 | false                             |
 | `logs.loki`                        | Bool if logs will get persisted                                                 | false                             |
+| `storage`                          | Spec to define how the persistency should be handled                            | nil                               |
+| `storage.size`                     | Defined size of the PVC                                                         |                                   |
+| `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
+| `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |

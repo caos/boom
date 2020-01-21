@@ -29,7 +29,7 @@ Upcoming tools:
 ## How does it work
 
 The operator works by reading a configuration (crd) located in a GIT Repository. Alternativly this `crd` can be read from the k8s api.
-In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly creadted `k8s` cluster.
+In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly created `k8s` cluster.
 
 ```yaml
 apiVersion: boom.caos.ch/v1beta1

@@ -73,6 +73,12 @@ func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Confi
 			KubeVersion:             toolsetCRDSpec.KubeVersion,
 		}
 
+		if toolsetCRDSpec.Prometheus.Storage != nil {
+			prom.StorageSpec.StorageClass = toolsetCRDSpec.Prometheus.Storage.StorageClass
+			prom.StorageSpec.AccessModes = toolsetCRDSpec.Prometheus.Storage.AccessModes
+			prom.StorageSpec.Storage = toolsetCRDSpec.Prometheus.Storage.Size
+		}
+
 		return prom
 	}
 	return nil
