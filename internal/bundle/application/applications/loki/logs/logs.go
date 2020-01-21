@@ -79,7 +79,13 @@ func getAllFlows(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, outputNames []stri
 		flows = append(flows, logging.NewFlow(aglogs.GetFlow(outputNames)))
 	}
 
-	if toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki {
+	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
+		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
+	}
+
+	if toolsetCRDSpec.Prometheus != nil && toolsetCRDSpec.Prometheus.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Prometheus) {
 		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
 	}
 

@@ -15,4 +15,5 @@ type Logs struct {
 	PrometheusOperator     bool `json:"prometheus-operator"`
 	LoggingOperator        bool `json:"logging-operator"`
 	Loki                   bool `json:"loki"`
+	Prometheus             bool `json:"prometheus"`
 }

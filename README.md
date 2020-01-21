@@ -87,7 +87,7 @@ Change the name of the key in the examples/gitops/privaterepo/kustomization.yaml
 Apply `Boom` to your cluster:
 
 ```bash
-kustomize build examples/gitops/publicrepo | kubectl apply -f -
+kustomize build examples/gitops/privaterepo | kubectl apply -f -
 ```
 
 #### k8s API Mode
