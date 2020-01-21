@@ -31,11 +31,7 @@ func (p *Prometheus) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 		return false
 	}
 
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
-	if config == nil {
-		return false
-	}
-	return true
+	return toolsetCRDSpec.Prometheus.Deploy
 }
 
 func (p *Prometheus) Initial() bool {

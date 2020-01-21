@@ -7,6 +7,7 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	"github.com/caos/boom/internal/bundle/application/applications/loki"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
@@ -54,6 +55,8 @@ func New(logger logging.Logger, appName name.Application) Application {
 		return prometheusnodeexporter.New(logger)
 	case prometheus.GetName():
 		return prometheus.New(logger)
+	case loki.GetName():
+		return loki.New(logger)
 	}
 
 	return nil
@@ -63,6 +66,8 @@ func GetOrderNumber(appName name.Application) int {
 	switch appName {
 	case prometheus.GetName():
 		return prometheus.GetOrderNumber()
+	case loki.GetName():
+		return loki.GetOrderNumber()
 	}
 
 	return 0

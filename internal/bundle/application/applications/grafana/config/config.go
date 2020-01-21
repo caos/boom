@@ -6,6 +6,10 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 )
 
+var (
+	DashboardsDirectoryPath string = "../../dashboards"
+)
+
 type Datasource struct {
 	Name      string
 	Type      string
@@ -21,8 +25,6 @@ type Provider struct {
 
 type Config struct {
 	Deploy             bool
-	Prefix             string
-	Namespace          string
 	Datasources        []*Datasource
 	DashboardProviders []*Provider
 	KubeVersion        string
@@ -56,21 +58,22 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 
 	conf := &Config{
 		Deploy:             spec.Grafana.Deploy,
-		Prefix:             spec.Grafana.Prefix,
-		Namespace:          spec.Grafana.Namespace,
 		DashboardProviders: dashboardProviders,
 		Datasources:        datasources,
 		KubeVersion:        kubeVersion,
 	}
 
-	providers := getGrafanaDashboards("../../dashboards", spec)
+	providers := getGrafanaDashboards(DashboardsDirectoryPath, spec)
 
 	for _, provider := range providers {
 		conf.AddDashboardProvider(provider)
 	}
 
-	datasource := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
-	conf.AddDatasourceURL("prometheus", "prometheus", datasource)
+	datasourceProm := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
+	conf.AddDatasourceURL("prometheus", "prometheus", datasourceProm)
+
+	datasourceLoki := strings.Join([]string{"http://loki.caos-system:3100"}, "")
+	conf.AddDatasourceURL("loki", "loki", datasourceLoki)
 
 	return conf
 }

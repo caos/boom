@@ -6,6 +6,7 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	"github.com/caos/boom/internal/bundle/application/applications/loki"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
@@ -45,6 +46,7 @@ func GetCaos() []name.Application {
 	apps = append(apps, grafana.GetName())
 	apps = append(apps, prometheus.GetName())
 	apps = append(apps, loggingoperator.GetName())
+	apps = append(apps, loki.GetName())
 
 	return apps
 }

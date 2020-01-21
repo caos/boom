@@ -117,6 +117,16 @@ func GetVersionFromYaml(filePath string) (string, error) {
 	return parts[1], nil
 }
 
+func GetApiGroupFromYaml(filePath string) (string, error) {
+	resource := &Resource{}
+	if err := YamlToStruct(filePath, resource); err != nil {
+		return "", err
+	}
+	parts := strings.Split(resource.ApiVersion, "/")
+
+	return parts[0], nil
+}
+
 func AddYamlToYaml(filePath, addFilePath string) error {
 
 	f, err := os.OpenFile(filePath,

@@ -55,11 +55,18 @@ type Provider struct {
 	Options         map[string]string `yaml:"options"`
 }
 
+type Admin struct {
+	ExistingSecret string `yaml:"existingSecret"`
+	UserKey        string `yaml:"userKey"`
+	PasswordKey    string `yaml:"passwordKey"`
+}
+
 type GrafanaValues struct {
 	FullnameOverride         string                          `yaml:"fullnameOverride,omitempty"`
 	Enabled                  bool                            `yaml:"enabled"`
 	DefaultDashboardsEnabled bool                            `yaml:"defaultDashboardsEnabled"`
 	AdminPassword            string                          `yaml:"adminPassword"`
+	Admin                    *Admin                          `yaml:"admin"`
 	Ingress                  *Ingress                        `yaml:"ingress"`
 	Sidecar                  *Sidecar                        `yaml:"sidecar"`
 	ExtraConfigmapMounts     []interface{}                   `yaml:"extraConfigmapMounts"`

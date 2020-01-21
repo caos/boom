@@ -9,7 +9,6 @@ import (
 	"github.com/caos/boom/internal/name"
 )
 
-
 type LoggingOperator struct {
 	logger logging.Logger
 	spec   *toolsetsv1beta1.LoggingOperator

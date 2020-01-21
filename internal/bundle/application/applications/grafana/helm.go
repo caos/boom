@@ -38,8 +38,12 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 
 	values.KubeTargetVersionOverride = conf.KubeVersion
 
+	providers := make([]*helm.Provider, 0)
+	dashboards := make(map[string]string, 0)
+	datasources := make([]*grafanastandalone.Datasource, 0)
+
+	//internal datasources
 	if conf.Datasources != nil {
-		datasources := make([]*grafanastandalone.Datasource, 0)
 		for _, datasource := range conf.Datasources {
 			valuesDatasource := &grafanastandalone.Datasource{
 				Name:      datasource.Name,
@@ -50,18 +54,19 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 			}
 			datasources = append(datasources, valuesDatasource)
 		}
-		values.Grafana.AdditionalDataSources = datasources
 	}
 
+	//internal dashboards
 	if conf.DashboardProviders != nil {
-		providers := make([]*helm.Provider, 0)
-		dashboards := make(map[string]string, 0)
 		for _, provider := range conf.DashboardProviders {
 			for _, configmap := range provider.ConfigMaps {
 				providers = append(providers, getProvider(configmap))
 				dashboards[configmap] = configmap
 			}
 		}
+	}
+
+	if len(providers) > 0 {
 		values.Grafana.DashboardProviders = &helm.DashboardProviders{
 			Providers: &helm.Providersyaml{
 				APIVersion: 1,
@@ -69,6 +74,15 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 			},
 		}
 		values.Grafana.DashboardsConfigMaps = dashboards
+	}
+	if len(datasources) > 0 {
+		values.Grafana.AdditionalDataSources = datasources
+	}
+
+	if toolset.Grafana.Admin != nil {
+		values.Grafana.Admin.ExistingSecret = toolset.Grafana.Admin.ExistingSecret
+		values.Grafana.Admin.UserKey = toolset.Grafana.Admin.UserKey
+		values.Grafana.Admin.PasswordKey = toolset.Grafana.Admin.PasswordKey
 	}
 
 	return values

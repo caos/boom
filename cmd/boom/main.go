@@ -38,6 +38,8 @@ import (
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kustomize"
 	// +kubebuilder:scaffold:imports
+
+	gconfig "github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 )
 
 var (
@@ -76,11 +78,13 @@ func main() {
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd.yaml", "The path to the CRD in the cloned git-repo ")
 
-	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "../../tools", "The local path where the tools folder should be")
-	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "../../dashboards", "The local path where the dashboards folder should be")
+	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools folder should be")
+	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "/dashboards", "The local path where the dashboards folder should be")
 
 	flag.IntVar(&intervalSeconds, "intervalSeconds", 60, "defines the interval in which the reconiliation of the gitCrds runs")
 	flag.Parse()
+
+	gconfig.DashboardsDirectoryPath = dashboardsDirectoryPath
 
 	var gitCrdPrivateKeyBytes []byte
 

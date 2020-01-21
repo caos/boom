@@ -2,8 +2,6 @@ package v1beta1
 
 type Grafana struct {
 	Deploy             bool          `json:"deploy,omitempty"`
-	Prefix             string        `json:"prefix,omitempty"`
-	Namespace          string        `json:"namespace,omitempty"`
 	Admin              *Admin        `json:"admin,omitempty"`
 	Datasources        []*Datasource `json:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty"`
@@ -13,6 +11,7 @@ type Admin struct {
 	UserKey        string `json:"userKey,omitempty"`
 	PasswordKey    string `json:"passwordKey,omitempty"`
 }
+
 type Datasource struct {
 	Name      string `json:"name,omitempty"`
 	Type      string `json:"type,omitempty"`
@@ -22,6 +21,6 @@ type Datasource struct {
 }
 
 type Provider struct {
-	ConfigMaps []string `json:"configMap,omitempty"`
+	ConfigMaps []string `json:"configMaps,omitempty"`
 	Folder     string   `json:"folder,omitempty"`
 }

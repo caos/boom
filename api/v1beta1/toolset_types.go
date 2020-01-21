@@ -33,7 +33,8 @@ type ToolsetSpec struct {
 	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
 	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
 	Argocd                 *Argocd                 `json:"argocd,omitempty" yaml:"argocd"`
-	Metrics                *Metrics                `json:"metrics,omitempty" yaml:"metrics"`
+	Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
+	Loki                   *Loki                   `json:"loki,omitempty" yaml:"loki"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

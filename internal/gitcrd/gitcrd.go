@@ -36,6 +36,14 @@ func New(conf *config.Config) (GitCrd, error) {
 	}
 
 	crdFilePath := filepath.Join(conf.CrdDirectoryPath, conf.CrdPath)
+	group, err := helper.GetApiGroupFromYaml(crdFilePath)
+	if err != nil {
+		return nil, err
+	}
+	if group != "boom.caos.ch" {
+		return nil, errors.Errorf("Unknown CRD apiGroup %s", group)
+	}
+
 	version, err := helper.GetVersionFromYaml(crdFilePath)
 	if err != nil {
 		return nil, err

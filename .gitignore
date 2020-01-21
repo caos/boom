@@ -16,7 +16,7 @@
 bin
 debug
 
-tools/*
+tools
 
 /*.go
 !main.go
