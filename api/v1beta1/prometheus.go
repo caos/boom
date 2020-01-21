@@ -13,4 +13,5 @@ type Metrics struct {
 	APIServer              bool `json:"api-server"`
 	PrometheusOperator     bool `json:"prometheus-operator"`
 	LoggingOperator        bool `json:"logging-operator"`
+	Loki                   bool `json:"loki"`
 }

@@ -7,6 +7,7 @@ import (
 	argocdmetrics "github.com/caos/boom/internal/bundle/application/applications/argocd/metrics"
 	kubestatemetrics "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/metrics"
 	lometrics "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/metrics"
+	lokimetrics "github.com/caos/boom/internal/bundle/application/applications/loki/metrics"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/metrics"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	pnemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/metrics"
@@ -50,11 +51,17 @@ func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Confi
 		servicemonitors = append(servicemonitors, lometrics.GetServicemonitors(monitorlabels)...)
 	}
 
+	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Loki) {
+		servicemonitors = append(servicemonitors, lokimetrics.GetServicemonitor(monitorlabels))
+	}
+
 	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.APIServer {
 		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(monitorlabels))
 	}
 
 	if len(servicemonitors) > 0 {
+
 		servicemonitors = append(servicemonitors, metrics.GetServicemonitor(monitorlabels))
 
 		prom := &Config{
