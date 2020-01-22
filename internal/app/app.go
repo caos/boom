@@ -15,21 +15,19 @@ import (
 )
 
 type App struct {
-	ToolsDirectoryPath      string
-	CrdDirectoryPath        string
-	DashboardsDirectoryPath string
-	GitCrds                 []gitcrd.GitCrd
-	Crds                    map[string]crd.Crd
-	logger                  logging.Logger
+	ToolsDirectoryPath string
+	CrdDirectoryPath   string
+	GitCrds            []gitcrd.GitCrd
+	Crds               map[string]crd.Crd
+	logger             logging.Logger
 }
 
 func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
 
 	app := &App{
-		ToolsDirectoryPath:      toolsDirectoryPath,
-		CrdDirectoryPath:        crdDirectoryPath,
-		DashboardsDirectoryPath: dashboardsDirectoryPath,
-		logger:                  logger,
+		ToolsDirectoryPath: toolsDirectoryPath,
+		CrdDirectoryPath:   crdDirectoryPath,
+		logger:             logger,
 	}
 
 	app.Crds = make(map[string]crd.Crd, 0)
@@ -83,12 +81,11 @@ func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
 	}
 
 	bundleConf := &bundleconfig.Config{
-		Logger:                  a.logger,
-		CrdName:                 toolsetCRD.Name,
-		BundleName:              bundles.Caos,
-		BaseDirectoryPath:       a.ToolsDirectoryPath,
-		DashboardsDirectoryPath: a.DashboardsDirectoryPath,
-		Templator:               helm.GetName(),
+		Logger:            a.logger,
+		CrdName:           toolsetCRD.Name,
+		BundleName:        bundles.Caos,
+		BaseDirectoryPath: a.ToolsDirectoryPath,
+		Templator:         helm.GetName(),
 	}
 
 	c.SetBundle(bundleConf)
@@ -131,12 +128,11 @@ func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(in
 		}
 
 		bundleConf := &bundleconfig.Config{
-			Logger:                  a.logger,
-			CrdName:                 namespacedName,
-			BundleName:              bundles.Caos,
-			BaseDirectoryPath:       a.ToolsDirectoryPath,
-			DashboardsDirectoryPath: a.DashboardsDirectoryPath,
-			Templator:               helm.GetName(),
+			Logger:            a.logger,
+			CrdName:           namespacedName,
+			BundleName:        bundles.Caos,
+			BaseDirectoryPath: a.ToolsDirectoryPath,
+			Templator:         helm.GetName(),
 		}
 		managedcrd.SetBundle(bundleConf)
 

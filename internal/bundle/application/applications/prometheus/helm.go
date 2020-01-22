@@ -5,11 +5,12 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
 func (p *Prometheus) SpecToHelmValues(toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	config := config.ScrapeMetricsCrdsConfig(instanceName, toolsetCRDSpec)
 
 	values := helm.DefaultValues(p.GetImageTags())
 
@@ -50,8 +51,8 @@ func (p *Prometheus) SpecToHelmValues(toolsetCRDSpec *v1beta1.ToolsetSpec) inter
 	if config.AdditionalScrapeConfigs != nil {
 		values.Prometheus.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
-
-	ruleLabels := map[string]string{"prometheus": "caos", "instance-name": "operated"}
+	
+	ruleLabels := labels.GetRuleLabels(instanceName)
 	rules, _ := helm.GetDefaultRules(ruleLabels)
 
 	values.Prometheus.PrometheusSpec.RuleSelector = &helm.RuleSelector{MatchLabels: ruleLabels}

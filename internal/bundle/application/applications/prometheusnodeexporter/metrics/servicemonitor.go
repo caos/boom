@@ -1,8 +1,16 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
+func GetServicemonitor(instanceName string) *servicemonitor.Config {
+	appName := prometheusnodeexporter.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
+
 	relabelings := make([]*servicemonitor.ConfigRelabeling, 0)
 	relabeling := &servicemonitor.ConfigRelabeling{
 		Action:       "replace",
@@ -18,13 +26,12 @@ func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
 		Path:        "/metrics",
 		Relabelings: relabelings,
 	}
-	labels := map[string]string{"app": "prometheus-node-exporter"}
 
 	return &servicemonitor.Config{
 		Name:                  "prometheus-node-exporter-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
-		JobName:               "node-exporter",
+		ServiceMatchingLabels: ls,
+		JobName:               appName.String(),
 	}
 }

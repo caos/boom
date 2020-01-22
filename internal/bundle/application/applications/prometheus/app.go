@@ -39,7 +39,7 @@ func (p *Prometheus) Initial() bool {
 }
 
 func (p *Prometheus) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	config := config.ScrapeMetricsCrdsConfig(instanceName, toolsetCRDSpec)
 	return !reflect.DeepEqual(config, p.config)
 }
 
@@ -47,7 +47,7 @@ func (p *Prometheus) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec)
 	if toolsetCRDSpec == nil {
 		return
 	}
-	p.config = config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	p.config = config.ScrapeMetricsCrdsConfig(instanceName, toolsetCRDSpec)
 }
 
 func (p *Prometheus) GetNamespace() string {

@@ -1,8 +1,15 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
+func GetServicemonitor(instanceName string) *servicemonitor.Config {
+	appName := kubestatemetrics.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
 
 	relabelings := make([]*servicemonitor.ConfigRelabeling, 0)
 	relabeling := &servicemonitor.ConfigRelabeling{
@@ -18,15 +25,11 @@ func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
 		Relabelings: relabelings,
 	}
 
-	labels := map[string]string{
-		"app.kubernetes.io/name": "kube-state-metrics",
-	}
-
 	return &servicemonitor.Config{
 		Name:                  "kube-state-metrics-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
+		ServiceMatchingLabels: ls,
 		JobName:               "kube-state-metrics",
 	}
 }

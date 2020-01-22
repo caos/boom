@@ -15,12 +15,11 @@ import (
 )
 
 type Bundle struct {
-	baseDirectoryPath       string
-	dashboardsDirectoryPath string
-	Applications            map[name.Application]application.Application
-	Templator               templator.Templator
-	logger                  logging.Logger
-	status                  error
+	baseDirectoryPath string
+	Applications      map[name.Application]application.Application
+	Templator         templator.Templator
+	logger            logging.Logger
+	status            error
 }
 
 func New(conf *config.Config) *Bundle {
@@ -28,12 +27,11 @@ func New(conf *config.Config) *Bundle {
 	templator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, conf.Templator)
 
 	b := &Bundle{
-		baseDirectoryPath:       conf.BaseDirectoryPath,
-		dashboardsDirectoryPath: conf.DashboardsDirectoryPath,
-		logger:                  conf.Logger,
-		Templator:               templator,
-		Applications:            apps,
-		status:                  nil,
+		baseDirectoryPath: conf.BaseDirectoryPath,
+		logger:            conf.Logger,
+		Templator:         templator,
+		Applications:      apps,
+		status:            nil,
 	}
 	return b
 }

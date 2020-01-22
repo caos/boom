@@ -1,18 +1,26 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
+func GetServicemonitor(instanceName string) *servicemonitor.Config {
+	appName := ambassador.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
+
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port: "admin",
 		Path: "/metrics",
 	}
-	labels := map[string]string{"app.kubernetes.io/name": "ambassador"}
 
 	return &servicemonitor.Config{
 		Name:                  "ambassador-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
+		ServiceMatchingLabels: ls,
+		JobName:               "ambassador",
 	}
 }

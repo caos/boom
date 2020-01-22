@@ -1,36 +1,47 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"strings"
 
-func GetServicemonitors(monitorlabels map[string]string) []*servicemonitor.Config {
+	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
+
+func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 	ret := make([]*servicemonitor.Config, 0)
-	ret = append(ret, getFluentd(monitorlabels))
-	ret = append(ret, getFluentbit(monitorlabels))
+	ret = append(ret, getFluentd(instanceName))
+	ret = append(ret, getFluentbit(instanceName))
 	return ret
 }
 
-func getFluentd(monitorlabels map[string]string) *servicemonitor.Config {
+func getFluentd(instanceName string) *servicemonitor.Config {
+	appName := loggingoperator.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port:        "metrics",
 		HonorLabels: true,
 	}
 
-	labels := map[string]string{
-		"app.kubernetes.io/name":       "fluentd",
-		"app.kubernetes.io/managed-by": "logging",
-	}
+	ls["app.kubernetes.io/name"] = "fluentd"
+	ls["app.kubernetes.io/managed-by"] = "logging"
 
+	jobname := strings.Join([]string{appName.String(), "fluentd-metrics"}, "-")
 	return &servicemonitor.Config{
 		Name:                  "logging-operator-fluentd-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
-		JobName:               "logging-operator-fluentd-metrics",
+		ServiceMatchingLabels: ls,
+		JobName:               jobname,
 	}
 }
 
-func getFluentbit(monitorlabels map[string]string) *servicemonitor.Config {
+func getFluentbit(instanceName string) *servicemonitor.Config {
+	appName := loggingoperator.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port:        "metrics",
@@ -38,16 +49,15 @@ func getFluentbit(monitorlabels map[string]string) *servicemonitor.Config {
 		HonorLabels: true,
 	}
 
-	labels := map[string]string{
-		"app.kubernetes.io/name":       "fluentbit",
-		"app.kubernetes.io/managed-by": "logging",
-	}
+	ls["app.kubernetes.io/name"] = "fluentbit"
+	ls["app.kubernetes.io/managed-by"] = "logging"
 
+	jobname := strings.Join([]string{appName.String(), "fluentbit-metrics"}, "-")
 	return &servicemonitor.Config{
 		Name:                  "logging-operator-fluentbit-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
-		JobName:               "logging-operator-fluentbit-metrics",
+		ServiceMatchingLabels: ls,
+		JobName:               jobname,
 	}
 }

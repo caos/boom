@@ -6,10 +6,9 @@ import (
 )
 
 type Config struct {
-	Logger                  logging.Logger
-	CrdName                 string
-	BundleName              name.Bundle
-	BaseDirectoryPath       string
-	DashboardsDirectoryPath string
-	Templator               name.Templator
+	Logger            logging.Logger
+	CrdName           string
+	BundleName        name.Bundle
+	BaseDirectoryPath string
+	Templator         name.Templator
 }

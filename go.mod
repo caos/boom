@@ -3,7 +3,6 @@ module github.com/caos/boom
 go 1.12
 
 require (
-	cloud.google.com/go v0.38.0
 	github.com/caos/orbiter v0.3.1-0.20191203154843-66823839f90e
 	github.com/go-logr/logr v0.1.0
 	github.com/golang/mock v1.3.1
