@@ -2,12 +2,12 @@ package metrics
 
 import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	"github.com/caos/boom/internal/labels"
 )
 
 func GetServicemonitor(instanceName string) *servicemonitor.Config {
-	appName := prometheusnodeexporter.GetName()
+	appName := info.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
 	ls := labels.GetApplicationLabels(appName)
 

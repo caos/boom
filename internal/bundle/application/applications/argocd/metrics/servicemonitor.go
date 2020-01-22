@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"github.com/caos/boom/internal/bundle/application/applications/argocd"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
 )
@@ -18,9 +17,8 @@ func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 }
 
 func getSMServer(instanceName string) *servicemonitor.Config {
-	appName := argocd.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	// argocd-server
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -28,6 +26,7 @@ func getSMServer(instanceName string) *servicemonitor.Config {
 		Path: "/metrics",
 	}
 
+	ls["app.kubernetes.io/instance"] = "argocd"
 	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "server"
 
@@ -41,9 +40,8 @@ func getSMServer(instanceName string) *servicemonitor.Config {
 }
 
 func getSMRepoServer(instanceName string) *servicemonitor.Config {
-	appName := argocd.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	// argocd-repo-server
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -51,6 +49,7 @@ func getSMRepoServer(instanceName string) *servicemonitor.Config {
 		Path: "/metrics",
 	}
 
+	ls["app.kubernetes.io/instance"] = "argocd"
 	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "repo-server"
 
@@ -65,9 +64,8 @@ func getSMRepoServer(instanceName string) *servicemonitor.Config {
 }
 
 func getSMApplicationController(instanceName string) *servicemonitor.Config {
-	appName := argocd.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	//argocd-application-controller
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -75,6 +73,7 @@ func getSMApplicationController(instanceName string) *servicemonitor.Config {
 		Path: "/metrics",
 	}
 
+	ls["app.kubernetes.io/instance"] = "argocd"
 	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "application-controller"
 

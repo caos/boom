@@ -3,6 +3,8 @@ package ambassador
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
@@ -15,6 +17,7 @@ func (a *Ambassador) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpe
 		values.ReplicaCount = a.spec.ReplicaCount
 	}
 
+	values.PodLabels = labels.GetApplicationLabels(info.GetName())
 	return values
 }
 

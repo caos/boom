@@ -3,6 +3,7 @@ package prometheusnodeexporter
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
@@ -16,6 +17,7 @@ func (p *PrometheusNodeExporter) SpecToHelmValues(toolset *toolsetsv1beta1.Tools
 	// 	values.ReplicaCount = spec.ReplicaCount
 	// }
 
+	values.PodLabels = labels.GetApplicationLabels(info.GetName())
 	return values
 }
 

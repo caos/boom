@@ -61,8 +61,13 @@ type Admin struct {
 	PasswordKey    string `yaml:"passwordKey"`
 }
 
+type Service struct {
+	Labels map[string]string `yaml:"labels,omitempty"`
+}
+
 type GrafanaValues struct {
 	FullnameOverride         string                          `yaml:"fullnameOverride,omitempty"`
+	Labels                   map[string]string               `yaml:"labels,omitempty"`
 	Enabled                  bool                            `yaml:"enabled"`
 	DefaultDashboardsEnabled bool                            `yaml:"defaultDashboardsEnabled"`
 	AdminPassword            string                          `yaml:"adminPassword"`
@@ -74,6 +79,7 @@ type GrafanaValues struct {
 	ServiceMonitor           *ServiceMonitor                 `yaml:"serviceMonitor"`
 	DashboardProviders       *DashboardProviders             `yaml:"dashboardProviders,omitempty"`
 	DashboardsConfigMaps     map[string]string               `yaml:"dashboardsConfigMaps,omitempty"`
+	Service                  *Service                        `yaml:"service,omitempty"`
 }
 
 type Rules struct {

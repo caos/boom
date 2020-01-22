@@ -6,6 +6,7 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -23,7 +24,7 @@ func New(logger logging.Logger) *Argocd {
 }
 
 func (a *Argocd) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (a *Argocd) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -43,5 +44,5 @@ func (a *Argocd) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
 }
 
 func (a *Argocd) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

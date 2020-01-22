@@ -1,20 +1,23 @@
 package metrics
 
 import (
-	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
 )
 
 func GetServicemonitor(instanceName string) *servicemonitor.Config {
-	appName := ambassador.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port: "admin",
 		Path: "/metrics",
 	}
+
+	ls["service"] = "ambassador-admin"
+	ls["app.kubernetes.io/part-of"] = "ambassador"
+	ls["app.kubernetes.io/name"] = "ambassador"
+	ls["app.kubernetes.io/instance"] = "ambassador"
 
 	return &servicemonitor.Config{
 		Name:                  "ambassador-servicemonitor",

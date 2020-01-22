@@ -3,7 +3,7 @@ package metrics
 import (
 	"strings"
 
-	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
 )
@@ -16,9 +16,9 @@ func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 }
 
 func getFluentd(instanceName string) *servicemonitor.Config {
-	appName := loggingoperator.GetName()
+	appName := info.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port:        "metrics",
@@ -39,9 +39,9 @@ func getFluentd(instanceName string) *servicemonitor.Config {
 }
 
 func getFluentbit(instanceName string) *servicemonitor.Config {
-	appName := loggingoperator.GetName()
+	appName := info.GetName()
 	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port:        "metrics",

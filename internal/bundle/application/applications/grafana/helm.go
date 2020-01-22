@@ -7,8 +7,10 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
 	"github.com/caos/boom/internal/kustomize"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
@@ -84,6 +86,13 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 		values.Grafana.Admin.UserKey = toolset.Grafana.Admin.UserKey
 		values.Grafana.Admin.PasswordKey = toolset.Grafana.Admin.PasswordKey
 	}
+
+	appLabels := labels.GetApplicationLabels(info.GetName())
+	values.Grafana.Labels = appLabels
+	service := &helm.Service{
+		Labels: appLabels,
+	}
+	values.Grafana.Service = service
 
 	return values
 }
