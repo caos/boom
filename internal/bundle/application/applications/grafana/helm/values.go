@@ -80,6 +80,7 @@ type GrafanaValues struct {
 	DashboardProviders       *DashboardProviders             `yaml:"dashboardProviders,omitempty"`
 	DashboardsConfigMaps     map[string]string               `yaml:"dashboardsConfigMaps,omitempty"`
 	Service                  *Service                        `yaml:"service,omitempty"`
+	PodLabels                map[string]string               `yaml:"podLabels,omitempty"`
 }
 
 type Rules struct {

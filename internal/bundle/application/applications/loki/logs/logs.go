@@ -10,6 +10,7 @@ import (
 	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
+	plogs "github.com/caos/boom/internal/bundle/application/applications/prometheus/logs"
 	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
 	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
 	"github.com/caos/boom/internal/labels"
@@ -25,15 +26,16 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 
 	ret := make([]interface{}, 0)
 	if len(flows) > 0 {
-		for _, flow := range flows {
-			ret = append(ret, flow)
-		}
+
+		//logging resource so that fluentd and fluentbit are deployed
+		ret = append(ret, getLogging())
 		for _, output := range outputs {
 			ret = append(ret, output)
 		}
 
-		//logging resource so that fluentd and fluentbit are deployed
-		ret = append(ret, getLogging())
+		for _, flow := range flows {
+			ret = append(ret, flow)
+		}
 	}
 
 	return ret
@@ -83,14 +85,14 @@ func getAllFlows(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, outputNames []stri
 		flows = append(flows, logging.NewFlow(aglogs.GetFlow(outputNames)))
 	}
 
-	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
-		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
-		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
-	}
+	// if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
+	// 	(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
+	// 	flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
+	// }
 
 	if toolsetCRDSpec.Prometheus != nil && toolsetCRDSpec.Prometheus.Deploy &&
 		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Prometheus) {
-		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
+		flows = append(flows, logging.NewFlow(plogs.GetFlow(outputNames)))
 	}
 
 	return flows

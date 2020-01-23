@@ -23,9 +23,15 @@ type Fluentd struct {
 type Metrics struct {
 	Port int `yaml:"port"`
 }
+type Image struct {
+	PullPolicy string `yaml:"pullPolicy"`
+	Repository string `yaml:"repository"`
+	Tag        string `yaml:"tag"`
+}
 
 type Fluentbit struct {
 	Metrics *Metrics `yaml:"metrics,omitempty"`
+	Image   *Image   `yaml:"image,omitempty"`
 }
 type Spec struct {
 	Fluentd          *Fluentd   `yaml:"fluentd"`
@@ -61,6 +67,11 @@ func New(conf *Config) *Logging {
 			Fluentbit: &Fluentbit{
 				Metrics: &Metrics{
 					Port: 8080,
+				},
+				Image: &Image{
+					Repository: "fluent/fluent-bit",
+					PullPolicy: "IfNotPresent",
+					Tag:        "1.3.6-debug",
 				},
 			},
 		},

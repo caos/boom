@@ -10,7 +10,7 @@ func GetFlow(outputs []string) *logging.FlowConfig {
 	ls := labels.GetApplicationLabels(info.GetName())
 
 	return &logging.FlowConfig{
-		Name:         "flow-ambassador",
+		Name:         "flow-grafana",
 		Namespace:    "caos-system",
 		SelectLabels: ls,
 		Outputs:      outputs,

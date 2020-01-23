@@ -89,6 +89,7 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 
 	appLabels := labels.GetApplicationLabels(info.GetName())
 	values.Grafana.Labels = appLabels
+	values.Grafana.PodLabels = appLabels
 	service := &helm.Service{
 		Labels: appLabels,
 	}
