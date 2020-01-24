@@ -49,6 +49,7 @@ type ToolsetReconciler struct {
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=apiregistration.k8s.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=getambassador.io,resources=*,verbs=*
 
 func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
