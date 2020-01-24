@@ -127,7 +127,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	var gitCrdError chan error
 	if gitCrdPath != "" {
 		if err := app.AddGitCrd(gitCrdURL, gitCrdPrivateKeyBytes, gitCrdPath); err != nil {
 			setupLog.Error(err, "unable to start supervised crd")
@@ -144,7 +143,6 @@ func main() {
 				})
 				if goErr != nil {
 					recLogger.Error(goErr)
-					gitCrdError <- goErr
 				}
 				recLogger.Info("Iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
@@ -205,8 +203,5 @@ func main() {
 			setupLog.Error(err, "unable to apply crd")
 			os.Exit(1)
 		}
-
-		<-gitCrdError
 	}
-
 }
