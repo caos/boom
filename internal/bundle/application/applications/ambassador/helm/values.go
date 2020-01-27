@@ -82,8 +82,9 @@ type SecurityContext struct {
 }
 type Port struct {
 	Name       string `yaml:"name"`
-	Port       int    `yaml:"port"`
-	TargetPort int    `yaml:"targetPort"`
+	Port       uint16 `yaml:"port"`
+	TargetPort uint16 `yaml:"targetPort"`
+	NodePort   uint16 `yaml:"nodePort"`
 }
 type Service struct {
 	Annotations interface{} `yaml:"annotations"`
