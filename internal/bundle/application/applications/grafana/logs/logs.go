@@ -12,7 +12,7 @@ func GetFlow(outputs []string) *logging.FlowConfig {
 		Namespace:    "caos-system",
 		SelectLabels: lables,
 		Outputs:      outputs,
-		ParserType:   "none",
+		ParserType:   "logfmt",
 	}
 
 }

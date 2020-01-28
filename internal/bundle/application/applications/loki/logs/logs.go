@@ -7,6 +7,8 @@ import (
 	glogs "github.com/caos/boom/internal/bundle/application/applications/grafana/logs"
 	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
+	lologs "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logs"
+	plogs "github.com/caos/boom/internal/bundle/application/applications/prometheus/logs"
 	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
 	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
 )
@@ -79,13 +81,18 @@ func getAllFlows(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, outputNames []stri
 		flows = append(flows, logging.NewFlow(aglogs.GetFlow(outputNames)))
 	}
 
-	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
-		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
-		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
+	if toolsetCRDSpec.LoggingOperator != nil && toolsetCRDSpec.LoggingOperator.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.LoggingOperator) {
+		flows = append(flows, logging.NewFlow(lologs.GetFlow(outputNames)))
 	}
 
 	if toolsetCRDSpec.Prometheus != nil && toolsetCRDSpec.Prometheus.Deploy &&
 		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Prometheus) {
+		flows = append(flows, logging.NewFlow(plogs.GetFlow(outputNames)))
+	}
+
+	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
 		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
 	}
 
@@ -100,7 +107,7 @@ func getLokiFlow(outputs []string) *logging.FlowConfig {
 		Namespace:    "caos-system",
 		SelectLabels: lables,
 		Outputs:      outputs,
-		ParserType:   "none",
+		ParserType:   "logfmt",
 	}
 }
 

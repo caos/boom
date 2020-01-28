@@ -127,6 +127,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	var gitCrdError chan error
 	if gitCrdPath != "" {
 		if err := app.AddGitCrd(gitCrdURL, gitCrdPrivateKeyBytes, gitCrdPath); err != nil {
 			setupLog.Error(err, "unable to start supervised crd")
@@ -204,4 +205,5 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	<-gitCrdError
 }

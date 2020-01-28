@@ -16,13 +16,10 @@ type Parser struct {
 	ReserveData        bool   `yaml:"reserve_data"`
 	Parse              *Parse `yaml:"parse"`
 }
-type TagNormaliser struct {
-	Format string
-}
 
 type Filter struct {
-	Parser        *Parser        `yaml:"parser,omitempty"`
-	TagNormaliser *TagNormaliser `yaml:"tag_normaliser,omitempty"`
+	Parser        *Parser           `yaml:"parser,omitempty"`
+	TagNormaliser map[string]string `yaml:"tag_normaliser,omitempty"`
 }
 
 type FlowSpec struct {
@@ -51,16 +48,18 @@ func NewFlow(conf *FlowConfig) *Flow {
 				&Filter{
 					Parser: &Parser{
 						RemoveKeyNameField: true,
+						ReserveData:        true,
 						Parse: &Parse{
 							Type: conf.ParserType,
 						},
 					},
 				},
-				// 	// &Filter{
-				// 	// 	TagNormaliser: &TagNormaliser{
-				// 	// 		Format: "${namespace_name}.${pod_name}.${container_name}",
-				// 	// 	},
-				// 	// },
+				&Filter{
+					TagNormaliser: map[string]string{
+						"metadata":      "${namespace}.${container}.${pod}",
+						"metadata_name": "${namespace_name}.${container_name}.${pod_name}",
+					},
+				},
 			},
 			Selectors:  conf.SelectLabels,
 			OutputRefs: conf.Outputs,

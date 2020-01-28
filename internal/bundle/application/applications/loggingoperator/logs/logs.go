@@ -3,13 +3,13 @@ package logs
 import "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
 
 func GetFlow(outputs []string) *logging.FlowConfig {
-	lables := map[string]string{"app.kubernetes.io/instance": "argocd"}
+	lables := map[string]string{"app.kubernetes.io/instance": "logging-operator", "app.kubernetes.io/name": "logging-operator"}
 
 	return &logging.FlowConfig{
-		Name:         "flow-argocd",
+		Name:         "flow-logging-operator",
 		Namespace:    "caos-system",
 		SelectLabels: lables,
 		Outputs:      outputs,
-		ParserType:   "logfmt",
+		ParserType:   "json",
 	}
 }
