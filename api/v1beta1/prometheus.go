@@ -7,18 +7,18 @@ type Prometheus struct {
 }
 
 type StorageSpec struct {
-	StorageClass string   `json:"storageClass,omitempty"`
-	AccessModes  []string `json:"accessModes,omitempty"`
-	Size         string   `json:"size,omitempty"`
+	StorageClass string   `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
+	AccessModes  []string `json:"accessModes,omitempty" yaml:"accessModes,omitempty"`
+	Size         string   `json:"size,omitempty" yaml:"size,omitempty"`
 }
 
 type Metrics struct {
 	Ambassador             bool `json:"ambassador"`
 	Argocd                 bool `json:"argocd"`
-	KubeStateMetrics       bool `json:"kube-state-metrics"`
-	PrometheusNodeExporter bool `json:"prometheus-node-exporter"`
-	APIServer              bool `json:"api-server"`
-	PrometheusOperator     bool `json:"prometheus-operator"`
-	LoggingOperator        bool `json:"logging-operator"`
+	KubeStateMetrics       bool `json:"kube-state-metrics" yaml:"kube-state-metrics"`
+	PrometheusNodeExporter bool `json:"prometheus-node-exporter" yaml:"prometheus-node-exporter"`
+	APIServer              bool `json:"api-server" yaml:"api-server"`
+	PrometheusOperator     bool `json:"prometheus-operator" yaml:"prometheus-operator"`
+	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
 	Loki                   bool `json:"loki"`
 }

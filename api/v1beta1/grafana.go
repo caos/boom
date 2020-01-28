@@ -7,9 +7,9 @@ type Grafana struct {
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty"`
 }
 type Admin struct {
-	ExistingSecret string `json:"existingSecret,omitempty"`
-	UserKey        string `json:"userKey,omitempty"`
-	PasswordKey    string `json:"passwordKey,omitempty"`
+	ExistingSecret string `json:"existingSecret,omitempty" yaml:"existingSecret,omitempty"`
+	UserKey        string `json:"userKey,omitempty" yaml:"userKey,omitempty"`
+	PasswordKey    string `json:"passwordKey,omitempty" yaml:"passwordKey,omitempty"`
 }
 
 type Datasource struct {
@@ -17,10 +17,10 @@ type Datasource struct {
 	Type      string `json:"type,omitempty"`
 	Url       string `json:"url,omitempty"`
 	Access    string `json:"access,omitempty"`
-	IsDefault bool   `json:"isDefault,omitempty"`
+	IsDefault bool   `json:"isDefault,omitempty" yaml:"isDefault,omitempty"`
 }
 
 type Provider struct {
-	ConfigMaps []string `json:"configMaps,omitempty"`
+	ConfigMaps []string `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
 	Folder     string   `json:"folder,omitempty"`
 }

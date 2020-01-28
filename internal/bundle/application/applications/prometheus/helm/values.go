@@ -100,7 +100,7 @@ type VolumeClaimTemplateSpec struct {
 	Resources        *Resources `yaml:"resources,omitempty"`
 }
 type Resources struct {
-	Requests *Request `yaml:"request,omitempty"`
+	Requests *Request `yaml:"requests,omitempty"`
 }
 
 type Request struct {

@@ -18,9 +18,11 @@ func (l *Loki) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{
 
 	if spec.Storage != nil {
 		values.Persistence.Enabled = true
-		values.Persistence.AccessModes = spec.Storage.AccessModes
 		values.Persistence.Size = spec.Storage.Size
 		values.Persistence.StorageClassName = spec.Storage.StorageClass
+		if spec.Storage.AccessModes != nil {
+			values.Persistence.AccessModes = spec.Storage.AccessModes
+		}
 	}
 
 	return values
