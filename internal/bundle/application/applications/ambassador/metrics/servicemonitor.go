@@ -4,7 +4,7 @@ import "github.com/caos/boom/internal/bundle/application/applications/prometheus
 
 func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
 	endpoint := &servicemonitor.ConfigEndpoint{
-		Port: "admin",
+		Port: "ambassador-admin",
 		Path: "/metrics",
 	}
 	labels := map[string]string{"app.kubernetes.io/name": "ambassador"}
