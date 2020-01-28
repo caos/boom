@@ -120,6 +120,8 @@ spec:
                       type: boolean
                     loki:
                       type: boolean
+                    prometheus:
+                      type: boolean
                     prometheus-node-exporter:
                       type: boolean
                     prometheus-operator:
@@ -131,6 +133,7 @@ spec:
                   - kube-state-metrics
                   - logging-operator
                   - loki
+                  - prometheus
                   - prometheus-node-exporter
                   - prometheus-operator
                   type: object
