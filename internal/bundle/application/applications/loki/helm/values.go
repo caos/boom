@@ -28,12 +28,17 @@ type Index struct {
 	Prefix string `yaml:"prefix"`
 	Period string `yaml:"period"`
 }
+type Chunks struct {
+	Prefix string `yaml:"prefix"`
+	Period string `yaml:"period"`
+}
 type SchemaConfig struct {
-	From        string `yaml:"from"`
-	Store       string `yaml:"store"`
-	ObjectStore string `yaml:"object_store"`
-	Schema      string `yaml:"schema"`
-	Index       *Index `yaml:"index"`
+	From        string  `yaml:"from"`
+	Store       string  `yaml:"store"`
+	ObjectStore string  `yaml:"object_store"`
+	Schema      string  `yaml:"schema"`
+	Index       *Index  `yaml:"index"`
+	Chunks      *Chunks `yaml:"chunks"`
 }
 type SchemaConfigs struct {
 	Configs []*SchemaConfig `yaml:"configs"`
@@ -52,11 +57,11 @@ type StorageConfig struct {
 	Filesystem *Filesystem `yaml:"filesystem"`
 }
 type ChunkStoreConfig struct {
-	MaxLookBackPeriod int `yaml:"max_look_back_period"`
+	MaxLookBackPeriod string `yaml:"max_look_back_period"`
 }
 type TableManager struct {
-	RetentionDeletesEnabled bool `yaml:"retention_deletes_enabled"`
-	RetentionPeriod         int  `yaml:"retention_period"`
+	RetentionDeletesEnabled bool   `yaml:"retention_deletes_enabled"`
+	RetentionPeriod         string `yaml:"retention_period"`
 }
 type Config struct {
 	AuthEnabled      bool              `yaml:"auth_enabled"`

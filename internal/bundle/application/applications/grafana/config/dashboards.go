@@ -57,12 +57,20 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 		providers = append(providers, provider)
 	}
 
-	// provider := &ConfigProvider{
-	// 	ConfigMaps: []string{
-	// 		"grafana-dashboard-kubelet",
-	// 	},
-	// 	Folder: filepath.Join(dashboardsfolder, "kubelet"),
-	// }
-	// providers = append(providers, provider)
+	provider := &Provider{
+		ConfigMaps: []string{
+			"grafana-dashboard-kubelet",
+		},
+		Folder: filepath.Join(dashboardsfolder, "kubelet"),
+	}
+	providers = append(providers, provider)
+
+	provider = &Provider{
+		ConfigMaps: []string{
+			"grafana-persistentvolumesusage",
+		},
+		Folder: filepath.Join(dashboardsfolder, "persistentvolumesusage"),
+	}
+	providers = append(providers, provider)
 	return providers
 }

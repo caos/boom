@@ -38,6 +38,7 @@ func DefaultValues(imageTags map[string]string) *Values {
 			Image:   "dduportal/bats",
 			Tag:     imageTags["dduportal/bats"],
 		},
+		Plugins: []string{"grafana-piechart-panel"},
 	}
 
 	return &Values{
