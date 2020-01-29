@@ -5,6 +5,7 @@ type Grafana struct {
 	Admin              *Admin        `json:"admin,omitempty"`
 	Datasources        []*Datasource `json:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty"`
+	Storage            *StorageSpec  `json:"storage,omitempty"`
 }
 type Admin struct {
 	ExistingSecret string `json:"existingSecret,omitempty" yaml:"existingSecret,omitempty"`
