@@ -61,19 +61,31 @@ type Admin struct {
 	PasswordKey    string `yaml:"passwordKey"`
 }
 
+type Persistence struct {
+	Type             string   `yaml:"type"`
+	Enabled          bool     `yaml:"enabled"`
+	AccessModes      []string `yaml:"accessModes"`
+	Size             string   `yaml:"size"`
+	StorageClassName string   `yaml:"storageClassName"`
+	Finalizers       []string `yaml:"finalizers"`
+}
+
 type GrafanaValues struct {
-	FullnameOverride         string                          `yaml:"fullnameOverride,omitempty"`
-	Enabled                  bool                            `yaml:"enabled"`
-	DefaultDashboardsEnabled bool                            `yaml:"defaultDashboardsEnabled"`
-	AdminPassword            string                          `yaml:"adminPassword"`
-	Admin                    *Admin                          `yaml:"admin"`
-	Ingress                  *Ingress                        `yaml:"ingress"`
-	Sidecar                  *Sidecar                        `yaml:"sidecar"`
-	ExtraConfigmapMounts     []interface{}                   `yaml:"extraConfigmapMounts"`
-	AdditionalDataSources    []*grafanastandalone.Datasource `yaml:"additionalDataSources"`
-	ServiceMonitor           *ServiceMonitor                 `yaml:"serviceMonitor"`
-	DashboardProviders       *DashboardProviders             `yaml:"dashboardProviders,omitempty"`
-	DashboardsConfigMaps     map[string]string               `yaml:"dashboardsConfigMaps,omitempty"`
+	FullnameOverride         string                           `yaml:"fullnameOverride,omitempty"`
+	Enabled                  bool                             `yaml:"enabled"`
+	DefaultDashboardsEnabled bool                             `yaml:"defaultDashboardsEnabled"`
+	AdminPassword            string                           `yaml:"adminPassword"`
+	Admin                    *Admin                           `yaml:"admin"`
+	Ingress                  *Ingress                         `yaml:"ingress"`
+	Sidecar                  *Sidecar                         `yaml:"sidecar"`
+	ExtraConfigmapMounts     []interface{}                    `yaml:"extraConfigmapMounts"`
+	AdditionalDataSources    []*grafanastandalone.Datasource  `yaml:"additionalDataSources"`
+	ServiceMonitor           *ServiceMonitor                  `yaml:"serviceMonitor"`
+	DashboardProviders       *DashboardProviders              `yaml:"dashboardProviders,omitempty"`
+	DashboardsConfigMaps     map[string]string                `yaml:"dashboardsConfigMaps,omitempty"`
+	Persistence              *Persistence                     `yaml:"persistence,omitempty"`
+	TestFramework            *grafanastandalone.TestFramework `yaml:"testFramework,omitempty"`
+	Plugins                  []string                         `yaml:"plugins,omitempty"`
 }
 
 type Rules struct {
