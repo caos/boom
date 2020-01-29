@@ -26,6 +26,10 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `fluentdStorage`                   | Spec to define how the persistency should be handled                            | nil                               |
+| `fluentdStorage.size`              | Defined size of the PVC                                                         |                                   |
+| `fluentdStorage.storageClass`      | Storageclass used by the PVC                                                    |                                   |
+| `fluentdStorage.accessModes`       | Accessmodes used by the PVC                                                     |                                   |
 
 ### Prometheus-Node-Exporter
 
@@ -52,6 +56,10 @@
 | `dashboardproviders`               | Spec for additional Dashboardproviders                                          | nil                               |
 | `dashboardproviders.configMaps`    | ConfigMaps in which the dashboards are stored                                   |                                   |
 | `dashboardproviders.folder`        | Local folder in which the dashboards are mounted                                |                                   |
+| `storage`                          | Spec to define how the persistency should be handled                            | nil                               |
+| `storage.size`                     | Defined size of the PVC                                                         |                                   |
+| `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
+| `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
 
 ### Ambassador
 
