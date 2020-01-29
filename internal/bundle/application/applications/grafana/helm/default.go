@@ -24,6 +24,7 @@ func DefaultValues(imageTags map[string]string) *Values {
 		ServiceMonitor: &ServiceMonitor{
 			SelfMonitor: false,
 		},
+		Plugins: []string{"grafana-piechart-panel"},
 	}
 
 	return &Values{

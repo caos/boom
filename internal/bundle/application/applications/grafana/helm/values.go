@@ -74,6 +74,7 @@ type GrafanaValues struct {
 	ServiceMonitor           *ServiceMonitor                 `yaml:"serviceMonitor"`
 	DashboardProviders       *DashboardProviders             `yaml:"dashboardProviders,omitempty"`
 	DashboardsConfigMaps     map[string]string               `yaml:"dashboardsConfigMaps,omitempty"`
+	Plugins                  []string                        `yaml:"plugins,omitempty"`
 }
 
 type Rules struct {
