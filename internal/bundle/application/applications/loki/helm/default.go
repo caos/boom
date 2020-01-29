@@ -27,13 +27,17 @@ func DefaultValues(imageTags map[string]string) *Values {
 			SchemaConfig: &SchemaConfigs{
 				Configs: []*SchemaConfig{
 					&SchemaConfig{
-						From:        "2018-04-15",
+						From:        "2000-01-01",
 						Store:       "boltdb",
 						ObjectStore: "filesystem",
 						Schema:      "v9",
 						Index: &Index{
 							Prefix: "index_",
-							Period: "168h",
+							Period: "24h",
+						},
+						Chunks: &Chunks{
+							Prefix: "chunk_",
+							Period: "24h",
 						},
 					},
 				},
@@ -50,11 +54,11 @@ func DefaultValues(imageTags map[string]string) *Values {
 				},
 			},
 			ChunkStoreConfig: &ChunkStoreConfig{
-				MaxLookBackPeriod: 0,
+				MaxLookBackPeriod: "168h",
 			},
 			TableManager: &TableManager{
 				RetentionDeletesEnabled: false,
-				RetentionPeriod:         0,
+				RetentionPeriod:         "336h",
 			},
 		},
 		Image: &Image{
