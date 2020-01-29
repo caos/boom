@@ -84,6 +84,15 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 		values.Grafana.Admin.UserKey = toolset.Grafana.Admin.UserKey
 		values.Grafana.Admin.PasswordKey = toolset.Grafana.Admin.PasswordKey
 	}
+	if toolset.Grafana.Storage != nil {
+		values.Grafana.Persistence.Enabled = true
+		values.Grafana.Persistence.Size = toolset.Grafana.Storage.Size
+		values.Grafana.Persistence.StorageClassName = toolset.Grafana.Storage.StorageClass
+
+		if toolset.Grafana.Storage.AccessModes != nil {
+			values.Grafana.Persistence.AccessModes = toolset.Grafana.Storage.AccessModes
+		}
+	}
 
 	return values
 }

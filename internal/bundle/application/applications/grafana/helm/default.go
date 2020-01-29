@@ -2,6 +2,8 @@ package helm
 
 import prometheusoperator "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/helm"
 
+import "github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
+
 func DefaultValues(imageTags map[string]string) *Values {
 	grafana := &GrafanaValues{
 		FullnameOverride:         "grafana",
@@ -23,6 +25,18 @@ func DefaultValues(imageTags map[string]string) *Values {
 		},
 		ServiceMonitor: &ServiceMonitor{
 			SelfMonitor: false,
+		},
+		Persistence: &Persistence{
+			Type:        "pvc",
+			Enabled:     false,
+			AccessModes: []string{"ReadWriteOnce"},
+			Size:        "10Gi",
+			Finalizers:  []string{"kubernetes.io/pvc-protection"},
+		},
+		TestFramework: &grafanastandalone.TestFramework{
+			Enabled: false,
+			Image:   "dduportal/bats",
+			Tag:     imageTags["dduportal/bats"],
 		},
 		Plugins: []string{"grafana-piechart-panel"},
 	}
