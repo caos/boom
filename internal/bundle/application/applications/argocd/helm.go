@@ -7,8 +7,16 @@ import (
 )
 
 func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
-	// spec := toolset.Argocd
-	values := helm.DefaultValues(a.GetImageTags())
+	spec := toolsetCRDSpec.Argocd
+
+	imageTags := a.GetImageTags()
+	values := helm.DefaultValues(imageTags)
+	if spec.CustomImageWithGopass {
+		imageRepository := "docker.pkg.github.com/caos/argocd-secrets/argocd"
+
+		values.RepoServer.Image.Repository = imageRepository
+		values.RepoServer.Image.Tag = imageTags[imageRepository]
+	}
 
 	return values
 }
