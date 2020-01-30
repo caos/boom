@@ -57,6 +57,17 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 		providers = append(providers, provider)
 	}
 
+	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.KubeStateMetrics) {
+		provider := &Provider{
+			ConfigMaps: []string{
+				"grafana-persistentvolumesusage",
+			},
+			Folder: filepath.Join(dashboardsfolder, "persistentvolumesusage"),
+		}
+		providers = append(providers, provider)
+	}
+
 	provider := &Provider{
 		ConfigMaps: []string{
 			"grafana-dashboard-kubelet",
@@ -65,12 +76,5 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 	}
 	providers = append(providers, provider)
 
-	provider = &Provider{
-		ConfigMaps: []string{
-			"grafana-persistentvolumesusage",
-		},
-		Folder: filepath.Join(dashboardsfolder, "persistentvolumesusage"),
-	}
-	providers = append(providers, provider)
 	return providers
 }
