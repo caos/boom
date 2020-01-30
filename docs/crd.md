@@ -73,6 +73,8 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `customImageWithGopass`            | Flag if custom argocd-image should get used with gopass                         | false                             |
+| `imagePullSecret`                  | Name of used imagePullSecret to pull customImage                                |                                   |
 
 ### Prometheus
 
