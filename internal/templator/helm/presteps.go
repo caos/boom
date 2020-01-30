@@ -37,7 +37,7 @@ func (h *Helm) preApplySteps(app interface{}, spec *v1beta1.ToolsetSpec) templat
 		for _, resource := range resources {
 			value, isString := resource.(string)
 			if isString {
-				h.status = helper.AddStringToYaml(resultfilepath, value)
+				h.status = helper.AddStringObjectToYaml(resultfilepath, value)
 			} else {
 				h.status = helper.AddStructToYaml(resultfilepath, resource)
 			}

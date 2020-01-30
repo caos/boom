@@ -46,13 +46,19 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return h
 	}
 
-	h.status = helper.AddStringToYaml(resultAbsFilePath, out)
+	h.status = helper.AddStringObjectToYaml(resultAbsFilePath, out)
 	if h.status != nil {
 		return h
 	}
 
 	h.status = helper.DeleteKindFromYaml(resultAbsFilePath, "Namespace")
 	if h.status != nil {
+		return h
+	}
+
+	// mutate templated results
+	if err := h.mutate(app, spec).GetStatus(); err != nil {
+		h.status = err
 		return h
 	}
 

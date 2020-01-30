@@ -67,6 +67,21 @@ func AddStringToYaml(path string, str string) error {
 
 	defer f.Close()
 
+	if _, err := f.WriteString(str); err != nil {
+		return err
+	}
+	return nil
+}
+
+func AddStringObjectToYaml(path string, str string) error {
+	f, err := os.OpenFile(path,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
 	if _, err := f.WriteString("\n---\n"); err != nil {
 		return err
 	}
@@ -93,7 +108,7 @@ func DeleteKindFromYaml(path string, kind string) error {
 		}
 
 		if struc.Kind != kind {
-			if err := AddStringToYaml(path, part); err != nil {
+			if err := AddStringObjectToYaml(path, part); err != nil {
 				return err
 			}
 		}
@@ -102,9 +117,13 @@ func DeleteKindFromYaml(path string, kind string) error {
 	return nil
 }
 
+type Metadata struct {
+	Name string `yaml:"name"`
+}
 type Resource struct {
-	Kind       string `yaml:"kind"`
-	ApiVersion string `yaml:"apiVersion"`
+	Kind       string    `yaml:"kind"`
+	ApiVersion string    `yaml:"apiVersion"`
+	Metadata   *Metadata `yaml:"metadata"`
 }
 
 func GetVersionFromYaml(filePath string) (string, error) {
@@ -126,7 +145,6 @@ func GetApiGroupFromYaml(filePath string) (string, error) {
 
 	return parts[0], nil
 }
-
 func AddYamlToYaml(filePath, addFilePath string) error {
 
 	f, err := os.OpenFile(filePath,
@@ -147,6 +165,34 @@ func AddYamlToYaml(filePath, addFilePath string) error {
 	}
 	if _, err := f.WriteString(addText); err != nil {
 		return err
+	}
+	return nil
+}
+
+func AddStringToKindAndName(filePath, kind, name, addContent string) error {
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	text := string(content)
+	parts := strings.Split(text, "\n---\n")
+
+	os.Remove(filePath)
+	for _, part := range parts {
+		struc := &Resource{}
+		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
+			return err
+		}
+
+		if err := AddStringObjectToYaml(filePath, part); err != nil {
+			return err
+		}
+		if struc.Kind == kind && name == name {
+			if err := AddStringToYaml(filePath, addContent); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
