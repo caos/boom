@@ -6,6 +6,11 @@ import "github.com/caos/boom/internal/bundle/application/applications/grafanasta
 
 func DefaultValues(imageTags map[string]string) *Values {
 	grafana := &GrafanaValues{
+		Image: &grafanastandalone.Image{
+			Repository: "grafana/grafana",
+			Tag:        imageTags["grafana/grafana"],
+			PullPolicy: "IfNotPresent",
+		},
 		FullnameOverride:         "grafana",
 		Enabled:                  true,
 		DefaultDashboardsEnabled: true,

@@ -86,6 +86,7 @@ type GrafanaValues struct {
 	Persistence              *Persistence                     `yaml:"persistence,omitempty"`
 	TestFramework            *grafanastandalone.TestFramework `yaml:"testFramework,omitempty"`
 	Plugins                  []string                         `yaml:"plugins,omitempty"`
+	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
 }
 
 type Rules struct {

@@ -52,14 +52,14 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "(\n  sum without(instance, node) (kubelet_volume_stats_capacity_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n  -\n  sum without(instance, node) (kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n)\n",
+              "expr": "(\n  sum without(job, instance, node, namespace) (kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n  -\n  sum without(job, instance, node, namespace, beta_kubernetes_io_arch, beta_kubernetes_io_fluentd_ds_ready, beta_kubernetes_io_instance_type, beta_kubernetes_io_os, cloud_google_com_gke_nodepool, cloud_google_com_gke_os_distribution, cloud_google_com_gke_preemptible, failure_domain_beta_kubernetes_io_region, failure_domain_beta_kubernetes_io_zone, kubernetes_io_arch, kubernetes_io_hostname, kubernetes_io_os) (kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n)\n",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Used Space",
               "refId": "A"
             },
             {
-              "expr": "sum without(instance, node) (kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n",
+              "expr": "sum without(job, instance, node, namespace, beta_kubernetes_io_arch, beta_kubernetes_io_fluentd_ds_ready, beta_kubernetes_io_instance_type, beta_kubernetes_io_os, cloud_google_com_gke_nodepool, cloud_google_com_gke_os_distribution, cloud_google_com_gke_preemptible, failure_domain_beta_kubernetes_io_region, failure_domain_beta_kubernetes_io_zone, kubernetes_io_arch, kubernetes_io_hostname, kubernetes_io_os) (kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Free Space",
@@ -159,7 +159,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "(\n  kubelet_volume_stats_capacity_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n  -\n  kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n)\n/\nkubelet_volume_stats_capacity_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100\n",
+              "expr": "(\n  avg(kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n  -\n  sum(kubelet_volume_stats_available_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n)\n/\navg(kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n* 100\n",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "",
@@ -338,7 +338,7 @@
           "tableColumn": "",
           "targets": [
             {
-              "expr": "kubelet_volume_stats_inodes_used{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n/\nkubelet_volume_stats_inodes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100\n",
+              "expr": "sum(kubelet_volume_stats_inodes_used{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n/\nsum(kubelet_volume_stats_inodes{job=\"kubernetes-nodes\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n* 100\n",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "",
@@ -442,7 +442,7 @@
         "multi": false,
         "name": "volume",
         "options": [],
-        "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubernetes-nodes\", namespace=\"$namespace\"}, persistentvolumeclaim)",
+        "query": "label_values(kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\", namespace=\"$namespace\"}, persistentvolumeclaim)",
         "refresh": 2,
         "regex": "",
         "sort": 1,
