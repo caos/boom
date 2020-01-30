@@ -11,6 +11,7 @@ func GetChartInfo() *chart.Chart {
 
 func GetImageTags() map[string]string {
 	return map[string]string{
+		"grafana/grafana":                           "6.6.0",
 		"quay.io/prometheus/alertmanager":           "v0.19.0",
 		"squareup/ghostunnel":                       "v1.4.1",
 		"jettech/kube-webhook-certgen":              "v1.0.0",
