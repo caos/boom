@@ -123,7 +123,7 @@ func DeleteKindFromYaml(path string, kind string) error {
 	return nil
 }
 
-func AddStringToKindAndName(filePath, kind, name, addContent string) error {
+func AddStringBeforePointForKindAndName(filePath, kind, name, point, addContent string) error {
 	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -138,14 +138,19 @@ func AddStringToKindAndName(filePath, kind, name, addContent string) error {
 		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
 			return err
 		}
-
-		if err := AddStringObjectToYaml(filePath, part); err != nil {
-			return err
-		}
+		output := part
 		if struc.Kind == kind && name == name {
-			if err := AddStringToYaml(filePath, addContent); err != nil {
-				return err
+			lines := strings.Split(part, "\n")
+			for i, line := range lines {
+				if strings.Contains(line, point) {
+					lines[i] = strings.Join([]string{addContent, line}, "")
+				}
 			}
+			output = strings.Join(lines, "\n")
+		}
+
+		if err := AddStringObjectToYaml(filePath, output); err != nil {
+			return err
 		}
 	}
 	return nil
