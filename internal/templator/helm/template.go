@@ -7,6 +7,7 @@ import (
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm/helmcommand"
+	"github.com/pkg/errors"
 )
 
 func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, resultFunc func(resultFilePath, namespace string) error) templator.Templator {
@@ -26,7 +27,7 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 	}
 
 	logFields["logID"] = "HELM-zqYnVAzGXHqBbhu"
-	h.logger.WithFields(logFields).Info("Deleting old results")
+	h.logger.WithFields(logFields).Debug("Deleting old results")
 	h.status = h.deleteResults(app)
 	if h.status != nil {
 		return h
@@ -40,19 +41,15 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return h
 	}
 
-	out, err := h.runHelmTemplate(h.overlay, app, spec)
-	if err != nil {
+	if err := h.runHelmTemplate(h.overlay, app, spec, resultAbsFilePath); err != nil {
 		h.status = err
 		return h
 	}
 
-	h.status = helper.AddStringToYaml(resultAbsFilePath, out)
+	deleteKind := "Namespace"
+	h.status = helper.DeleteKindFromYaml(resultAbsFilePath, deleteKind)
 	if h.status != nil {
-		return h
-	}
-
-	h.status = helper.DeleteKindFromYaml(resultAbsFilePath, "Namespace")
-	if h.status != nil {
+		h.status = errors.Wrapf(h.status, "Error while trying to delete kind %s from results", deleteKind)
 		return h
 	}
 
@@ -67,33 +64,35 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 	return h
 }
 
-func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec) (string, error) {
+func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec, resultAbsFilePath string) error {
+	if h.status != nil {
+		return h.status
+	}
+
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
 		"overlay":     overlay,
+		"logID":       "HELM-siNod1Y2nYCVW0r",
 	}
 
-	logFields["logID"] = "HELM-D3KJ1Qv5F8fxVA5"
-	h.logger.WithFields(logFields).Info("Generate values with toolsetSpec")
+	h.logger.WithFields(logFields).Debug("Generate values with toolsetSpec")
 	chartInfo := app.GetChartInfo()
 	values := app.SpecToHelmValues(spec)
 
-	valuesFilePath := filepath.Join(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
-	valuesAbsFilePath, err := filepath.Abs(valuesFilePath)
+	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if err := helper.StructToYaml(values, valuesAbsFilePath); err != nil {
-		return "", err
+		return err
 	}
 
-	logFields["logID"] = "HELM-siNod1Y2nYCVW0r"
-	h.logger.WithFields(logFields).Info("Generate templator files")
-
+	h.logger.WithFields(logFields).Debug("Generate result through helm template")
 	out, err := helmcommand.Template(h.templatorDirectoryPath, chartInfo.Name, app.GetName().String(), app.GetNamespace(), valuesAbsFilePath)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return string(out), nil
+
+	return helper.AddStringToYaml(resultAbsFilePath, string(out))
 }

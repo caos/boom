@@ -37,8 +37,12 @@ func GetVersion() name.Version {
 }
 
 func New(conf *config.Config) *Crd {
+	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+		"version": "v1beta1",
+	})
+
 	return &Crd{
-		logger: conf.Logger,
+		logger: crdLogger,
 		status: nil,
 	}
 }

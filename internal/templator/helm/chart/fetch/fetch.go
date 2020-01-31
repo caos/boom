@@ -102,6 +102,10 @@ func fetch(logger logging.Logger, basePath string, chart *ChartInfo) error {
 		"version":     chart.Version,
 		"logID":       "HELM-HkLTnAhAJnAyPq8",
 	}
+	if chart.IndexName != "" {
+		logFields["indexname"] = chart.IndexName
+	}
+
 	logger.WithFields(logFields).Info("Fetching chart")
 	return helmcommand.FetchChart(basePath, chart.Name, chart.Version, chart.IndexName)
 }
