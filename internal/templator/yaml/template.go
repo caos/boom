@@ -30,9 +30,9 @@ func (y *YAML) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 
 	fmt.Println(yamlInterface)
 	// if yamlStr, isString := yamlInterface.(string); isString {
-	// 	y.status = helper.AddStringToYaml(resultAbsFilePath, yamlStr)
+	// 	y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
 	// } else {
-	// 	y.status = helper.AddStringToYaml(resultAbsFilePath, yamlStr)
+	// 	y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
 	// }
 	// if y.GetStatus() != nil {
 	// 	return y

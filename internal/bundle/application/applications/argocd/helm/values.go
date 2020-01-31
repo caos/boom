@@ -13,6 +13,7 @@ type Args struct {
 	StatusProcessors    string `yaml:"statusProcessors"`
 	OperationProcessors string `yaml:"operationProcessors"`
 }
+
 type ReadinessProbe struct {
 	FailureThreshold    int `yaml:"failureThreshold"`
 	InitialDelaySeconds int `yaml:"initialDelaySeconds"`

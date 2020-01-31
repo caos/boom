@@ -8,9 +8,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type Metadata struct {
+	Name string `yaml:"name"`
+}
 type Resource struct {
-	Kind       string `yaml:"kind"`
-	ApiVersion string `yaml:"apiVersion"`
+	Kind       string    `yaml:"kind"`
+	ApiVersion string    `yaml:"apiVersion"`
+	Metadata   *Metadata `yaml:"metadata"`
 }
 
 func AddStructToYaml(path string, struc interface{}) error {
@@ -37,6 +41,21 @@ func AddStructToYaml(path string, struc interface{}) error {
 }
 
 func AddStringToYaml(path string, str string) error {
+	f, err := os.OpenFile(path,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	if _, err := f.WriteString(str); err != nil {
+		return err
+	}
+	return nil
+}
+
+func AddStringObjectToYaml(path string, str string) error {
 	f, err := os.OpenFile(path,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -95,11 +114,39 @@ func DeleteKindFromYaml(path string, kind string) error {
 		}
 
 		if struc.Kind != kind {
-			if err := AddStringToYaml(path, part); err != nil {
+			if err := AddStringObjectToYaml(path, part); err != nil {
 				return err
 			}
 		}
 	}
 
+	return nil
+}
+
+func AddStringToKindAndName(filePath, kind, name, addContent string) error {
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	text := string(content)
+	parts := strings.Split(text, "\n---\n")
+
+	os.Remove(filePath)
+	for _, part := range parts {
+		struc := &Resource{}
+		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
+			return err
+		}
+
+		if err := AddStringObjectToYaml(filePath, part); err != nil {
+			return err
+		}
+		if struc.Kind == kind && name == name {
+			if err := AddStringToYaml(filePath, addContent); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }

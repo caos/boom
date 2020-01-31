@@ -53,6 +53,12 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return h
 	}
 
+	// mutate templated results
+	if err := h.mutate(app, spec).GetStatus(); err != nil {
+		h.status = err
+		return h
+	}
+
 	// pre apply steps
 	if err := h.preApplySteps(app, spec).GetStatus(); err != nil {
 		h.status = err
