@@ -31,18 +31,27 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 		}
 
 		//logging resource so that fluentd and fluentbit are deployed
-		ret = append(ret, getLogging())
+		ret = append(ret, getLogging(toolsetCRDSpec))
 	}
 
 	return ret
 }
 
-func getLogging() *logging.Logging {
+func getLogging(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *logging.Logging {
 
 	conf := &logging.Config{
 		Name:             "logging",
 		Namespace:        "caos-system",
 		ControlNamespace: "caos-system",
+	}
+	if toolsetCRDSpec.LoggingOperator.FluentdPVC != nil {
+		conf.FluentdPVC = &logging.Storage{
+			StorageClassName: toolsetCRDSpec.LoggingOperator.FluentdPVC.StorageClass,
+			Storage:          toolsetCRDSpec.LoggingOperator.FluentdPVC.Size,
+		}
+		if toolsetCRDSpec.LoggingOperator.FluentdPVC.AccessModes != nil {
+			conf.FluentdPVC.AccessModes = toolsetCRDSpec.LoggingOperator.FluentdPVC.AccessModes
+		}
 	}
 
 	return logging.New(conf)

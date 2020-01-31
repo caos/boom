@@ -8,31 +8,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func StructToYaml(struc interface{}, path string) error {
-
-	data, err := yaml.Marshal(struc)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(path, data, 0644)
+type Metadata struct {
+	Name string `yaml:"name"`
 }
-
-func YamlToStruct(path string, struc interface{}) error {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	return yaml.Unmarshal(data, struc)
-}
-
-func YamlToString(path string) (string, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
+type Resource struct {
+	Kind       string    `yaml:"kind"`
+	ApiVersion string    `yaml:"apiVersion"`
+	Metadata   *Metadata `yaml:"metadata"`
 }
 
 func AddStructToYaml(path string, struc interface{}) error {
@@ -91,6 +73,30 @@ func AddStringObjectToYaml(path string, str string) error {
 	return nil
 }
 
+func AddYamlToYaml(filePath, addFilePath string) error {
+
+	f, err := os.OpenFile(filePath,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	addContent, err := ioutil.ReadFile(addFilePath)
+	if err != nil {
+		return err
+	}
+	addText := string(addContent)
+
+	if _, err := f.WriteString("\n---\n"); err != nil {
+		return err
+	}
+	if _, err := f.WriteString(addText); err != nil {
+		return err
+	}
+	return nil
+}
+
 func DeleteKindFromYaml(path string, kind string) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -114,58 +120,6 @@ func DeleteKindFromYaml(path string, kind string) error {
 		}
 	}
 
-	return nil
-}
-
-type Metadata struct {
-	Name string `yaml:"name"`
-}
-type Resource struct {
-	Kind       string    `yaml:"kind"`
-	ApiVersion string    `yaml:"apiVersion"`
-	Metadata   *Metadata `yaml:"metadata"`
-}
-
-func GetVersionFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[1], nil
-}
-
-func GetApiGroupFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[0], nil
-}
-func AddYamlToYaml(filePath, addFilePath string) error {
-
-	f, err := os.OpenFile(filePath,
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	addContent, err := ioutil.ReadFile(addFilePath)
-	if err != nil {
-		return err
-	}
-	addText := string(addContent)
-
-	if _, err := f.WriteString("\n---\n"); err != nil {
-		return err
-	}
-	if _, err := f.WriteString(addText); err != nil {
-		return err
-	}
 	return nil
 }
 

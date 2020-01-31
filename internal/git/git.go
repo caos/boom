@@ -25,113 +25,114 @@ type Git struct {
 
 func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git, error) {
 
-	var auth *gitssh.PublicKeys
-	if privateKey != nil {
-		signer, err := ssh.ParsePrivateKey(privateKey)
-		if err != nil {
-			return nil, err
-		}
-
-		auth = &gitssh.PublicKeys{User: "git", Signer: signer}
-		auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	logFields := map[string]interface{}{
+		"logID": "GIT-4Sia0VjJ79gb7cw",
 	}
 
+	auth, err := parsePrivateKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	repoLogger := logger.WithFields(map[string]interface{}{
+		"url":       url,
+		"localpath": localPath,
+	})
+
 	g := &Git{
-		logger:    logger,
+		logger:    repoLogger,
 		auth:      auth,
 		localPath: localPath,
 		url:       url,
 	}
 
-	repoLogger := g.logger.WithFields(map[string]interface{}{
-		"repo": url,
-	})
-
+	g.logger.WithFields(logFields).Debug("Clone repository...")
 	repo, err := g.cloneRepo()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Cloning repo %s failed", url)
+		return nil, err
 	}
 	g.Repo = repo
 
-	g.logger.WithFields(map[string]interface{}{
-		"logID": "GIT-4Sia0VjJ79gb7cw",
-	}).Info("Cloned...")
+	g.logger.WithFields(logFields).Debug("Cloned...")
 	ref, err := g.Repo.Head()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to get head from repo %s", url)
+		return nil, errors.Wrap(err, "Failed to get head from repo ")
 	}
 
-	g.logger.WithFields(map[string]interface{}{
-		"logID": "GIT-4Sia0VjJ79gb7cw",
-	}).Info("Get last commit...")
+	g.logger.WithFields(logFields).Debug("Get last commit...")
 	commit, err := g.Repo.CommitObject(ref.Hash())
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to get last commit from repo %s", url)
+		return nil, errors.Wrap(err, "Failed to get last commit from repo ")
 	}
+
 	prevTree, err := commit.Tree()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to get tree of last commit from repo %s", url)
+		return nil, errors.Wrap(err, "Failed to get tree of last commit from repo ")
 	}
 	g.prevTree = prevTree
-	repoLogger.WithFields(map[string]interface{}{
-		"logID": "GIT-pQnw5FfIqAk0eWc",
-		"path":  localPath,
-	}).Info("Cloned new GitCRD")
+	g.logger.WithFields(logFields).Info("Cloned new GitCRD")
 
 	return g, nil
 }
 
+func parsePrivateKey(privateKey []byte) (*gitssh.PublicKeys, error) {
+
+	if privateKey != nil {
+		var auth *gitssh.PublicKeys
+		signer, err := ssh.ParsePrivateKey(privateKey)
+		if err != nil {
+			return nil, errors.Wrap(err, "Error while parsing private key")
+		}
+
+		auth = &gitssh.PublicKeys{User: "git", Signer: signer}
+		auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+		return auth, nil
+	}
+
+	return nil, nil
+}
+
 func (g *Git) cloneRepo() (*git.Repository, error) {
-
-	g.logger.WithFields(map[string]interface{}{
-		"logID": "GIT-vNU9maj2Rfo5rRU",
-		"repo":  g.url,
-		"to":    g.localPath,
-	}).Info("Cloning plain")
-
 	os.RemoveAll(g.localPath)
 
-	ctx := context.TODO()
-	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	if g.auth != nil {
-		repo, err := git.PlainCloneContext(toCtx, g.localPath, false, &git.CloneOptions{
-			URL:          g.url,
-			SingleBranch: true,
-			Depth:        1,
-			Progress:     os.Stdout,
-			Auth:         g.auth,
-		})
-		cancel()
-		if err != nil {
-			return nil, err
-		}
-		return repo, nil
-	}
-	repo, err := git.PlainCloneContext(toCtx, g.localPath, false, &git.CloneOptions{
+	cloneOptions := &git.CloneOptions{
 		URL:          g.url,
 		SingleBranch: true,
 		Depth:        1,
-		Progress:     os.Stdout,
-	})
-	cancel()
-	if err != nil {
-		return nil, err
 	}
-	return repo, nil
+
+	if g.auth != nil {
+		cloneOptions.Auth = g.auth
+	}
+
+	ctx := context.TODO()
+	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	repo, err := git.PlainCloneContext(toCtx, g.localPath, false, cloneOptions)
+	cancel()
+	return repo, errors.Wrap(err, "Error while cloning repository")
 }
 
 func (g *Git) ReloadRepo() error {
+
+	logFields := map[string]interface{}{
+		"logID": "GIT-vjrsm5kdQkuF6mo",
+	}
+	g.logger.WithFields(logFields).Info("Reloading repository")
+
+	g.logger.WithFields(logFields).Debug("Remove old source in filesystem")
 	err := os.RemoveAll(g.localPath)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error while removing old source inf filesystem")
 	}
 
+	g.logger.WithFields(logFields).Debug("Clone repository")
 	repo, err := g.cloneRepo()
 	if err != nil {
 		return err
 	}
 
 	g.Repo = repo
+	g.logger.WithFields(logFields).Info("Repository reloaded")
 	return nil
 }
 

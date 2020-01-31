@@ -1,8 +1,6 @@
 package helper
 
 import (
-	"bytes"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -22,15 +20,15 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	}
 	command = command[1:]
 
-	logger.WithFields(map[string]interface{}{
-		"cmd": command,
-	}).Debug("Executing")
-
-	if logger.IsVerbose() {
-		cmd.Stdout = os.Stdout
+	logFields := map[string]interface{}{
+		"cmd":   command,
+		"logId": "CMD-sN18gqW3pTG8rUR",
 	}
 
-	var buf bytes.Buffer
-	cmd.Stderr = &buf
-	return errors.Wrap(cmd.Run(), buf.String())
+	logger.WithFields(logFields).Debug("Executing")
+
+	out, err := cmd.Output()
+	logger.WithFields(logFields).Debug(string(out))
+
+	return errors.Wrap(err, "Error while executing command")
 }

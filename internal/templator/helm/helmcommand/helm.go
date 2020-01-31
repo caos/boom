@@ -4,6 +4,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/caos/boom/internal/helper"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -17,8 +20,7 @@ func Init(basePath string) error {
 
 func FetchChart(basePath, name, version, index string) error {
 
-	chartHome := filepath.Join(basePath, chartsFolder)
-	chartHomeAbs, err := filepath.Abs(chartHome)
+	chartHomeAbs, err := helper.GetAbsPath(basePath, chartsFolder)
 	if err != nil {
 		return err
 	}
@@ -55,12 +57,11 @@ func Template(basePath, chartName, releaseName, releaseNamespace, valuesFilePath
 		valuesParam = strings.Join([]string{"--values", valuesFilePath}, " ")
 	}
 
-	chartHome := filepath.Join(basePath, chartsFolder)
-	chartHomeAbs, err := filepath.Abs(chartHome)
+	chartHomeAbs, err := helper.GetAbsPath(basePath, chartsFolder)
 	if err != nil {
 		return nil, err
 	}
-	chartStr := strings.Join([]string{chartHomeAbs, chartName}, "/")
+	chartStr := filepath.Join(chartHomeAbs, chartName)
 
 	command := addIfNotEmpty("template", releaseNameParam)
 	command = addIfNotEmpty(command, releaseNamespaceParam)
@@ -69,6 +70,7 @@ func Template(basePath, chartName, releaseName, releaseNamespace, valuesFilePath
 
 	return doHelmCommandOutput(basePath, command)
 }
+
 func addIfNotEmpty(one, two string) string {
 	if two != "" {
 		return strings.Join([]string{one, two}, " ")
@@ -77,27 +79,27 @@ func addIfNotEmpty(one, two string) string {
 }
 
 func doHelmCommand(basePath, command string) error {
-	helmHomeFolderPath := filepath.Join(basePath, helmHomeFolder)
-	helmHomeFolderPathAbs, err := filepath.Abs(helmHomeFolderPath)
+
+	helmHomeFolderPathAbs, err := helper.GetAbsPath(basePath, helmHomeFolder)
 	if err != nil {
 		return err
 	}
+
 	helm := strings.Join([]string{"helm", "--home", helmHomeFolderPathAbs, command}, " ")
 
 	cmd := exec.Command("/bin/sh", "-c", helm)
 
-	return cmd.Run()
+	return errors.Wrapf(cmd.Run(), "Error while executing helm command \"%s\"", helm)
 }
 
 func doHelmCommandOutput(basePath, command string) ([]byte, error) {
-	helmHomeFolderPath := filepath.Join(basePath, helmHomeFolder)
-	helmHomeFolderPathAbs, err := filepath.Abs(helmHomeFolderPath)
+	helmHomeFolderPathAbs, err := helper.GetAbsPath(basePath, helmHomeFolder)
 	if err != nil {
 		return nil, err
 	}
+
 	helm := strings.Join([]string{"helm", "--home", helmHomeFolderPathAbs, command}, " ")
 
 	cmd := exec.Command("/bin/sh", "-c", helm)
-
 	return cmd.Output()
 }
