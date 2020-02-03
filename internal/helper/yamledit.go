@@ -139,7 +139,7 @@ func AddStringBeforePointForKindAndName(filePath, kind, name, point, addContent 
 			return err
 		}
 		output := part
-		if struc.Kind == kind && name == name {
+		if struc.Kind == kind && struc.Metadata.Name == name {
 			lines := strings.Split(part, "\n")
 			for i, line := range lines {
 				if strings.Contains(line, point) {

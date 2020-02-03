@@ -9,16 +9,21 @@ import (
 )
 
 func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
-	if toolsetCRDSpec.Argocd.ImagePullSecret != "" {
+
+	if toolsetCRDSpec.Argocd.CustomImageWithGopass {
 		tab := "  "
 		nl := "\n"
-		addContent := strings.Join([]string{
-			tab, tab, tab, "imagePullSecrets:", nl,
-			tab, tab, tab, "- name: ", toolsetCRDSpec.Argocd.ImagePullSecret, nl,
-		}, "")
 
-		if err := helper.AddStringBeforePointForKindAndName(resultFilePath, "Deployment", "argocd-repo-server", "volumes:", addContent); err != nil {
-			return err
+		// imagepullsecret for customImage
+		if toolsetCRDSpec.Argocd.ImagePullSecret != "" {
+			addContent := strings.Join([]string{
+				tab, tab, tab, "imagePullSecrets:", nl,
+				tab, tab, tab, "- name: ", toolsetCRDSpec.Argocd.ImagePullSecret, nl,
+			}, "")
+
+			if err := helper.AddStringBeforePointForKindAndName(resultFilePath, "Deployment", "argocd-repo-server", "volumes:", addContent); err != nil {
+				return err
+			}
 		}
 
 		if toolsetCRDSpec.Argocd.GopassDirectory != "" && toolsetCRDSpec.Argocd.GopassStoreName != "" {
@@ -35,6 +40,7 @@ func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultF
 			}
 		}
 	}
+
 	return nil
 }
 
