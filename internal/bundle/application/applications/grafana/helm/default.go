@@ -44,6 +44,23 @@ func DefaultValues(imageTags map[string]string) *Values {
 			Tag:     imageTags["dduportal/bats"],
 		},
 		Plugins: []string{"grafana-piechart-panel"},
+		Ini: &Ini{
+			Paths: map[string]string{
+				"data":         "/var/lib/grafana/data",
+				"logs":         "/var/log/grafana",
+				"plugins":      "/var/lib/grafana/plugins",
+				"provisioning": "/etc/grafana/provisioning",
+			},
+			Analytics: map[string]bool{
+				"check_for_updates": true,
+			},
+			Log: map[string]string{
+				"mode": "console",
+			},
+			GrafanaNet: map[string]interface{}{
+				"url": "https://grafana.net",
+			},
+		},
 	}
 
 	return &Values{
