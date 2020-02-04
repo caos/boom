@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -45,4 +47,26 @@ func GetClientSet(config *rest.Config) (*kubernetes.Clientset, error) {
 	// creates the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	return clientset, errors.Wrap(err, "Error while creating clientset")
+}
+
+func GetSecret(name, namespace string) (*v1.Secret, error) {
+	conf, err := GetClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := GetClientSet(conf)
+	if err != nil {
+		return nil, err
+	}
+
+	secret, err := clientset.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	if secret == nil {
+		return nil, errors.New("Secret not found")
+	}
+
+	return secret, nil
 }

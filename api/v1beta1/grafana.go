@@ -6,7 +6,7 @@ type Grafana struct {
 	Datasources        []*Datasource `json:"datasources,omitempty" yaml:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty" yaml:"dashboardproviders,omitempty"`
 	Storage            *StorageSpec  `json:"storage,omitempty" yaml:"storage,omitempty"`
-	Auth               *Auth         `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Auth               *GrafanaAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 
 type Admin struct {
@@ -28,21 +28,21 @@ type Provider struct {
 	Folder     string   `json:"folder,omitempty" yaml:"folder,omitempty"`
 }
 
-type Auth struct {
-	Google       *GoogleAuth   `json:"google,omitempty" yaml:"google,omitempty"`
-	Github       *GithubAuth   `json:"github,omitempty" yaml:"github,omitempty"`
-	Gitlab       *GitlabAuth   `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
-	GenericOAuth *GenericOAuth `json:"genericOAuth,omitempty" yaml:"genericOAuth,omitempty"`
+type GrafanaAuth struct {
+	Google       *GrafanaGoogleAuth   `json:"google,omitempty" yaml:"google,omitempty"`
+	Github       *GrafanaGithubAuth   `json:"github,omitempty" yaml:"github,omitempty"`
+	Gitlab       *GrafanaGitlabAuth   `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
+	GenericOAuth *GrafanaGenericOAuth `json:"genericOAuth,omitempty" yaml:"genericOAuth,omitempty"`
 }
 
-type GoogleAuth struct {
+type GrafanaGoogleAuth struct {
 	SecretName     string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey    string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecret   string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
 	AllowedDomains []string `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
 }
 
-type GithubAuth struct {
+type GrafanaGithubAuth struct {
 	SecretName           string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey          string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecret         string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
@@ -50,14 +50,14 @@ type GithubAuth struct {
 	TeamIDs              []string `json:"teamIDs,omitempty" yaml:"teamIDs,omitempty"`
 }
 
-type GitlabAuth struct {
+type GrafanaGitlabAuth struct {
 	SecretName    string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey   string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecret  string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
 	AllowedGroups []string `json:"allowedGroups,omitempty" yaml:"allowedGroups,omitempty"`
 }
 
-type GenericOAuth struct {
+type GrafanaGenericOAuth struct {
 	SecretName     string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey    string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecret   string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`

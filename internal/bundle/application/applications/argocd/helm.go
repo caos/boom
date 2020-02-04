@@ -1,15 +1,18 @@
 package argocd
 
 import (
+	"strings"
+
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"strings"
+	"gopkg.in/yaml.v3"
 )
 
 func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
-	if toolsetCRDSpec.Argocd.ImagePullSecret != "" {
+	if toolsetCRDSpec.Argocd.CustomImageWithGopass && toolsetCRDSpec.Argocd.ImagePullSecret != "" {
 		tab := "  "
 		nl := "\n"
 		addContent := strings.Join([]string{
@@ -36,6 +39,13 @@ func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultF
 		}
 	}
 	return nil
+}
+
+type connector struct {
+	Type   string
+	Name   string
+	ID     string
+	Config interface{}
 }
 
 func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
@@ -81,6 +91,56 @@ func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) i
 			}
 			values.RepoServer.VolumeMounts = append(values.RepoServer.VolumeMounts, volMount)
 		}
+	}
+
+	if spec.Auth.OIDC != nil {
+		oidc, err := auth.GetOIDC(spec.Auth.OIDC)
+		if err == nil {
+			values.Server.Config.OIDC = oidc
+		}
+	}
+
+	dex := make([]*connector, 0)
+	if spec.Auth.GithubConnector != nil {
+		github, err := auth.GetGithub(spec.Auth.GithubConnector)
+		if err == nil {
+			dex = append(dex, &connector{
+				Name:   spec.Auth.GithubConnector.Name,
+				ID:     spec.Auth.GithubConnector.ID,
+				Type:   "github",
+				Config: github,
+			})
+		}
+	}
+	if spec.Auth.GitlabConnector != nil {
+		gitlab, err := auth.GetGitlab(spec.Auth.GitlabConnector)
+		if err == nil {
+			dex = append(dex, &connector{
+				Name:   spec.Auth.GitlabConnector.Name,
+				ID:     spec.Auth.GitlabConnector.ID,
+				Type:   "gitlab",
+				Config: gitlab,
+			})
+		}
+	}
+	if spec.Auth.GoogleConnector != nil {
+		google, err := auth.GetGoogle(spec.Auth.GoogleConnector)
+		if err == nil {
+			dex = append(dex, &connector{
+				Name:   spec.Auth.GoogleConnector.Name,
+				ID:     spec.Auth.GoogleConnector.ID,
+				Type:   "google",
+				Config: google,
+			})
+		}
+	}
+
+	if len(dex) > 0 {
+		data, err := yaml.Marshal(dex)
+		if err == nil {
+			values.Server.Config.Dex = string(data)
+		}
+		values.Dex = helm.DefaultDexValues(imageTags)
 	}
 
 	return values
