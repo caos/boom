@@ -20,7 +20,7 @@ type google struct {
 	AdminEmail             string   `yaml:"adminEmail,omitempty"`
 }
 
-func GetGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector) (interface{}, error) {
+func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector) (interface{}, error) {
 	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err

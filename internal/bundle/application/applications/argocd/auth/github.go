@@ -19,7 +19,7 @@ type org struct {
 	Teams []string `yaml:"teams,omitempty"`
 }
 
-func GetGithub(spec *toolsetsv1beta1.ArgocdGithubConnector) (interface{}, error) {
+func getGithub(spec *toolsetsv1beta1.ArgocdGithubConnector) (interface{}, error) {
 	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err

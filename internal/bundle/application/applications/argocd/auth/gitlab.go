@@ -14,7 +14,7 @@ type gitlab struct {
 	UseLoginAsID bool     `yaml:"useLoginAsID,omitempty"`
 }
 
-func GetGitlab(spec *toolsetsv1beta1.ArgocdGitlabConnector) (interface{}, error) {
+func getGitlab(spec *toolsetsv1beta1.ArgocdGitlabConnector) (interface{}, error) {
 	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err

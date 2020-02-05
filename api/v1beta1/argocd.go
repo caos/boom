@@ -1,14 +1,18 @@
 package v1beta1
 
 type Argocd struct {
-	Deploy                bool        `json:"deploy,omitempty"`
-	CustomImageWithGopass bool        `json:"customImageWithGopass,omitempty" yaml:"customImageWithGopass,omitempty"`
-	ImagePullSecret       string      `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassGPGKey          string      `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
-	GopassSSHKey          string      `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
-	GopassDirectory       string      `json:"gopassDirectory,omitempty" yaml:"gopassDirectory,omitempty"`
-	GopassStoreName       string      `json:"gopassStoreName,omitempty" yaml:"gopassStoreName,omitempty"`
-	Auth                  *ArgocdAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Deploy      bool               `json:"deploy,omitempty"`
+	CustomImage *ArgocdCustomImage `json:"customImage,omitempty" yaml:"customImage,omitempty"`
+	Auth        *ArgocdAuth        `json:"auth,omitempty" yaml:"auth,omitempty"`
+}
+
+type ArgocdCustomImage struct {
+	Enabled         bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	ImagePullSecret string `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
+	GopassGPGKey    string `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
+	GopassSSHKey    string `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
+	GopassDirectory string `json:"gopassDirectory,omitempty" yaml:"gopassDirectory,omitempty"`
+	GopassStoreName string `json:"gopassStoreName,omitempty" yaml:"gopassStoreName,omitempty"`
 }
 
 type ArgocdAuth struct {
