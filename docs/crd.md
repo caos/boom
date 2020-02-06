@@ -89,12 +89,13 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `customImageWithGopass`            | Flag if custom argocd-image should get used with gopass                         | false                             |
-| `imagePullSecret`                  | Name of used imagePullSecret to pull customImage                                |                                   |
-| `gopassGPGKey`                     | Name of the existent secret which contains the gpg-key                          |                                   |
-| `gopassSSHKey`                     | Name of the existent secret which contains the ssh-key                          |                                   |
-| `gopassDirectory`                  | SSH-URL to Repository which is used as gopass secret store                      |                                   |
-| `gopassStoreName`                  | Name of the gopass secret store                                                 |                                   |
+| `customImage`                      | Configuration if the custom argocd+gopass image should be used                  | nil                               |
+| `customImage.enabled`              | Flag if custom argocd-image should get used with gopass                         | false                             |
+| `customImage.imagePullSecret`      | Name of used imagePullSecret to pull customImage                                |                                   |
+| `customImage.gopassGPGKey`         | Name of the existent secret which contains the gpg-key                          |                                   |
+| `customImage.gopassSSHKey`         | Name of the existent secret which contains the ssh-key                          |                                   |
+| `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
+| `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
 
 ### Prometheus
 
