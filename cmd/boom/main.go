@@ -88,10 +88,6 @@ func main() {
 
 	var gitCrdPrivateKeyBytes []byte
 
-	if localMode {
-		helper.InConfig = false
-	}
-
 	if gitOrbConfig != "" {
 		gitOrbConfig, err := ioutil.ReadFile(gitOrbConfig)
 		if err != nil {

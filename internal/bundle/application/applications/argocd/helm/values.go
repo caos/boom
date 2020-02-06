@@ -167,10 +167,7 @@ type Route struct {
 type Config struct {
 	URL                         string `yaml:"url"`
 	ApplicationInstanceLabelKey string `yaml:"application.instanceLabelKey"`
-	OIDC                        string `yaml:"oidc.config,omitempty"`
-	Dex                         string `yaml:"dex.config,omitempty"`
 }
-
 type Server struct {
 	Name                   string            `yaml:"name"`
 	Image                  *Image            `yaml:"image"`
