@@ -12,7 +12,7 @@ func GetCrdsFromSpec(spec *toolsetsv1beta1.Ambassador) []interface{} {
 		host := GetHostFromConfig(&HostConfig{
 			Name:             spec.Hosts.Argocd.Domain,
 			Namespace:        "caos-system",
-			InsecureAction:   "route",
+			InsecureAction:   "Redirect",
 			Hostname:         spec.Hosts.Argocd.Domain,
 			AcmeProvider:     spec.Hosts.Argocd.AcmeAuthority,
 			PrivateKeySecret: spec.Hosts.Argocd.Domain,
@@ -24,7 +24,7 @@ func GetCrdsFromSpec(spec *toolsetsv1beta1.Ambassador) []interface{} {
 			Name:      "argocd",
 			Namespace: "caos-system",
 			Prefix:    "/",
-			Service:   "argocd-server.caos-system",
+			Service:   "https://argocd-server.caos-system:443",
 			Host:      spec.Hosts.Argocd.Domain,
 		})
 		ret = append(ret, mapping)
@@ -35,7 +35,7 @@ func GetCrdsFromSpec(spec *toolsetsv1beta1.Ambassador) []interface{} {
 		host := GetHostFromConfig(&HostConfig{
 			Name:             spec.Hosts.Grafana.Domain,
 			Namespace:        "caos-system",
-			InsecureAction:   "route",
+			InsecureAction:   "Redirect",
 			Hostname:         spec.Hosts.Grafana.Domain,
 			AcmeProvider:     spec.Hosts.Grafana.AcmeAuthority,
 			PrivateKeySecret: spec.Hosts.Grafana.Domain,
