@@ -73,8 +73,7 @@ func DefaultValues(imageTags map[string]string) *Values {
 			RunAsUser: 8888,
 		},
 		Service: &Service{
-			// Type: "NodePort",
-			Type: "LoadBalancer",
+			Type: "NodePort",
 			Ports: []*Port{
 				&Port{
 					Name:       "http",
