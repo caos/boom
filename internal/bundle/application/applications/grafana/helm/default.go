@@ -44,6 +44,10 @@ func DefaultValues(imageTags map[string]string) *Values {
 			Tag:     imageTags["dduportal/bats"],
 		},
 		Plugins: []string{"grafana-piechart-panel"},
+		Env: map[string]string{
+			"GF_SERVER_DOMAIN":   "test.monitoring.boom.caos.ch",
+			"GF_SERVER_ROOT_URL": "%(protocol)s://%(domain)s/",
+		},
 	}
 
 	return &Values{
