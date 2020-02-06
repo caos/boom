@@ -5,6 +5,7 @@ import (
 
 	"github.com/caos/boom/api/v1beta1"
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
@@ -91,6 +92,36 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 
 		if toolset.Grafana.Storage.AccessModes != nil {
 			values.Grafana.Persistence.AccessModes = toolset.Grafana.Storage.AccessModes
+		}
+	}
+
+	if toolset.Grafana.Auth != nil {
+		if toolset.Grafana.Auth.Google != nil {
+			google, err := auth.GetGoogleAuthConfig(toolset.Grafana.Auth.Google)
+			if err == nil {
+				values.Grafana.Ini.AuthGoogle = google
+			}
+		}
+
+		if toolset.Grafana.Auth.Github != nil {
+			github, err := auth.GetGithubAuthConfig(toolset.Grafana.Auth.Github)
+			if err == nil {
+				values.Grafana.Ini.AuthGithub = github
+			}
+		}
+
+		if toolset.Grafana.Auth.Gitlab != nil {
+			gitlab, err := auth.GetGitlabAuthConfig(toolset.Grafana.Auth.Gitlab)
+			if err == nil {
+				values.Grafana.Ini.AuthGitlab = gitlab
+			}
+		}
+
+		if toolset.Grafana.Auth.GenericOAuth != nil {
+			generic, err := auth.GetGenericOAuthConfig(toolset.Grafana.Auth.GenericOAuth)
+			if err == nil {
+				values.Grafana.Ini.AuthGeneric = generic
+			}
 		}
 	}
 
