@@ -28,7 +28,6 @@ type Config struct {
 	Datasources        []*Datasource
 	DashboardProviders []*Provider
 	KubeVersion        string
-	Ini                map[string]interface{}
 }
 
 func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
