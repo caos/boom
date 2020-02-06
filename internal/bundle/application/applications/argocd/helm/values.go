@@ -13,6 +13,7 @@ type Args struct {
 	StatusProcessors    string `yaml:"statusProcessors"`
 	OperationProcessors string `yaml:"operationProcessors"`
 }
+
 type ReadinessProbe struct {
 	FailureThreshold    int `yaml:"failureThreshold"`
 	InitialDelaySeconds int `yaml:"initialDelaySeconds"`
@@ -57,6 +58,27 @@ type Metrics struct {
 type ClusterAdminAccess struct {
 	Enabled bool `yaml:"enabled"`
 }
+type ConfigMap struct {
+	Name        string `yaml:"name,omitempty"`
+	DefaultMode int    `yaml:"defaultMode,omitempty"`
+}
+type VolumeSecret struct {
+	SecretName  string `yaml:"secretName,omitempty"`
+	DefaultMode int    `yaml:"defaultMode,omitempty"`
+}
+type Volume struct {
+	Secret    *VolumeSecret `yaml:"secret,omitempty"`
+	ConfigMap *ConfigMap    `yaml:"configMap,omitempty"`
+	Name      string        `yaml:"name"`
+	EmptyDir  struct{}      `yaml:"emptyDir,omitempty"`
+}
+
+type VolumeMount struct {
+	Name      string `yaml:"name"`
+	MountPath string `yaml:"mountPath,omitempty"`
+	SubPath   string `yaml:"subPath,omitempty"`
+	ReadOnly  bool   `yaml:"readOnly,omitempty"`
+}
 type Controller struct {
 	Name               string              `yaml:"name"`
 	Image              *Image              `yaml:"image"`
@@ -69,8 +91,8 @@ type Controller struct {
 	ContainerPort      int                 `yaml:"containerPort"`
 	ReadinessProbe     *ReadinessProbe     `yaml:"readinessProbe"`
 	LivenessProbe      *LivenessProbe      `yaml:"livenessProbe"`
-	VolumeMounts       []interface{}       `yaml:"volumeMounts"`
-	Volumes            []interface{}       `yaml:"volumes"`
+	VolumeMounts       []*VolumeMount      `yaml:"volumeMounts"`
+	Volumes            []*Volume           `yaml:"volumes"`
 	Service            *Service            `yaml:"service"`
 	NodeSelector       struct{}            `yaml:"nodeSelector"`
 	Tolerations        []interface{}       `yaml:"tolerations"`
@@ -80,14 +102,6 @@ type Controller struct {
 	ServiceAccount     *ServiceAccount     `yaml:"serviceAccount"`
 	Metrics            *Metrics            `yaml:"metrics"`
 	ClusterAdminAccess *ClusterAdminAccess `yaml:"clusterAdminAccess"`
-}
-type VolumeMount struct {
-	Name      string `yaml:"name"`
-	MountPath string `yaml:"mountPath"`
-}
-type Volume struct {
-	Name     string   `yaml:"name"`
-	EmptyDir struct{} `yaml:"emptyDir"`
 }
 type Dex struct {
 	Enabled           bool            `yaml:"enabled"`

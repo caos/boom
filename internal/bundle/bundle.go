@@ -134,7 +134,6 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		b.logger.WithFields(logFields).Error(b.status)
 		return b
 	}
-
 	b.logger.WithFields(logFields).Info("Reconciling")
 
 	deploy := app.Deploy(spec)

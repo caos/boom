@@ -2,17 +2,43 @@ package ambassador
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
+func (a *Ambassador) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+	var ret []interface{}
+	if toolsetCRDSpec.Ambassador.Hosts != nil {
+		ret = append(ret, crds.GetCrdsFromSpec(toolsetCRDSpec.Ambassador)...)
+	}
+	return ret, nil
+}
+
 func (a *Ambassador) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
-	a.spec = toolsetCRDSpec.Ambassador
+	spec := toolsetCRDSpec.Ambassador
 	imageTags := helm.GetImageTags()
 
 	values := helm.DefaultValues(imageTags)
-	if a.spec.ReplicaCount != 0 {
-		values.ReplicaCount = a.spec.ReplicaCount
+	if spec.ReplicaCount != 0 {
+		values.ReplicaCount = spec.ReplicaCount
+	}
+
+	if spec.Service != nil {
+		values.Service.Type = spec.Service.Type
+		values.Service.LoadBalancerIP = spec.Service.LoadBalancerIP
+		if spec.Service.Ports != nil {
+			ports := make([]*helm.Port, 0)
+			for _, v := range spec.Service.Ports {
+				ports = append(ports, &helm.Port{
+					Name:       v.Name,
+					Port:       v.Port,
+					TargetPort: v.TargetPort,
+					NodePort:   v.NodePort,
+				})
+			}
+			values.Service.Ports = ports
+		}
 	}
 
 	return values

@@ -67,7 +67,15 @@
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
 | `replicaCount`                     | Number of replicas used for deployment                                          | 1                                 |
-| `loadBalancerIP`                   | Used IP for loadbalancing for ambassador                                        | nil                               |
+| `service`                          | Service definition for ambassador                                               | nil                               |
+| `service.type`                     | Type for the service                                                            | NodePort                          |
+| `service.loadBalancerIP`           | Used IP for loadbalancing for ambassador if loadbalancer is used                | nil                               |
+| `hosts`                            | Defined hosts for certificates                                                  | nil                               |
+| `hosts.argocd`                     | Host definition for argocd                                                      | nil                               |
+| `hosts.grafana`                    | Host definition for grafana                                                     | nil                               |
+| `hosts.*.domain`                   | Defined domain                                                                  |                                   |
+| `hosts.*.email`                    | Used email for ACME request                                                     |                                   |
+| `hosts.*.acmeAuthority`            | Used authority for ACME request to get a certificate                            |                                   |
 
 ### Kube-State-Metrics
 
@@ -81,6 +89,12 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `customImageWithGopass`            | Flag if custom argocd-image should get used with gopass                         | false                             |
+| `imagePullSecret`                  | Name of used imagePullSecret to pull customImage                                |                                   |
+| `gopassGPGKey`                     | Name of the existent secret which contains the gpg-key                          |                                   |
+| `gopassSSHKey`                     | Name of the existent secret which contains the ssh-key                          |                                   |
+| `gopassDirectory`                  | SSH-URL to Repository which is used as gopass secret store                      |                                   |
+| `gopassStoreName`                  | Name of the gopass secret store                                                 |                                   |
 
 ### Prometheus
 
