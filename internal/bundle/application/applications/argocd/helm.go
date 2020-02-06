@@ -23,6 +23,7 @@ func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultF
 			}
 		}
 	}
+
 	return nil
 }
 

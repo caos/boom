@@ -60,6 +60,9 @@ func DefaultValues(imageTags map[string]string) *Values {
 			GrafanaNet: map[string]interface{}{
 				"url": "https://grafana.net",
 			},
+		Env: map[string]string{
+			"GF_SERVER_DOMAIN":   "test.monitoring.boom.caos.ch",
+			"GF_SERVER_ROOT_URL": "%(protocol)s://%(domain)s/",
 		},
 	}
 

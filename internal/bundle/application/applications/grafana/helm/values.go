@@ -99,6 +99,7 @@ type GrafanaValues struct {
 	TestFramework            *grafanastandalone.TestFramework `yaml:"testFramework,omitempty"`
 	Plugins                  []string                         `yaml:"plugins,omitempty"`
 	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
+	Env                      map[string]string                `yaml:"env,omitempty"`
 }
 
 type Rules struct {
