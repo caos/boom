@@ -6,7 +6,7 @@ type Grafana struct {
 	Datasources        []*Datasource `json:"datasources,omitempty" yaml:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty" yaml:"dashboardproviders,omitempty"`
 	Storage            *StorageSpec  `json:"storage,omitempty" yaml:"storage,omitempty"`
-	Domain             string        `json:"domain,omitempty" yaml:"domain,omitempty"`
+	Network            *Network      `json:"network,omitempty" yaml:"network,omitempty"`
 	Auth               *GrafanaAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 

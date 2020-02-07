@@ -3,6 +3,7 @@ package v1beta1
 type Argocd struct {
 	Deploy      bool               `json:"deploy,omitempty"`
 	CustomImage *ArgocdCustomImage `json:"customImage,omitempty" yaml:"customImage,omitempty"`
+	Network     *Network           `json:"network,omitempty" yaml:"network,omitempty"`
 	Auth        *ArgocdAuth        `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 
@@ -16,7 +17,6 @@ type ArgocdCustomImage struct {
 }
 
 type ArgocdAuth struct {
-	RootURL         string                 `json:"rootUrl,omitempty" yaml:"rootUrl,omitempty"`
 	OIDC            *ArgocdOIDC            `json:"oidc,omitempty" yaml:"oidc,omitempty"`
 	GithubConnector *ArgocdGithubConnector `json:"github,omitempty" yaml:"github,omitempty"`
 	GitlabConnector *ArgocdGitlabConnector `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`

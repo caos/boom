@@ -26,11 +26,11 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 	}
 
 	connectors := make([]*connector, 0)
-	if spec.Auth.RootURL == "" {
+	if spec.Network == nil || spec.Network.Domain == "" {
 		logger.WithFields(logFields).Info("No auth connectors configured as no rootUrl is defined")
 		return nil
 	}
-	redirect := strings.Join([]string{spec.Auth.RootURL, "/api/dex/callback"}, "")
+	redirect := strings.Join([]string{"https://", spec.Network.Domain, "/api/dex/callback"}, "")
 
 	if spec.Auth.GithubConnector != nil {
 		github, err := getGithub(spec.Auth.GithubConnector, redirect)

@@ -1,6 +1,8 @@
 package argocd
 
 import (
+	"strings"
+
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
@@ -63,21 +65,23 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 		}
 	}
 
-	if spec.Auth.OIDC != nil {
-		oidc, err := auth.GetOIDC(spec.Auth.OIDC)
-		if err == nil {
-			values.Server.Config.OIDC = oidc
+	if spec.Network != nil && spec.Network.Domain != "" {
+		if spec.Auth.OIDC != nil {
+			oidc, err := auth.GetOIDC(spec.Auth.OIDC)
+			if err == nil {
+				values.Server.Config.OIDC = oidc
+			}
 		}
-	}
 
-	dexConfig := auth.GetDexConfigFromSpec(logger, spec)
-	if dexConfig != nil {
-		data, err := yaml.Marshal(dexConfig)
-		if err == nil {
-			values.Server.Config.Dex = string(data)
+		dexConfig := auth.GetDexConfigFromSpec(logger, spec)
+		if dexConfig != nil {
+			data, err := yaml.Marshal(dexConfig)
+			if err == nil {
+				values.Server.Config.Dex = string(data)
+			}
+			values.Dex = helm.DefaultDexValues(imageTags)
+			values.Server.Config.URL = strings.Join([]string{"https://", spec.Network.Domain}, "")
 		}
-		values.Dex = helm.DefaultDexValues(imageTags)
-		values.Server.Config.URL = spec.Auth.RootURL
 	}
 
 	return values

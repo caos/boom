@@ -96,40 +96,39 @@ func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1bet
 		}
 	}
 
-	if toolset.Grafana.Auth != nil {
-		if toolset.Grafana.Auth.Google != nil {
-			google, err := auth.GetGoogleAuthConfig(toolset.Grafana.Auth.Google)
-			if err == nil {
-				values.Grafana.Ini.AuthGoogle = google
-			}
-		}
+	if toolset.Grafana.Network != nil && toolset.Grafana.Network.Domain != "" {
+		values.Grafana.Env["GF_SERVER_DOMAIN"] = toolset.Grafana.Network.Domain
 
-		if toolset.Grafana.Auth.Github != nil {
-			github, err := auth.GetGithubAuthConfig(toolset.Grafana.Auth.Github)
-			if err == nil {
-				values.Grafana.Ini.AuthGithub = github
+		if toolset.Grafana.Auth != nil {
+			if toolset.Grafana.Auth.Google != nil {
+				google, err := auth.GetGoogleAuthConfig(toolset.Grafana.Auth.Google)
+				if err == nil {
+					values.Grafana.Ini.AuthGoogle = google
+				}
 			}
-		}
 
-		if toolset.Grafana.Auth.Gitlab != nil {
-			gitlab, err := auth.GetGitlabAuthConfig(toolset.Grafana.Auth.Gitlab)
-			if err == nil {
-				values.Grafana.Ini.AuthGitlab = gitlab
+			if toolset.Grafana.Auth.Github != nil {
+				github, err := auth.GetGithubAuthConfig(toolset.Grafana.Auth.Github)
+				if err == nil {
+					values.Grafana.Ini.AuthGithub = github
+				}
 			}
-		}
 
-		if toolset.Grafana.Auth.GenericOAuth != nil {
-			generic, err := auth.GetGenericOAuthConfig(toolset.Grafana.Auth.GenericOAuth)
-			if err == nil {
-				values.Grafana.Ini.AuthGeneric = generic
+			if toolset.Grafana.Auth.Gitlab != nil {
+				gitlab, err := auth.GetGitlabAuthConfig(toolset.Grafana.Auth.Gitlab)
+				if err == nil {
+					values.Grafana.Ini.AuthGitlab = gitlab
+				}
+			}
+
+			if toolset.Grafana.Auth.GenericOAuth != nil {
+				generic, err := auth.GetGenericOAuthConfig(toolset.Grafana.Auth.GenericOAuth)
+				if err == nil {
+					values.Grafana.Ini.AuthGeneric = generic
+				}
 			}
 		}
 	}
-
-	if toolset.Grafana.Domain != "" {
-		values.Grafana.Env["GF_SERVER_DOMAIN"] = toolset.Grafana.Domain
-	}
-
 	return values
 }
 
