@@ -6,6 +6,7 @@ type Grafana struct {
 	Datasources        []*Datasource `json:"datasources,omitempty" yaml:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty" yaml:"dashboardproviders,omitempty"`
 	Storage            *StorageSpec  `json:"storage,omitempty" yaml:"storage,omitempty"`
+	Domain             string        `json:"domain,omitempty" yaml:"domain,omitempty"`
 	Auth               *GrafanaAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 
@@ -36,34 +37,34 @@ type GrafanaAuth struct {
 }
 
 type GrafanaGoogleAuth struct {
-	SecretName     string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey    string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecret   string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
-	AllowedDomains []string `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
+	SecretName      string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+	ClientIDKey     string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
+	ClientSecretKey string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
+	AllowedDomains  []string `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
 }
 
 type GrafanaGithubAuth struct {
 	SecretName           string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey          string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecret         string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
+	ClientSecretKey      string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
 	AllowedOrganizations []string `json:"allowedOrganizations,omitempty" yaml:"allowedOrganizations,omitempty"`
 	TeamIDs              []string `json:"teamIDs,omitempty" yaml:"teamIDs,omitempty"`
 }
 
 type GrafanaGitlabAuth struct {
-	SecretName    string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey   string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecret  string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
-	AllowedGroups []string `json:"allowedGroups,omitempty" yaml:"allowedGroups,omitempty"`
+	SecretName      string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+	ClientIDKey     string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
+	ClientSecretKey string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
+	AllowedGroups   []string `json:"allowedGroups,omitempty" yaml:"allowedGroups,omitempty"`
 }
 
 type GrafanaGenericOAuth struct {
-	SecretName     string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey    string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecret   string   `json:"clientSecret,omitempty" yaml:"clientSecret,omitempty"`
-	Scopes         []string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
-	AuthURL        string   `json:"authURL,omitempty" yaml:"authURL,omitempty"`
-	TokenURL       string   `json:"tokenURL,omitempty" yaml:"tokenURL,omitempty"`
-	APIURL         string   `json:"apiURL,omitempty" yaml:"apiURL,omitempty"`
-	AllowedDomains []string `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
+	SecretName      string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+	ClientIDKey     string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
+	ClientSecretKey string   `json:"clientSecret,omitempty" yaml:"clientSecretKey,omitempty"`
+	Scopes          []string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
+	AuthURL         string   `json:"authURL,omitempty" yaml:"authURL,omitempty"`
+	TokenURL        string   `json:"tokenURL,omitempty" yaml:"tokenURL,omitempty"`
+	APIURL          string   `json:"apiURL,omitempty" yaml:"apiURL,omitempty"`
+	AllowedDomains  []string `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
 }

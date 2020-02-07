@@ -14,7 +14,7 @@ func GetGenericOAuthConfig(spec *toolsetsv1beta1.GrafanaGenericOAuth) (map[strin
 	}
 
 	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecret])
+	clientSecret := string(secret.Data[spec.ClientSecretKey])
 	allowedDomains := strings.Join(spec.AllowedDomains, " ")
 	scopes := strings.Join(spec.Scopes, " ")
 

@@ -71,12 +71,13 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 	}
 
 	dexConfig := auth.GetDexConfigFromSpec(logger, spec)
-	if len(dexConfig) > 0 {
+	if dexConfig != nil {
 		data, err := yaml.Marshal(dexConfig)
 		if err == nil {
 			values.Server.Config.Dex = string(data)
 		}
 		values.Dex = helm.DefaultDexValues(imageTags)
+		values.Server.Config.URL = spec.Auth.RootURL
 	}
 
 	return values

@@ -126,6 +126,10 @@ func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1bet
 		}
 	}
 
+	if toolset.Grafana.Domain != "" {
+		values.Grafana.Env["GF_SERVER_DOMAIN"] = toolset.Grafana.Domain
+	}
+
 	return values
 }
 

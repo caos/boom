@@ -14,7 +14,7 @@ func GetGoogleAuthConfig(spec *toolsetsv1beta1.GrafanaGoogleAuth) (map[string]st
 	}
 
 	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecret])
+	clientSecret := string(secret.Data[spec.ClientSecretKey])
 	domains := strings.Join(spec.AllowedDomains, " ")
 
 	return map[string]string{

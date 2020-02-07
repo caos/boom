@@ -16,6 +16,7 @@ type ArgocdCustomImage struct {
 }
 
 type ArgocdAuth struct {
+	RootURL         string                 `json:"rootUrl,omitempty" yaml:"rootUrl,omitempty"`
 	OIDC            *ArgocdOIDC            `json:"oidc,omitempty" yaml:"oidc,omitempty"`
 	GithubConnector *ArgocdGithubConnector `json:"github,omitempty" yaml:"github,omitempty"`
 	GitlabConnector *ArgocdGitlabConnector `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
@@ -47,7 +48,6 @@ type ArgocdGithubConfig struct {
 	SecretName      string             `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey     string             `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecretKey string             `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
-	RedirectURI     string             `json:"redirectURI,omitempty" yaml:"redirectURI,omitempty"`
 	Orgs            []*ArgocdGithubOrg `json:"orgs,omitempty" yaml:"orgs,omitempty"`
 	LoadAllGroups   bool               `json:"loadAllGroups,omitempty" yaml:"loadAllGroups,omitempty"`
 	TeamNameField   string             `json:"teamNameField,omitempty" yaml:"teamNameField,omitempty"`
@@ -70,7 +70,6 @@ type ArgocdGitlabConfig struct {
 	ClientIDKey     string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecretKey string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
 	BaseURL         string   `json:"baseURL,omitempty" yaml:"baseURL,omitempty"`
-	RedirectURI     string   `json:"redirectURI,omitempty" yaml:"redirectURI,omitempty"`
 	Groups          []string `json:"groups,omitempty" yaml:"groups,omitempty"`
 	UseLoginAsID    bool     `json:"useLoginAsID,omitempty" yaml:"useLoginAsID,omitempty"`
 }
@@ -85,7 +84,6 @@ type ArgocdGoogleConfig struct {
 	SecretName             string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 	ClientIDKey            string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
 	ClientSecretKey        string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
-	RedirectURI            string   `json:"redirectURI,omitempty" yaml:"redirectURI,omitempty"`
 	HostedDomains          []string `json:"hostedDomains,omitempty" yaml:"hostedDomains,omitempty"`
 	Groups                 []string `json:"groups,omitempty" yaml:"groups,omitempty"`
 	ServiceAccountJSONKey  string   `json:"serviceAccountJSONKey,omitempty" yaml:"serviceAccountJSONKey,omitempty"`
