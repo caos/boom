@@ -60,6 +60,7 @@
 | `storage.size`                     | Defined size of the PVC                                                         |                                   |
 | `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
 | `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso.md)          |                                   |
 
 ### Ambassador
 
@@ -95,6 +96,7 @@
 | `gopassSSHKey`                     | Name of the existent secret which contains the ssh-key                          |                                   |
 | `gopassDirectory`                  | SSH-URL to Repository which is used as gopass secret store                      |                                   |
 | `gopassStoreName`                  | Name of the gopass secret store                                                 |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso.md)          |                                   |
 
 ### Prometheus
 
