@@ -24,7 +24,7 @@ func GetCrdsFromSpec(spec *toolsetsv1beta1.Ambassador) []interface{} {
 			Name:      "argocd",
 			Namespace: "caos-system",
 			Prefix:    "/",
-			Service:   "argocd-server.caos-system",
+			Service:   "https://argocd-server.caos-system:443",
 			Host:      spec.Hosts.Argocd.Domain,
 		})
 		ret = append(ret, mapping)
