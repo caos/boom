@@ -6,10 +6,11 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 	"gopkg.in/yaml.v3"
 )
 
-func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
 	spec := toolsetCRDSpec.Argocd
 
 	if spec.CustomImage.Enabled && spec.CustomImage.ImagePullSecret != "" {
@@ -27,7 +28,7 @@ func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultF
 	return nil
 }
 
-func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolsetCRDSpec.Argocd
 
 	imageTags := a.GetImageTags()
@@ -69,7 +70,7 @@ func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) i
 		}
 	}
 
-	dexConfig := auth.GetDexConfigFromSpec(spec)
+	dexConfig := auth.GetDexConfigFromSpec(logger, spec)
 	if len(dexConfig) > 0 {
 		data, err := yaml.Marshal(dexConfig)
 		if err == nil {

@@ -19,7 +19,7 @@ type org struct {
 	Teams []string `yaml:"teams,omitempty"`
 }
 
-func getGithub(spec *toolsetsv1beta1.ArgocdGithubConnector) (interface{}, error) {
+func getGithub(spec *toolsetsv1beta1.ArgocdGithubConnector, redirect string) (interface{}, error) {
 	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func getGithub(spec *toolsetsv1beta1.ArgocdGithubConnector) (interface{}, error)
 	github := &github{
 		ClientID:      clientID,
 		ClientSecret:  clientSecret,
-		RedirectURI:   spec.Config.RedirectURI,
+		RedirectURI:   redirect,
 		Orgs:          orgs,
 		LoadAllGroups: spec.Config.LoadAllGroups,
 		TeamNameField: spec.Config.TeamNameField,

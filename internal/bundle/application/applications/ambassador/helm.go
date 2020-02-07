@@ -5,9 +5,10 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (a *Ambassador) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+func (a *Ambassador) HelmPreApplySteps(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
 	var ret []interface{}
 	if toolsetCRDSpec.Ambassador.Hosts != nil {
 		ret = append(ret, crds.GetCrdsFromSpec(toolsetCRDSpec.Ambassador)...)
@@ -15,7 +16,7 @@ func (a *Ambassador) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSp
 	return ret, nil
 }
 
-func (a *Ambassador) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (a *Ambassador) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolsetCRDSpec.Ambassador
 	imageTags := helm.GetImageTags()
 

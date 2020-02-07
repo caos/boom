@@ -11,9 +11,10 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
 	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
+func (g *Grafana) HelmPreApplySteps(logger logging.Logger, spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
 	config := config.New(spec.KubeVersion, spec)
 
 	folders := make([]string, 0)
@@ -33,7 +34,7 @@ func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, e
 	return ret, nil
 }
 
-func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	conf := config.New(toolset.KubeVersion, toolset)
 	values := helm.DefaultValues(g.GetImageTags())
 
