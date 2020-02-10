@@ -4,18 +4,17 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/bundle/application/applications/argocd/auth"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/config"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
-	"gopkg.in/yaml.v3"
 )
 
 func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
 	spec := toolsetCRDSpec.Argocd
 
-	if spec.CustomImage.Enabled && spec.CustomImage.ImagePullSecret != "" {
+	if spec.CustomImage != nil && spec.CustomImage.Enabled && spec.CustomImage.ImagePullSecret != "" {
 		if err := customimage.AddImagePullSecretFromSpec(spec, resultFilePath); err != nil {
 			return err
 		}
@@ -35,7 +34,7 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 
 	imageTags := a.GetImageTags()
 	values := helm.DefaultValues(imageTags)
-	if spec.CustomImage.Enabled {
+	if spec.CustomImage != nil && spec.CustomImage.Enabled {
 		conf := customimage.FromSpec(spec, imageTags)
 		values.RepoServer.Image = &helm.Image{
 			Repository:      conf.ImageRepository,
@@ -65,20 +64,20 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 		}
 	}
 
+	conf := config.GetFromSpec(logger, spec)
+	if conf.Repositories != "" {
+		values.Server.Config.Repositories = conf.Repositories
+	}
+
 	if spec.Network != nil && spec.Network.Domain != "" {
-		if spec.Auth.OIDC != nil {
-			oidc, err := auth.GetOIDC(spec.Auth.OIDC)
-			if err == nil {
-				values.Server.Config.OIDC = oidc
-			}
+
+		if conf.OIDC != "" {
+			values.Server.Config.OIDC = conf.OIDC
 		}
 
-		dexConfig := auth.GetDexConfigFromSpec(logger, spec)
-		if dexConfig != nil {
-			data, err := yaml.Marshal(dexConfig)
-			if err == nil {
-				values.Server.Config.Dex = string(data)
-			}
+		if conf.Connectors != "" {
+			values.Server.Config.Dex = conf.Connectors
+
 			values.Dex = helm.DefaultDexValues(imageTags)
 			values.Server.Config.URL = strings.Join([]string{"https://", spec.Network.Domain}, "")
 		}

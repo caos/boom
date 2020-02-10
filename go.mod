@@ -12,7 +12,6 @@ require (
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.7
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	k8s.io/api v0.0.0-20191121015604-11707872ac1c
 	k8s.io/apimachinery v0.0.0-20191123233150-4c4803ed55e3

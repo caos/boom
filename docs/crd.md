@@ -94,6 +94,7 @@
 | `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
 | `network`                          | Network configuration, [here](network.md)                                       |                                   |
 | `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
+| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     |                                   |
 
 ### Prometheus
 

@@ -1,10 +1,23 @@
 package v1beta1
 
 type Argocd struct {
-	Deploy      bool               `json:"deploy,omitempty"`
-	CustomImage *ArgocdCustomImage `json:"customImage,omitempty" yaml:"customImage,omitempty"`
-	Network     *Network           `json:"network,omitempty" yaml:"network,omitempty"`
-	Auth        *ArgocdAuth        `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Deploy       bool                `json:"deploy,omitempty"`
+	CustomImage  *ArgocdCustomImage  `json:"customImage,omitempty" yaml:"customImage,omitempty"`
+	Network      *Network            `json:"network,omitempty" yaml:"network,omitempty"`
+	Auth         *ArgocdAuth         `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Repositories []*ArgocdRepository `json:"repositories,omitempty" yaml:"repositories,omitempty"`
+}
+
+type ArgocdRepository struct {
+	URL               string        `json:"url,omitempty" yaml:"url,omitempty"`
+	UsernameSecret    *ArgocdSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
+	PasswordSecret    *ArgocdSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
+	CertificateSecret *ArgocdSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
+}
+
+type ArgocdSecret struct {
+	Name string `json:"name" yaml:"name"`
+	Key  string `json:"key" yaml:"key"`
 }
 
 type ArgocdCustomImage struct {

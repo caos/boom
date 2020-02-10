@@ -164,11 +164,13 @@ type Route struct {
 	Enabled  bool   `yaml:"enabled"`
 	Hostname string `yaml:"hostname"`
 }
+
 type Config struct {
 	URL                         string `yaml:"url"`
 	ApplicationInstanceLabelKey string `yaml:"application.instanceLabelKey"`
 	OIDC                        string `yaml:"oidc.config,omitempty"`
 	Dex                         string `yaml:"dex.config,omitempty"`
+	Repositories                string `yaml:"repositories,omitempty"`
 }
 
 type Server struct {

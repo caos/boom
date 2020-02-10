@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-type connectorsStruct struct {
-	Connectors []*connector
+type Connectors struct {
+	Connectors []*connector `yaml:"connectors,omitempty"`
 }
 
 type connector struct {
@@ -19,7 +19,7 @@ type connector struct {
 	Config interface{}
 }
 
-func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *connectorsStruct {
+func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *Connectors {
 	logFields := map[string]interface{}{
 		"logID":       "AUTH-yYqnPDhTdTjQWiJ",
 		"application": "argocd",
@@ -77,7 +77,7 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 	if len(connectors) > 0 {
 		logFields["connectors"] = len(connectors)
 		logger.WithFields(logFields).Debug("Created dex configuration")
-		return &connectorsStruct{Connectors: connectors}
+		return &Connectors{Connectors: connectors}
 	}
 	return nil
 }

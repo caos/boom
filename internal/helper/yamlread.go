@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func readFile(path string) ([]byte, error) {
@@ -25,7 +25,7 @@ func YamlToStruct(path string, struc interface{}) error {
 
 	err = yaml.Unmarshal(data, struc)
 	if err != nil {
-		return errors.Wrapf(err, "Error while unmarshaling yaml to struct", path)
+		return errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", path)
 	}
 	return nil
 }

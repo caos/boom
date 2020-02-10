@@ -45,7 +45,7 @@ func (h *Helm) preApplySteps(app interface{}, spec *v1beta1.ToolsetSpec) templat
 			}
 
 			if h.status != nil {
-				h.status = errors.Wrapf(err, "Error while adding element %i to result-file", i)
+				h.status = errors.Wrapf(err, "Error while adding element %d to result-file", i)
 				return h
 			}
 		}
