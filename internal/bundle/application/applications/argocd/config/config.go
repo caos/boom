@@ -22,18 +22,15 @@ func GetFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *Config {
 	if err == nil {
 		conf.Connectors = string(data)
 	}
-
 	repos := repository.GetFromSpec(logger, spec)
 	data2, err := yaml.Marshal(repos)
 	if err == nil {
 		conf.Repositories = string(data2)
 	}
 
-	if spec.Auth.OIDC != nil {
-		oidc, err := auth.GetOIDC(spec.Auth.OIDC)
-		if err == nil {
-			conf.OIDC = oidc
-		}
+	oidc, err := auth.GetOIDC(spec)
+	if err == nil {
+		conf.OIDC = oidc
 	}
 
 	return conf

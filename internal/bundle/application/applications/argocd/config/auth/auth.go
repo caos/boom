@@ -26,6 +26,11 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 	}
 
 	connectors := make([]*connector, 0)
+
+	if spec.Auth == nil || (spec.Auth.GithubConnector == nil && spec.Auth.GoogleConnector == nil && spec.Auth.GitlabConnector == nil) {
+		return &Connectors{Connectors: connectors}
+	}
+
 	if spec.Network == nil || spec.Network.Domain == "" {
 		logger.WithFields(logFields).Info("No auth connectors configured as no rootUrl is defined")
 		return nil

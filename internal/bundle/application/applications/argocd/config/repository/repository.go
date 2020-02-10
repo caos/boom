@@ -20,6 +20,10 @@ type secret struct {
 func GetFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) []*Repository {
 	repositories := make([]*Repository, 0)
 
+	if spec.Repositories == nil || len(spec.Repositories) == 0 {
+		return repositories
+	}
+
 	for _, v := range spec.Repositories {
 		var us, ps, ssh *secret
 		if v.UsernameSecret != nil {

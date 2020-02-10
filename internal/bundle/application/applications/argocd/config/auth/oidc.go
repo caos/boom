@@ -20,18 +20,22 @@ type Claim struct {
 	Values    []string `yaml:"values,omitempty"`
 }
 
-func GetOIDC(spec *toolsetsv1beta1.ArgocdOIDC) (string, error) {
-	secret, err := helper.GetSecret(spec.SecretName, "caos-system")
+func GetOIDC(spec *toolsetsv1beta1.Argocd) (string, error) {
+	if spec.Auth == nil || spec.Auth.OIDC == nil {
+		return "", nil
+	}
+
+	secret, err := helper.GetSecret(spec.Auth.OIDC.SecretName, "caos-system")
 	if err != nil {
 		return "", err
 	}
-	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecretKey])
+	clientID := string(secret.Data[spec.Auth.OIDC.ClientIDKey])
+	clientSecret := string(secret.Data[spec.Auth.OIDC.ClientSecretKey])
 
 	var claims map[string]*Claim
-	if len(spec.RequestedIDTokenClaims) > 0 {
+	if len(spec.Auth.OIDC.RequestedIDTokenClaims) > 0 {
 		claims = make(map[string]*Claim, 0)
-		for k, v := range spec.RequestedIDTokenClaims {
+		for k, v := range spec.Auth.OIDC.RequestedIDTokenClaims {
 			claims[k] = &Claim{
 				Essential: v.Essential,
 				Values:    v.Values,
@@ -40,11 +44,11 @@ func GetOIDC(spec *toolsetsv1beta1.ArgocdOIDC) (string, error) {
 	}
 
 	oidc := &oidc{
-		Name:                   spec.Name,
-		Issuer:                 spec.Issuer,
+		Name:                   spec.Auth.OIDC.Name,
+		Issuer:                 spec.Auth.OIDC.Issuer,
 		ClientID:               clientID,
 		ClientSecret:           clientSecret,
-		RequestedScopes:        spec.RequestedScopes,
+		RequestedScopes:        spec.Auth.OIDC.RequestedScopes,
 		RequestedIDTokenClaims: claims,
 	}
 
