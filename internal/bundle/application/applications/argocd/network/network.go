@@ -9,7 +9,7 @@ func GetHostConfig(spec *toolsetsv1beta1.Network) *crds.HostConfig {
 	return &crds.HostConfig{
 		Name:             spec.Domain,
 		Namespace:        "caos-system",
-		InsecureAction:   "route",
+		InsecureAction:   "Redirect",
 		Hostname:         spec.Domain,
 		AcmeProvider:     spec.AcmeAuthority,
 		PrivateKeySecret: spec.Domain,
