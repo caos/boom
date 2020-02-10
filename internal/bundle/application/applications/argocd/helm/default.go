@@ -1,5 +1,55 @@
 package helm
 
+// Enabled           bool            `yaml:"enabled"`
+// Name              string          `yaml:"name"`
+// Image             *Image          `yaml:"image"`
+// InitImage         *Image          `yaml:"initImage"`
+// Env               []interface{}   `yaml:"env"`
+// ServiceAccount    *ServiceAccount `yaml:"serviceAccount"`
+// VolumeMounts      []*VolumeMount  `yaml:"volumeMounts"`
+// Volumes           []*Volume       `yaml:"volumes"`
+// ContainerPortHTTP int             `yaml:"containerPortHttp"`
+// ServicePortHTTP   int             `yaml:"servicePortHttp"`
+// ContainerPortGrpc int             `yaml:"containerPortGrpc"`
+// ServicePortGrpc   int             `yaml:"servicePortGrpc"`
+// NodeSelector      struct{}        `yaml:"nodeSelector"`
+// Tolerations       []interface{}   `yaml:"tolerations"`
+// Affinity          struct{}        `yaml:"affinity"`
+// PriorityClassName string          `yaml:"priorityClassName"`
+// Resources         struct{}        `yaml:"resources"`
+
+func DefaultDexValues(imageTags map[string]string) *Dex {
+	return &Dex{
+		Enabled: true,
+		Name:    "dex-server",
+		Image: &Image{
+			Repository:      "quay.io/dexidp/dex",
+			Tag:             imageTags["quay.io/dexidp/dex"],
+			ImagePullPolicy: "IfNotPresent",
+		},
+		ServiceAccount: &ServiceAccount{
+			Create: true,
+			Name:   "argocd-dex-server",
+		},
+		VolumeMounts: []*VolumeMount{
+			&VolumeMount{
+				Name:      "static-files",
+				MountPath: "/shared",
+			},
+		},
+		Volumes: []*Volume{
+			&Volume{
+				Name:     "static-files",
+				EmptyDir: struct{}{},
+			},
+		},
+		ContainerPortHTTP: 5556,
+		ServicePortHTTP:   5556,
+		ContainerPortGrpc: 5557,
+		ServicePortGrpc:   5557,
+	}
+}
+
 func DefaultValues(imageTags map[string]string) *Values {
 	values := &Values{
 		FullnameOverride: "argocd",
@@ -124,6 +174,10 @@ func DefaultValues(imageTags map[string]string) *Values {
 			},
 			Route: &Route{
 				Enabled: false,
+			},
+			Config: &Config{
+				URL:                         "https://argocd.example.com",
+				ApplicationInstanceLabelKey: "argocd.argoproj.io/instance",
 			},
 		},
 		RepoServer: &RepoServer{
