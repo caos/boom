@@ -14,7 +14,7 @@ func GetGitlabAuthConfig(spec *toolsetsv1beta1.GrafanaGitlabAuth) (map[string]st
 	}
 
 	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecret])
+	clientSecret := string(secret.Data[spec.ClientSecretKey])
 	allowedGroups := strings.Join(spec.AllowedGroups, " ")
 
 	return map[string]string{

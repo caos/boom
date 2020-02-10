@@ -78,12 +78,13 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
 		"overlay":     overlay,
-		"logID":       "HELM-siNod1Y2nYCVW0r",
 	}
+	templateLogger := h.logger.WithFields(logFields)
+	logFields["logID"] = "HELM-siNod1Y2nYCVW0r"
 
 	h.logger.WithFields(logFields).Debug("Generate values with toolsetSpec")
 	chartInfo := app.GetChartInfo()
-	values := app.SpecToHelmValues(spec)
+	values := app.SpecToHelmValues(templateLogger, spec)
 
 	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
 	if err != nil {

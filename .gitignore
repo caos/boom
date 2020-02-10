@@ -22,3 +22,5 @@ tools
 !main.go
 
 examples/gitops/privatrepo/secret
+
+local/*

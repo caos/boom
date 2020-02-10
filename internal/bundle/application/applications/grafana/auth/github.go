@@ -14,7 +14,7 @@ func GetGithubAuthConfig(spec *toolsetsv1beta1.GrafanaGithubAuth) (map[string]st
 	}
 
 	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecret])
+	clientSecret := string(secret.Data[spec.ClientSecretKey])
 	teamIds := strings.Join(spec.TeamIDs, " ")
 	allowedOrganizations := strings.Join(spec.AllowedOrganizations, " ")
 

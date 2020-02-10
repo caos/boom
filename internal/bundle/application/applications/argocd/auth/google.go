@@ -11,6 +11,7 @@ import (
 )
 
 type google struct {
+	Issuer                 string   `yaml:"issuer,omitempty"`
 	ClientID               string   `yaml:"clientID,omitempty"`
 	ClientSecret           string   `yaml:"clientSecret,omitempty"`
 	RedirectURI            string   `yaml:"redirectURI,omitempty"`
@@ -20,7 +21,7 @@ type google struct {
 	AdminEmail             string   `yaml:"adminEmail,omitempty"`
 }
 
-func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector) (interface{}, error) {
+func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector, redirect string) (interface{}, error) {
 	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err
@@ -49,20 +50,23 @@ func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector) (interface{}, error)
 		return nil, err
 	}
 
-	// write json to file
-	err = ioutil.WriteFile(spec.Config.ServiceAccountFilePath, serviceAccountJSON, 0644)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error while writing json to file %s", spec.Config.ServiceAccountFilePath)
+	if serviceAccountJSON != nil {
+		// write json to file
+		err = ioutil.WriteFile(spec.Config.ServiceAccountFilePath, serviceAccountJSON, 0644)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Error while writing json to file %s", spec.Config.ServiceAccountFilePath)
+		}
 	}
 
 	google := &google{
 		ClientID:               clientID,
 		ClientSecret:           clientSecret,
-		RedirectURI:            spec.Config.RedirectURI,
+		RedirectURI:            redirect,
 		Groups:                 spec.Config.Groups,
 		HostedDomains:          spec.Config.HostedDomains,
 		ServiceAccountFilePath: spec.Config.ServiceAccountFilePath,
 		AdminEmail:             spec.Config.AdminEmail,
+		Issuer:                 "https://accounts.google.com",
 	}
 
 	return google, nil

@@ -107,7 +107,7 @@ type Dex struct {
 	Enabled           bool            `yaml:"enabled"`
 	Name              string          `yaml:"name"`
 	Image             *Image          `yaml:"image"`
-	InitImage         *Image          `yaml:"initImage"`
+	InitImage         *Image          `yaml:"initImage,omitempty"`
 	Env               []interface{}   `yaml:"env"`
 	ServiceAccount    *ServiceAccount `yaml:"serviceAccount"`
 	VolumeMounts      []*VolumeMount  `yaml:"volumeMounts"`

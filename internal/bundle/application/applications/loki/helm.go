@@ -4,15 +4,16 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/logs"
+	"github.com/caos/orbiter/logging"
 
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
 
-func (l *Loki) HelmPreApplySteps(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+func (l *Loki) HelmPreApplySteps(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
 	return logs.GetAllResources(toolsetCRDSpec), nil
 }
 
-func (l *Loki) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (l *Loki) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolset.Loki
 	values := helm.DefaultValues(l.GetImageTags())
 
