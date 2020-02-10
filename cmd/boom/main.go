@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -87,6 +87,10 @@ func main() {
 	gconfig.DashboardsDirectoryPath = dashboardsDirectoryPath
 
 	var gitCrdPrivateKeyBytes []byte
+
+	if localMode {
+		helper.InConfig = false
+	}
 
 	if gitOrbConfig != "" {
 		gitOrbConfig, err := ioutil.ReadFile(gitOrbConfig)

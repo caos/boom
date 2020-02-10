@@ -1,41 +1,26 @@
 package argocd
 
 import (
-	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
-	"github.com/caos/boom/internal/helper"
-	"github.com/caos/boom/internal/templator/helm/chart"
 	"strings"
+
+	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/config"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
+	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+	spec := toolsetCRDSpec.Argocd
 
-	if toolsetCRDSpec.Argocd.CustomImageWithGopass {
-		tab := "  "
-		nl := "\n"
-
-		// imagepullsecret for customImage
-		if toolsetCRDSpec.Argocd.ImagePullSecret != "" {
-			addContent := strings.Join([]string{
-				tab, tab, tab, "imagePullSecrets:", nl,
-				tab, tab, tab, "- name: ", toolsetCRDSpec.Argocd.ImagePullSecret, nl,
-			}, "")
-
-			if err := helper.AddStringBeforePointForKindAndName(resultFilePath, "Deployment", "argocd-repo-server", "volumes:", addContent); err != nil {
-				return err
-			}
+	if spec.CustomImage != nil && spec.CustomImage.Enabled && spec.CustomImage.ImagePullSecret != "" {
+		if err := customimage.AddImagePullSecretFromSpec(spec, resultFilePath); err != nil {
+			return err
 		}
 
-		if toolsetCRDSpec.Argocd.GopassDirectory != "" && toolsetCRDSpec.Argocd.GopassStoreName != "" {
-			addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh", toolsetCRDSpec.Argocd.GopassDirectory, toolsetCRDSpec.Argocd.GopassStoreName}, " ")
-			addLifecycle := strings.Join([]string{
-				tab, tab, tab, tab, "lifecycle:", nl,
-				tab, tab, tab, tab, tab, "postStart:", nl,
-				tab, tab, tab, tab, tab, tab, "exec:", nl,
-				tab, tab, tab, tab, tab, tab, tab, "command: [\"/bin/bash\", \"-c\", \"", addCommand, "\"]", nl,
-			}, "")
-
-			if err := helper.AddStringBeforePointForKindAndName(resultFilePath, "Deployment", "argocd-repo-server", "imagePullPolicy:", addLifecycle); err != nil {
+		if spec.CustomImage.GopassDirectory != "" && spec.CustomImage.GopassStoreName != "" {
+			if err := customimage.AddPostStartFromSpec(spec, resultFilePath); err != nil {
 				return err
 			}
 		}
@@ -44,48 +29,57 @@ func (a *Argocd) HelmMutate(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultF
 	return nil
 }
 
-func (a *Argocd) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolsetCRDSpec.Argocd
 
 	imageTags := a.GetImageTags()
 	values := helm.DefaultValues(imageTags)
-	if spec.CustomImageWithGopass {
-		imageRepository := "docker.pkg.github.com/caos/argocd-secrets/argocd"
+	if spec.CustomImage != nil && spec.CustomImage.Enabled {
+		conf := customimage.FromSpec(spec, imageTags)
+		values.RepoServer.Image = &helm.Image{
+			Repository:      conf.ImageRepository,
+			Tag:             conf.ImageTag,
+			ImagePullPolicy: "IfNotPresent",
+		}
+		if conf.AddSecretVolumes != nil {
+			for _, v := range conf.AddSecretVolumes {
+				values.RepoServer.Volumes = append(values.RepoServer.Volumes, &helm.Volume{
+					Secret: &helm.VolumeSecret{
+						SecretName:  v.SecretName,
+						DefaultMode: v.DefaultMode,
+					},
+					Name: v.Name,
+				})
+			}
+		}
+		if conf.AddVolumeMounts != nil {
+			for _, v := range conf.AddVolumeMounts {
+				values.RepoServer.VolumeMounts = append(values.RepoServer.VolumeMounts, &helm.VolumeMount{
+					Name:      v.Name,
+					MountPath: v.MountPath,
+					SubPath:   v.SubPath,
+					ReadOnly:  v.ReadOnly,
+				})
+			}
+		}
+	}
 
-		values.RepoServer.Image.Repository = imageRepository
-		values.RepoServer.Image.Tag = imageTags[imageRepository]
-		if spec.GopassGPGKey != "" {
-			vol := &helm.Volume{
-				Name: toolsetCRDSpec.Argocd.GopassGPGKey,
-				Secret: &helm.VolumeSecret{
-					SecretName:  toolsetCRDSpec.Argocd.GopassGPGKey,
-					DefaultMode: 0444,
-				},
-			}
-			values.RepoServer.Volumes = append(values.RepoServer.Volumes, vol)
-			volMount := &helm.VolumeMount{
-				Name:      toolsetCRDSpec.Argocd.GopassGPGKey,
-				MountPath: "/home/argocd/gpg-import",
-				ReadOnly:  true,
-			}
-			values.RepoServer.VolumeMounts = append(values.RepoServer.VolumeMounts, volMount)
+	conf := config.GetFromSpec(logger, spec)
+	if conf.Repositories != "" {
+		values.Server.Config.Repositories = conf.Repositories
+	}
+
+	if spec.Network != nil && spec.Network.Domain != "" {
+
+		if conf.OIDC != "" {
+			values.Server.Config.OIDC = conf.OIDC
 		}
 
-		if spec.GopassSSHKey != "" {
-			vol := &helm.Volume{
-				Name: toolsetCRDSpec.Argocd.GopassSSHKey,
-				Secret: &helm.VolumeSecret{
-					SecretName:  toolsetCRDSpec.Argocd.GopassSSHKey,
-					DefaultMode: 0444,
-				},
-			}
-			values.RepoServer.Volumes = append(values.RepoServer.Volumes, vol)
-			volMount := &helm.VolumeMount{
-				Name:      toolsetCRDSpec.Argocd.GopassSSHKey,
-				MountPath: "/home/argocd/ssh-key",
-				ReadOnly:  true,
-			}
-			values.RepoServer.VolumeMounts = append(values.RepoServer.VolumeMounts, volMount)
+		if conf.Connectors != "" {
+			values.Server.Config.Dex = conf.Connectors
+
+			values.Dex = helm.DefaultDexValues(imageTags)
+			values.Server.Config.URL = strings.Join([]string{"https://", spec.Network.Domain}, "")
 		}
 	}
 

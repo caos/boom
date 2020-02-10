@@ -107,7 +107,7 @@ type Dex struct {
 	Enabled           bool            `yaml:"enabled"`
 	Name              string          `yaml:"name"`
 	Image             *Image          `yaml:"image"`
-	InitImage         *Image          `yaml:"initImage"`
+	InitImage         *Image          `yaml:"initImage,omitempty"`
 	Env               []interface{}   `yaml:"env"`
 	ServiceAccount    *ServiceAccount `yaml:"serviceAccount"`
 	VolumeMounts      []*VolumeMount  `yaml:"volumeMounts"`
@@ -164,10 +164,15 @@ type Route struct {
 	Enabled  bool   `yaml:"enabled"`
 	Hostname string `yaml:"hostname"`
 }
+
 type Config struct {
 	URL                         string `yaml:"url"`
 	ApplicationInstanceLabelKey string `yaml:"application.instanceLabelKey"`
+	OIDC                        string `yaml:"oidc.config,omitempty"`
+	Dex                         string `yaml:"dex.config,omitempty"`
+	Repositories                string `yaml:"repositories,omitempty"`
 }
+
 type Server struct {
 	Name                   string            `yaml:"name"`
 	Image                  *Image            `yaml:"image"`

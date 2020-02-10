@@ -4,7 +4,6 @@ type Ambassador struct {
 	Deploy       bool               `json:"deploy,omitempty"`
 	ReplicaCount int                `json:"replicaCount,omitempty"`
 	Service      *AmbassadorService `json:"service,omitempty"`
-	Hosts        *Hosts             `json:"hosts,omitempty" yaml:"hosts,omitempty"`
 }
 
 type AmbassadorService struct {
@@ -20,13 +19,8 @@ type Port struct {
 	NodePort   uint16 `json:"nodePort,omitempty" yaml:"nodePort,omitempty"`
 }
 
-type Hosts struct {
-	Argocd  *Host `json:"argocd"`
-	Grafana *Host `json:"grafana"`
-}
-
-type Host struct {
+type Network struct {
 	Domain        string `json:"domain" yaml:"domain"`
-	Email         string `json:"email" yaml:"email"`
+	Email         string `json:"email,omitempty" yaml:"email,omitempty"`
 	AcmeAuthority string `json:"acmeAuthority,omitempty" yaml:"acmeAuthority,omitempty"`
 }

@@ -4,12 +4,13 @@ import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/templator"
+	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 )
 
 type TemplatorPreSteps interface {
 	templator.HelmApplication
-	HelmPreApplySteps(*v1beta1.ToolsetSpec) ([]interface{}, error)
+	HelmPreApplySteps(logging.Logger, *v1beta1.ToolsetSpec) ([]interface{}, error)
 }
 
 func (h *Helm) preApplySteps(app interface{}, spec *v1beta1.ToolsetSpec) templator.Templator {
@@ -19,7 +20,15 @@ func (h *Helm) preApplySteps(app interface{}, spec *v1beta1.ToolsetSpec) templat
 
 	pre, ok := app.(TemplatorPreSteps)
 	if ok {
-		resources, err := pre.HelmPreApplySteps(spec)
+
+		logFields := map[string]interface{}{
+			"application": pre.GetName().String(),
+			"overlay":     h.overlay,
+		}
+
+		preLogger := h.logger.WithFields(logFields)
+		preLogger.Debug("Pre-steps")
+		resources, err := pre.HelmPreApplySteps(preLogger, spec)
 		if err != nil {
 			h.status = errors.Wrapf(err, "Error while processing pre-steps for application %s", pre.GetName().String())
 			return h
@@ -36,7 +45,7 @@ func (h *Helm) preApplySteps(app interface{}, spec *v1beta1.ToolsetSpec) templat
 			}
 
 			if h.status != nil {
-				h.status = errors.Wrapf(err, "Error while adding element %i to result-file", i)
+				h.status = errors.Wrapf(err, "Error while adding element %d to result-file", i)
 				return h
 			}
 		}

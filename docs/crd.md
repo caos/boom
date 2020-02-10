@@ -7,7 +7,7 @@
 | `kubeVersion`                      | Version of the kuberentes version of the cluster                                |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
 | `logging-operator`                 | Spec for the Banzaicloud Logging-Operator                                       |                                   |
-| `prometheus-node-exporter`         | Spec for the Prometheus-NOde-Exporter                                           |                                   |
+| `prometheus-node-exporter`         | Spec for the Prometheus-Node-Exporter                                           |                                   |
 | `grafana`                          | Spec for the Grafana                                                            |                                   |
 | `ambassador`                       | Spec for the Ambassador                                                         |                                   |
 | `kube-state-metrics`               | Spec for the Kube-State-Metrics                                                 |                                   |
@@ -60,6 +60,8 @@
 | `storage.size`                     | Defined size of the PVC                                                         |                                   |
 | `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
 | `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
+| `network`                          | Network configuration, [here](network.md)                                       |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
 
 ### Ambassador
 
@@ -70,12 +72,6 @@
 | `service`                          | Service definition for ambassador                                               | nil                               |
 | `service.type`                     | Type for the service                                                            | NodePort                          |
 | `service.loadBalancerIP`           | Used IP for loadbalancing for ambassador if loadbalancer is used                | nil                               |
-| `hosts`                            | Defined hosts for certificates                                                  | nil                               |
-| `hosts.argocd`                     | Host definition for argocd                                                      | nil                               |
-| `hosts.grafana`                    | Host definition for grafana                                                     | nil                               |
-| `hosts.*.domain`                   | Defined domain                                                                  |                                   |
-| `hosts.*.email`                    | Used email for ACME request                                                     |                                   |
-| `hosts.*.acmeAuthority`            | Used authority for ACME request to get a certificate                            |                                   |
 
 ### Kube-State-Metrics
 
@@ -89,12 +85,16 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `customImageWithGopass`            | Flag if custom argocd-image should get used with gopass                         | false                             |
-| `imagePullSecret`                  | Name of used imagePullSecret to pull customImage                                |                                   |
-| `gopassGPGKey`                     | Name of the existent secret which contains the gpg-key                          |                                   |
-| `gopassSSHKey`                     | Name of the existent secret which contains the ssh-key                          |                                   |
-| `gopassDirectory`                  | SSH-URL to Repository which is used as gopass secret store                      |                                   |
-| `gopassStoreName`                  | Name of the gopass secret store                                                 |                                   |
+| `customImage`                      | Custom argocd-image                                                             | nil                               |
+| `customImage.enabled`              | Flag if custom argocd-image should get used with gopass                         | false                             |
+| `customImage.imagePullSecret`      | Name of used imagePullSecret to pull customImage                                |                                   |
+| `customImage.gopassGPGKey`         | Name of the existent secret which contains the gpg-key                          |                                   |
+| `customImage.gopassSSHKey`         | Name of the existent secret which contains the ssh-key                          |                                   |
+| `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
+| `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
+| `network`                          | Network configuration, [here](network.md)                                       |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
+| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     |                                   |
 
 ### Prometheus
 

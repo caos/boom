@@ -5,14 +5,16 @@ import (
 
 	"github.com/caos/boom/api/v1beta1"
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
 	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
+func (g *Grafana) HelmPreApplySteps(logger logging.Logger, spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
 	config := config.New(spec.KubeVersion, spec)
 
 	folders := make([]string, 0)
@@ -32,7 +34,7 @@ func (g *Grafana) HelmPreApplySteps(spec *v1beta1.ToolsetSpec) ([]interface{}, e
 	return ret, nil
 }
 
-func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	conf := config.New(toolset.KubeVersion, toolset)
 	values := helm.DefaultValues(g.GetImageTags())
 
@@ -94,6 +96,39 @@ func (g *Grafana) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interfa
 		}
 	}
 
+	if toolset.Grafana.Network != nil && toolset.Grafana.Network.Domain != "" {
+		values.Grafana.Env["GF_SERVER_DOMAIN"] = toolset.Grafana.Network.Domain
+
+		if toolset.Grafana.Auth != nil {
+			if toolset.Grafana.Auth.Google != nil {
+				google, err := auth.GetGoogleAuthConfig(toolset.Grafana.Auth.Google)
+				if err == nil {
+					values.Grafana.Ini.AuthGoogle = google
+				}
+			}
+
+			if toolset.Grafana.Auth.Github != nil {
+				github, err := auth.GetGithubAuthConfig(toolset.Grafana.Auth.Github)
+				if err == nil {
+					values.Grafana.Ini.AuthGithub = github
+				}
+			}
+
+			if toolset.Grafana.Auth.Gitlab != nil {
+				gitlab, err := auth.GetGitlabAuthConfig(toolset.Grafana.Auth.Gitlab)
+				if err == nil {
+					values.Grafana.Ini.AuthGitlab = gitlab
+				}
+			}
+
+			if toolset.Grafana.Auth.GenericOAuth != nil {
+				generic, err := auth.GetGenericOAuthConfig(toolset.Grafana.Auth.GenericOAuth)
+				if err == nil {
+					values.Grafana.Ini.AuthGeneric = generic
+				}
+			}
+		}
+	}
 	return values
 }
 
