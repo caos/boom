@@ -23,7 +23,7 @@ type ArgocdSecret struct {
 type ArgocdCustomImage struct {
 	Enabled         bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	ImagePullSecret string               `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassGPGKey    string               `json:"gopassPGPKey,omitempty" yaml:"gopassPGPKey,omitempty"`
+	GopassGPGKey    string               `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
 	GopassSSHKey    string               `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
 	GopassStores    []*ArgocdGopassStore `json:"gopassStores,omitempty" yaml:"gopassStores,omitempty"`
 }
