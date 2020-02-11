@@ -106,7 +106,7 @@ func AddPostStartFromSpec(spec *toolsetsv1beta1.Argocd, resultFilePath string) e
 	}
 	jsonStoresStr := strings.ReplaceAll(string(jsonStores), "\"", "\\\"")
 
-	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh", jsonStoresStr}, " ")
+	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh '", jsonStoresStr, "'"}, "")
 	addLifecycle := strings.Join([]string{
 		tab, tab, tab, tab, "lifecycle:", nl,
 		tab, tab, tab, tab, tab, "postStart:", nl,
