@@ -69,6 +69,10 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 		values.Server.Config.Repositories = conf.Repositories
 	}
 
+	if conf.ConfigManagementPlugins != "" {
+		values.Server.Config.ConfigManagementPlugins = conf.ConfigManagementPlugins
+	}
+
 	if spec.Network != nil && spec.Network.Domain != "" {
 
 		if conf.OIDC != "" {
