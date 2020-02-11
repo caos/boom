@@ -27,7 +27,6 @@ var (
 			Namespace: "caos-system",
 		},
 		Spec: &v1beta1.ToolsetSpec{
-			KubeVersion: "1.17.0",
 			Ambassador: &v1beta1.Ambassador{
 				Deploy: true,
 			},
@@ -54,7 +53,6 @@ var (
 			Namespace: "caos-system",
 		},
 		Spec: &v1beta1.ToolsetSpec{
-			KubeVersion: "1.17.0",
 			Ambassador: &v1beta1.Ambassador{
 				Deploy: false,
 			},

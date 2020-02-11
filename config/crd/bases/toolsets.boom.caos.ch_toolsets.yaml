@@ -392,8 +392,6 @@ spec:
                 replicaCount:
                   type: integer
               type: object
-            kubeVersion:
-              type: string
             logging-operator:
               properties:
                 deploy:

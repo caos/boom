@@ -382,17 +382,9 @@ func (in *ArgocdOIDC) DeepCopyInto(out *ArgocdOIDC) {
 	}
 	if in.RequestedIDTokenClaims != nil {
 		in, out := &in.RequestedIDTokenClaims, &out.RequestedIDTokenClaims
-		*out = make(map[string]*ArgocdClaim, len(*in))
+		*out = make(map[string]ArgocdClaim, len(*in))
 		for key, val := range *in {
-			var outVal *ArgocdClaim
-			if val == nil {
-				(*out)[key] = nil
-			} else {
-				in, out := &val, &outVal
-				*out = new(ArgocdClaim)
-				(*in).DeepCopyInto(*out)
-			}
-			(*out)[key] = outVal
+			(*out)[key] = *val.DeepCopy()
 		}
 	}
 }

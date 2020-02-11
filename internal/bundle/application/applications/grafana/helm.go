@@ -9,13 +9,14 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
+	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
 
 func (g *Grafana) HelmPreApplySteps(logger logging.Logger, spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
-	config := config.New(spec.KubeVersion, spec)
+	config := config.New(spec)
 
 	folders := make([]string, 0)
 	for _, provider := range config.DashboardProviders {
@@ -35,10 +36,15 @@ func (g *Grafana) HelmPreApplySteps(logger logging.Logger, spec *v1beta1.Toolset
 }
 
 func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
-	conf := config.New(toolset.KubeVersion, toolset)
+	version, err := kubectl.NewVersion().GetKubeVersion(logger)
+	if err != nil {
+		return nil
+	}
+
+	conf := config.New(toolset)
 	values := helm.DefaultValues(g.GetImageTags())
 
-	values.KubeTargetVersionOverride = conf.KubeVersion
+	values.KubeTargetVersionOverride = version
 
 	providers := make([]*helm.Provider, 0)
 	dashboards := make(map[string]string, 0)

@@ -13,7 +13,6 @@ metadata:
   name: caos
   namespace: caos-system
 spec:
-  kubeVersion: v1.17.0
   grafana:
     deploy: true
     domain: example.caos.ch
@@ -70,7 +69,6 @@ metadata:
   name: caos
   namespace: caos-system
 spec:
-  kubeVersion: v1.17.0
   Argocd:
     deploy: true
     auth:
