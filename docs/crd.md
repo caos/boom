@@ -4,7 +4,6 @@
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
-| `kubeVersion`                      | Version of the kuberentes version of the cluster                                |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
 | `logging-operator`                 | Spec for the Banzaicloud Logging-Operator                                       |                                   |
 | `prometheus-node-exporter`         | Spec for the Prometheus-Node-Exporter                                           |                                   |

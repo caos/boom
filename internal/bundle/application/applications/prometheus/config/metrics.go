@@ -70,7 +70,6 @@ func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Confi
 			MonitorLabels:           monitorlabels,
 			ServiceMonitors:         servicemonitors,
 			AdditionalScrapeConfigs: getScrapeConfigs(),
-			KubeVersion:             toolsetCRDSpec.KubeVersion,
 		}
 
 		if toolsetCRDSpec.Prometheus.Storage != nil {

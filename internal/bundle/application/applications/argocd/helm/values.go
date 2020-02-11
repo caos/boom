@@ -171,6 +171,7 @@ type Config struct {
 	OIDC                        string `yaml:"oidc.config,omitempty"`
 	Dex                         string `yaml:"dex.config,omitempty"`
 	Repositories                string `yaml:"repositories,omitempty"`
+	ConfigManagementPlugins     string `yaml:"configManagementPlugins,omitempty"`
 }
 
 type Server struct {

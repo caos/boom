@@ -1,10 +1,12 @@
 package customimage
 
 import (
+	"encoding/json"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/helper"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -84,8 +86,27 @@ func AddImagePullSecretFromSpec(spec *toolsetsv1beta1.Argocd, resultFilePath str
 	return helper.AddStringBeforePointForKindAndName(resultFilePath, "Deployment", "argocd-repo-server", "volumes:", addContent)
 }
 
+type stores struct {
+	Stores []*store `json:"stores"`
+}
+
+type store struct {
+	Directory string `json:"directory"`
+	StoreName string `json:"storename"`
+}
+
 func AddPostStartFromSpec(spec *toolsetsv1beta1.Argocd, resultFilePath string) error {
-	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh", spec.CustomImage.GopassDirectory, spec.CustomImage.GopassStoreName}, " ")
+	stores := &stores{}
+	for _, v := range spec.CustomImage.GopassStores {
+		stores.Stores = append(stores.Stores, &store{Directory: v.Directory, StoreName: v.StoreName})
+	}
+	jsonStores, err := json.Marshal(stores)
+	if err != nil {
+		return errors.Wrap(err, "Error while marshaling gopass stores in json")
+	}
+	jsonStoresStr := strings.ReplaceAll(string(jsonStores), "\"", "\\\"")
+
+	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh", jsonStoresStr}, " ")
 	addLifecycle := strings.Join([]string{
 		tab, tab, tab, tab, "lifecycle:", nl,
 		tab, tab, tab, tab, tab, "postStart:", nl,

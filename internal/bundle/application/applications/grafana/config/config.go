@@ -27,11 +27,10 @@ type Config struct {
 	Deploy             bool
 	Datasources        []*Datasource
 	DashboardProviders []*Provider
-	KubeVersion        string
 	Ini                map[string]interface{}
 }
 
-func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
+func New(spec *toolsetsv1beta1.ToolsetSpec) *Config {
 	dashboardProviders := make([]*Provider, 0)
 	if spec.Grafana.DashboardProviders != nil {
 		for _, provider := range spec.Grafana.DashboardProviders {
@@ -61,7 +60,6 @@ func New(kubeVersion string, spec *toolsetsv1beta1.ToolsetSpec) *Config {
 		Deploy:             spec.Grafana.Deploy,
 		DashboardProviders: dashboardProviders,
 		Datasources:        datasources,
-		KubeVersion:        kubeVersion,
 	}
 
 	providers := getGrafanaDashboards(DashboardsDirectoryPath, spec)

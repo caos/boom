@@ -38,7 +38,6 @@ metadata:
   name: caos
   namespace: caos-system
 spec:
-  kubeVersion: v1.17.0
   prometheus-operator:
     deploy: true
   logging-operator:
