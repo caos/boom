@@ -21,12 +21,16 @@ type ArgocdSecret struct {
 }
 
 type ArgocdCustomImage struct {
-	Enabled         bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	ImagePullSecret string `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassGPGKey    string `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
-	GopassSSHKey    string `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
-	GopassDirectory string `json:"gopassDirectory,omitempty" yaml:"gopassDirectory,omitempty"`
-	GopassStoreName string `json:"gopassStoreName,omitempty" yaml:"gopassStoreName,omitempty"`
+	Enabled         bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	ImagePullSecret string               `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
+	GopassGPGKey    string               `json:"gopassPGPKey,omitempty" yaml:"gopassPGPKey,omitempty"`
+	GopassSSHKey    string               `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
+	GopassStores    []*ArgocdGopassStore `json:"gopassStores,omitempty" yaml:"gopassStores,omitempty"`
+}
+
+type ArgocdGopassStore struct {
+	Directory string `json:"directory,omitempty" yaml:"directory,omitempty"`
+	StoreName string `json:"storeName,omitempty" yaml:"storeName,omitempty"`
 }
 
 type ArgocdAuth struct {
@@ -37,13 +41,13 @@ type ArgocdAuth struct {
 }
 
 type ArgocdOIDC struct {
-	Name                   string                  `json:"name,omitempty" yaml:"name,omitempty"`
-	Issuer                 string                  `json:"issuer,omitempty" yaml:"issuer,omitempty"`
-	SecretName             string                  `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey            string                  `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecretKey        string                  `json:"clientSecretKey,omitempty" yaml:"clientSecret,omitempty"`
-	RequestedScopes        []string                `json:"requestedScopes,omitempty" yaml:"requestedScopes,omitempty"`
-	RequestedIDTokenClaims map[string]*ArgocdClaim `json:"requestedIDTokenClaims,omitempty" yaml:"requestedIDTokenClaims,omitempty"`
+	Name                   string                 `json:"name,omitempty" yaml:"name,omitempty"`
+	Issuer                 string                 `json:"issuer,omitempty" yaml:"issuer,omitempty"`
+	SecretName             string                 `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+	ClientIDKey            string                 `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
+	ClientSecretKey        string                 `json:"clientSecretKey,omitempty" yaml:"clientSecret,omitempty"`
+	RequestedScopes        []string               `json:"requestedScopes,omitempty" yaml:"requestedScopes,omitempty"`
+	RequestedIDTokenClaims map[string]ArgocdClaim `json:"requestedIDTokenClaims,omitempty" yaml:"requestedIDTokenClaims,omitempty"`
 }
 
 type ArgocdClaim struct {

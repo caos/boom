@@ -19,7 +19,7 @@ func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1bet
 			return err
 		}
 
-		if spec.CustomImage.GopassDirectory != "" && spec.CustomImage.GopassStoreName != "" {
+		if spec.CustomImage.GopassStores != nil && len(spec.CustomImage.GopassStores) > 0 {
 			if err := customimage.AddPostStartFromSpec(spec, resultFilePath); err != nil {
 				return err
 			}
