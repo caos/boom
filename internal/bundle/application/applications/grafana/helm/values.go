@@ -81,6 +81,10 @@ type Ini struct {
 	AuthGeneric map[string]string      `yaml:"auth.generic_oauth,omitempty"`
 }
 
+type Service struct {
+	Labels map[string]string `yaml:"labels,omitempty"`
+}
+
 type GrafanaValues struct {
 	FullnameOverride         string                           `yaml:"fullnameOverride,omitempty"`
 	Enabled                  bool                             `yaml:"enabled"`
@@ -100,6 +104,8 @@ type GrafanaValues struct {
 	Plugins                  []string                         `yaml:"plugins,omitempty"`
 	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
 	Env                      map[string]string                `yaml:"env,omitempty"`
+	Service                  *Service                        `yaml:"service,omitempty"`
+	PodLabels                map[string]string               `yaml:"podLabels,omitempty"`
 }
 
 type Rules struct {

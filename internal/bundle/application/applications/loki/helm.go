@@ -3,8 +3,10 @@ package loki
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/logs"
 	"github.com/caos/orbiter/logging"
+	"github.com/caos/boom/internal/labels"
 
 	"github.com/caos/boom/internal/templator/helm/chart"
 )
@@ -26,6 +28,10 @@ func (l *Loki) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.
 		}
 	}
 
+	appLabels := labels.GetApplicationLabels(info.GetName())
+	values.PodLabels = appLabels
+	values.Service.Labels = appLabels
+	values.FullNameOverride = info.GetName().String()
 	return values
 }
 

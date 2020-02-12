@@ -4,8 +4,10 @@ import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -16,7 +18,7 @@ func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1b
 		return nil
 	}
 
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	config := config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 
 	values := helm.DefaultValues(p.GetImageTags())
 
@@ -58,13 +60,17 @@ func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1b
 		values.Prometheus.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
 
-	ruleLabels := map[string]string{"prometheus": "caos", "instance-name": "operated"}
+	ruleLabels := labels.GetRuleLabels(info.GetInstanceName())
 	rules, _ := helm.GetDefaultRules(ruleLabels)
 
 	values.Prometheus.PrometheusSpec.RuleSelector = &helm.RuleSelector{MatchLabels: ruleLabels}
 	values.DefaultRules.Labels = ruleLabels
 	values.KubeTargetVersionOverride = version
 	values.AdditionalPrometheusRules = []*helm.AdditionalPrometheusRules{rules}
+
+	values.FullnameOverride = info.GetInstanceName()
+
+	values.CommonLabels = labels.GetApplicationLabels(info.GetName())
 
 	return values
 }

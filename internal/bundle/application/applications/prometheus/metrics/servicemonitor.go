@@ -1,21 +1,26 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
+func GetServicemonitor(instanceName string) *servicemonitor.Config {
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName)
+	ls := labels.GetApplicationLabels(appName)
+
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port: "web",
 		Path: "/metrics",
-	}
-
-	labels := map[string]string{
-		"operated-prometheus": "true",
 	}
 
 	return &servicemonitor.Config{
 		Name:                  "prometheus-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
+		ServiceMatchingLabels: ls,
+		JobName:               appName.String(),
 	}
 }

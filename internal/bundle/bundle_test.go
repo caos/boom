@@ -29,11 +29,10 @@ func NewBundle(templator name.Templator) *Bundle {
 	ctrl.SetLogger(kubebuilder.New(logger))
 
 	bundleConf := &config.Config{
-		Logger:                  logger,
-		CrdName:                 "caos_test",
-		BaseDirectoryPath:       baseDirectoryPath,
-		DashboardsDirectoryPath: dashboardsDirectoryPath,
-		Templator:               templator,
+		Logger:            logger,
+		CrdName:           "caos_test",
+		BaseDirectoryPath: baseDirectoryPath,
+		Templator:         templator,
 	}
 
 	b := New(bundleConf)

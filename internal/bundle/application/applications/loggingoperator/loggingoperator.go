@@ -6,6 +6,7 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -22,7 +23,7 @@ func New(logger logging.Logger) *LoggingOperator {
 	return lo
 }
 func (l *LoggingOperator) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (lo *LoggingOperator) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -42,5 +43,5 @@ func (l *LoggingOperator) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.Toolset
 }
 
 func (l *LoggingOperator) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

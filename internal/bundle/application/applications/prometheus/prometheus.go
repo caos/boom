@@ -7,6 +7,7 @@ import (
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -22,7 +23,7 @@ func New(logger logging.Logger) *Prometheus {
 }
 
 func (p *Prometheus) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (p *Prometheus) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -39,7 +40,7 @@ func (p *Prometheus) Initial() bool {
 }
 
 func (p *Prometheus) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	config := config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 	return !reflect.DeepEqual(config, p.config)
 }
 
@@ -47,9 +48,9 @@ func (p *Prometheus) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec)
 	if toolsetCRDSpec == nil {
 		return
 	}
-	p.config = config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
+	p.config = config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 }
 
 func (p *Prometheus) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

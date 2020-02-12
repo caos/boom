@@ -6,6 +6,7 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -22,7 +23,7 @@ func New(logger logging.Logger) *Loki {
 }
 
 func (l *Loki) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (lo *Loki) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -42,5 +43,5 @@ func (l *Loki) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
 }
 
 func (l *Loki) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

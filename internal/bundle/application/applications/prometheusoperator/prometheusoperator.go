@@ -6,6 +6,7 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -23,7 +24,7 @@ func New(logger logging.Logger) *PrometheusOperator {
 }
 
 func (po *PrometheusOperator) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (po *PrometheusOperator) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -43,5 +44,5 @@ func (po *PrometheusOperator) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.Too
 }
 
 func (po *PrometheusOperator) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

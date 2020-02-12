@@ -60,12 +60,11 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 	}
 
 	bundleConf := &bundleconfig.Config{
-		Logger:                  conf.Logger,
-		CrdName:                 conf.CrdName,
-		BundleName:              conf.BundleName,
-		BaseDirectoryPath:       conf.BaseDirectoryPath,
-		DashboardsDirectoryPath: conf.DashboardsDirectoryPath,
-		Templator:               conf.Templator,
+		Logger:            conf.Logger,
+		CrdName:           conf.CrdName,
+		BundleName:        conf.BundleName,
+		BaseDirectoryPath: conf.BaseDirectoryPath,
+		Templator:         conf.Templator,
 	}
 
 	c.crd.SetBundle(bundleConf)

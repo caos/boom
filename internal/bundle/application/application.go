@@ -3,14 +3,23 @@ package application
 import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
+	ambassadorinfo "github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd"
+	argocdinfo "github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
+	grafanainfo "github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
+	kubestatemetricsinfo "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	loggingoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loki"
+	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
+	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
+	prometheusnodeexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
+	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
@@ -39,23 +48,23 @@ type YAMLApplication interface {
 
 func New(logger logging.Logger, appName name.Application) Application {
 	switch appName {
-	case ambassador.GetName():
+	case ambassadorinfo.GetName():
 		return ambassador.New(logger)
-	case argocd.GetName():
+	case argocdinfo.GetName():
 		return argocd.New(logger)
-	case grafana.GetName():
+	case grafanainfo.GetName():
 		return grafana.New(logger)
-	case kubestatemetrics.GetName():
+	case kubestatemetricsinfo.GetName():
 		return kubestatemetrics.New(logger)
-	case prometheusoperator.GetName():
+	case prometheusoperatorinfo.GetName():
 		return prometheusoperator.New(logger)
-	case loggingoperator.GetName():
+	case loggingoperatorinfo.GetName():
 		return loggingoperator.New(logger)
-	case prometheusnodeexporter.GetName():
+	case prometheusnodeexporterinfo.GetName():
 		return prometheusnodeexporter.New(logger)
-	case prometheus.GetName():
+	case prometheusinfo.GetName():
 		return prometheus.New(logger)
-	case loki.GetName():
+	case lokiinfo.GetName():
 		return loki.New(logger)
 	}
 
@@ -64,10 +73,10 @@ func New(logger logging.Logger, appName name.Application) Application {
 
 func GetOrderNumber(appName name.Application) int {
 	switch appName {
-	case prometheus.GetName():
-		return prometheus.GetOrderNumber()
-	case loki.GetName():
-		return loki.GetOrderNumber()
+	case prometheusinfo.GetName():
+		return prometheusinfo.GetOrderNumber()
+	case lokiinfo.GetName():
+		return lokiinfo.GetOrderNumber()
 	}
 
 	return 0

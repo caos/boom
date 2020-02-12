@@ -3,6 +3,8 @@ package kubestatemetrics
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -15,6 +17,7 @@ func (k *KubeStateMetrics) SpecToHelmValues(logger logging.Logger, toolset *tool
 		values.Replicas = spec.ReplicaCount
 	}
 
+	values.CustomLabels = labels.GetApplicationLabels(info.GetName())
 	return values
 }
 

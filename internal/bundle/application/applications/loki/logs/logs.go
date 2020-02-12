@@ -1,6 +1,8 @@
 package logs
 
 import (
+	"strings"
+
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	amlogs "github.com/caos/boom/internal/bundle/application/applications/ambassador/logs"
 	aglogs "github.com/caos/boom/internal/bundle/application/applications/argocd/logs"
@@ -8,9 +10,11 @@ import (
 	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
 	lologs "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logs"
+	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	plogs "github.com/caos/boom/internal/bundle/application/applications/prometheus/logs"
 	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
 	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
+	"github.com/caos/boom/internal/labels"
 )
 
 func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} {
@@ -23,15 +27,18 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 
 	ret := make([]interface{}, 0)
 	if len(flows) > 0 {
-		for _, flow := range flows {
-			ret = append(ret, flow)
-		}
+
+		//logging resource so that fluentd and fluentbit are deployed
+		ret = append(ret, getLogging())
 		for _, output := range outputs {
 			ret = append(ret, output)
 		}
 
 		//logging resource so that fluentd and fluentbit are deployed
 		ret = append(ret, getLogging(toolsetCRDSpec))
+		for _, flow := range flows {
+			ret = append(ret, flow)
+		}
 	}
 
 	return ret
@@ -109,22 +116,24 @@ func getAllFlows(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, outputNames []stri
 }
 
 func getLokiFlow(outputs []string) *logging.FlowConfig {
-	lables := map[string]string{"release": "loki", "app": "loki"}
+	ls := labels.GetApplicationLabels(info.GetName())
 
 	return &logging.FlowConfig{
 		Name:         "flow-loki",
 		Namespace:    "caos-system",
-		SelectLabels: lables,
+		SelectLabels: ls,
 		Outputs:      outputs,
 		ParserType:   "logfmt",
 	}
 }
 
 func getOutputs() ([]string, []*logging.Output) {
+	outputURL := strings.Join([]string{"http://", info.GetName().String(), ".", info.GetNamespace(), ":3100"}, "")
+
 	conf := &logging.ConfigOutput{
 		Name:      "output-loki",
 		Namespace: "caos-system",
-		URL:       "http://loki.caos-system:3100",
+		URL:       outputURL,
 	}
 
 	outputs := make([]*logging.Output, 0)
