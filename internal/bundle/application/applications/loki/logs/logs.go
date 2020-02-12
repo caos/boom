@@ -10,6 +10,7 @@ import (
 	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
+	lologs "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logs"
 	plogs "github.com/caos/boom/internal/bundle/application/applications/prometheus/logs"
 	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
 	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
@@ -36,17 +37,28 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 		for _, flow := range flows {
 			ret = append(ret, flow)
 		}
+		//logging resource so that fluentd and fluentbit are deployed
+		ret = append(ret, getLogging(toolsetCRDSpec))
 	}
 
 	return ret
 }
 
-func getLogging() *logging.Logging {
+func getLogging(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *logging.Logging {
 
 	conf := &logging.Config{
 		Name:             "logging",
 		Namespace:        "caos-system",
 		ControlNamespace: "caos-system",
+	}
+	if toolsetCRDSpec.LoggingOperator.FluentdPVC != nil {
+		conf.FluentdPVC = &logging.Storage{
+			StorageClassName: toolsetCRDSpec.LoggingOperator.FluentdPVC.StorageClass,
+			Storage:          toolsetCRDSpec.LoggingOperator.FluentdPVC.Size,
+		}
+		if toolsetCRDSpec.LoggingOperator.FluentdPVC.AccessModes != nil {
+			conf.FluentdPVC.AccessModes = toolsetCRDSpec.LoggingOperator.FluentdPVC.AccessModes
+		}
 	}
 
 	return logging.New(conf)
@@ -84,15 +96,19 @@ func getAllFlows(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, outputNames []stri
 		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Argocd) {
 		flows = append(flows, logging.NewFlow(aglogs.GetFlow(outputNames)))
 	}
-
-	// if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
-	// 	(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
-	// 	flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
-	// }
+	if toolsetCRDSpec.LoggingOperator != nil && toolsetCRDSpec.LoggingOperator.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.LoggingOperator) {
+		flows = append(flows, logging.NewFlow(lologs.GetFlow(outputNames)))
+	}
 
 	if toolsetCRDSpec.Prometheus != nil && toolsetCRDSpec.Prometheus.Deploy &&
 		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Prometheus) {
 		flows = append(flows, logging.NewFlow(plogs.GetFlow(outputNames)))
+	}
+
+	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
+		(toolsetCRDSpec.Loki.Logs == nil || toolsetCRDSpec.Loki.Logs.Loki) {
+		flows = append(flows, logging.NewFlow(getLokiFlow(outputNames)))
 	}
 
 	return flows
@@ -106,7 +122,7 @@ func getLokiFlow(outputs []string) *logging.FlowConfig {
 		Namespace:    "caos-system",
 		SelectLabels: ls,
 		Outputs:      outputs,
-		ParserType:   "none",
+		ParserType:   "logfmt",
 	}
 }
 

@@ -24,11 +24,11 @@ type GitCrd interface {
 
 func New(conf *config.Config) (GitCrd, error) {
 
-	conf.Logger.WithFields(map[string]interface{}{
+	logFields := map[string]interface{}{
 		"logID": "CRD-OieUWt0rdMoRrIh",
-		"repo":  conf.CrdUrl,
-		"path":  conf.CrdPath,
-	}).Info("New GitCRD")
+	}
+
+	conf.Logger.WithFields(logFields).Info("New GitCRD")
 
 	git, err := git.New(conf.Logger, conf.CrdDirectoryPath, conf.CrdUrl, conf.PrivateKey)
 	if err != nil {
@@ -38,22 +38,30 @@ func New(conf *config.Config) (GitCrd, error) {
 	crdFilePath := filepath.Join(conf.CrdDirectoryPath, conf.CrdPath)
 	group, err := helper.GetApiGroupFromYaml(crdFilePath)
 	if err != nil {
+		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}
+
 	if group != "boom.caos.ch" {
 		return nil, errors.Errorf("Unknown CRD apiGroup %s", group)
 	}
 
 	version, err := helper.GetVersionFromYaml(crdFilePath)
 	if err != nil {
+		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}
+
 	if version != "v1beta1" {
 		return nil, errors.Errorf("Unknown CRD version %s", version)
 	}
 
+	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+		"type": "gitcrd",
+	})
+
 	v1beta1conf := &v1beta1config.Config{
-		Logger:           conf.Logger,
+		Logger:           crdLogger,
 		Git:              git,
 		CrdDirectoryPath: conf.CrdDirectoryPath,
 		CrdPath:          conf.CrdPath,

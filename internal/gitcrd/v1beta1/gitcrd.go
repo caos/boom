@@ -32,13 +32,12 @@ func New(conf *config.Config) (*GitCrd, error) {
 		git:              conf.Git,
 	}
 
-	// toolsetCRD, err := gitCrd.GetCrdContent()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+		"version": "v1beta1",
+	})
 
 	crdConf := &crdconfig.Config{
-		Logger:  conf.Logger,
+		Logger:  crdLogger,
 		Version: v1beta1.GetVersion(),
 	}
 
@@ -76,6 +75,7 @@ func (c *GitCrd) CleanUp() {
 	if c.status != nil {
 		return
 	}
+
 	c.status = os.RemoveAll(c.crdDirectoryPath)
 }
 

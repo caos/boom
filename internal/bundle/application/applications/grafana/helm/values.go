@@ -65,20 +65,45 @@ type Service struct {
 	Labels map[string]string `yaml:"labels,omitempty"`
 }
 
+type Persistence struct {
+	Type             string   `yaml:"type"`
+	Enabled          bool     `yaml:"enabled"`
+	AccessModes      []string `yaml:"accessModes"`
+	Size             string   `yaml:"size"`
+	StorageClassName string   `yaml:"storageClassName"`
+	Finalizers       []string `yaml:"finalizers"`
+}
+
+type Ini struct {
+	Paths       map[string]string      `yaml:"paths,omitempty"`
+	Analytics   map[string]bool        `yaml:"analytics,omitempty"`
+	Log         map[string]string      `yaml:"log,omitempty"`
+	GrafanaNet  map[string]interface{} `yaml:"grafana_net,omitempty"`
+	AuthGoogle  map[string]string      `yaml:"auth.google,omitempty"`
+	AuthGitlab  map[string]string      `yaml:"auth.gitlab,omitempty"`
+	AuthGithub  map[string]string      `yaml:"auth.github,omitempty"`
+	AuthGeneric map[string]string      `yaml:"auth.generic_oauth,omitempty"`
+}
+
 type GrafanaValues struct {
-	FullnameOverride         string                          `yaml:"fullnameOverride,omitempty"`
-	Labels                   map[string]string               `yaml:"labels,omitempty"`
-	Enabled                  bool                            `yaml:"enabled"`
-	DefaultDashboardsEnabled bool                            `yaml:"defaultDashboardsEnabled"`
-	AdminPassword            string                          `yaml:"adminPassword"`
-	Admin                    *Admin                          `yaml:"admin"`
-	Ingress                  *Ingress                        `yaml:"ingress"`
-	Sidecar                  *Sidecar                        `yaml:"sidecar"`
-	ExtraConfigmapMounts     []interface{}                   `yaml:"extraConfigmapMounts"`
-	AdditionalDataSources    []*grafanastandalone.Datasource `yaml:"additionalDataSources"`
-	ServiceMonitor           *ServiceMonitor                 `yaml:"serviceMonitor"`
-	DashboardProviders       *DashboardProviders             `yaml:"dashboardProviders,omitempty"`
-	DashboardsConfigMaps     map[string]string               `yaml:"dashboardsConfigMaps,omitempty"`
+	FullnameOverride         string                           `yaml:"fullnameOverride,omitempty"`
+	Enabled                  bool                             `yaml:"enabled"`
+	DefaultDashboardsEnabled bool                             `yaml:"defaultDashboardsEnabled"`
+	AdminPassword            string                           `yaml:"adminPassword"`
+	Admin                    *Admin                           `yaml:"admin"`
+	Ingress                  *Ingress                         `yaml:"ingress"`
+	Sidecar                  *Sidecar                         `yaml:"sidecar"`
+	ExtraConfigmapMounts     []interface{}                    `yaml:"extraConfigmapMounts"`
+	AdditionalDataSources    []*grafanastandalone.Datasource  `yaml:"additionalDataSources"`
+	ServiceMonitor           *ServiceMonitor                  `yaml:"serviceMonitor"`
+	DashboardProviders       *DashboardProviders              `yaml:"dashboardProviders,omitempty"`
+	DashboardsConfigMaps     map[string]string                `yaml:"dashboardsConfigMaps,omitempty"`
+	Ini                      *Ini                             `yaml:"grafana.ini,omitempty"`
+	Persistence              *Persistence                     `yaml:"persistence,omitempty"`
+	TestFramework            *grafanastandalone.TestFramework `yaml:"testFramework,omitempty"`
+	Plugins                  []string                         `yaml:"plugins,omitempty"`
+	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
+	Env                      map[string]string                `yaml:"env,omitempty"`
 	Service                  *Service                        `yaml:"service,omitempty"`
 	PodLabels                map[string]string               `yaml:"podLabels,omitempty"`
 }

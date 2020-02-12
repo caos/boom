@@ -6,9 +6,10 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (p *PrometheusNodeExporter) SpecToHelmValues(toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (p *PrometheusNodeExporter) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	// spec := toolset.PrometheusNodeExporter
 	values := helm.DefaultValues(p.GetImageTags())
 

@@ -7,10 +7,16 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
+	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
+func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
+	version, err := kubectl.NewVersion().GetKubeVersion(logger)
+	if err != nil {
+		return nil
+	}
 
-func (p *Prometheus) SpecToHelmValues(toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
 	config := config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 
 	values := helm.DefaultValues(p.GetImageTags())
@@ -58,7 +64,7 @@ func (p *Prometheus) SpecToHelmValues(toolsetCRDSpec *v1beta1.ToolsetSpec) inter
 
 	values.Prometheus.PrometheusSpec.RuleSelector = &helm.RuleSelector{MatchLabels: ruleLabels}
 	values.DefaultRules.Labels = ruleLabels
-	values.KubeTargetVersionOverride = config.KubeVersion
+	values.KubeTargetVersionOverride = version
 	values.AdditionalPrometheusRules = []*helm.AdditionalPrometheusRules{rules}
 
 	values.FullnameOverride = info.GetInstanceName()

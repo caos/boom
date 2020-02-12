@@ -1,6 +1,6 @@
 package helm
 
-import "gopkg.in/yaml.v2"
+import "gopkg.in/yaml.v3"
 
 func GetDefaultRules(labels map[string]string) (*AdditionalPrometheusRules, error) {
 	rulesStr := `name: node-exporter.rules

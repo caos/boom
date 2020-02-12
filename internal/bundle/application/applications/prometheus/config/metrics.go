@@ -67,13 +67,17 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 			MonitorLabels:           labels.GetMonitorLabels(instanceName),
 			ServiceMonitors:         servicemonitors,
 			AdditionalScrapeConfigs: getScrapeConfigs(),
-			KubeVersion:             toolsetCRDSpec.KubeVersion,
 		}
 
 		if toolsetCRDSpec.Prometheus.Storage != nil {
-			prom.StorageSpec.StorageClass = toolsetCRDSpec.Prometheus.Storage.StorageClass
-			prom.StorageSpec.AccessModes = toolsetCRDSpec.Prometheus.Storage.AccessModes
-			prom.StorageSpec.Storage = toolsetCRDSpec.Prometheus.Storage.Size
+			prom.StorageSpec = &StorageSpec{
+				StorageClass: toolsetCRDSpec.Prometheus.Storage.StorageClass,
+				Storage:      toolsetCRDSpec.Prometheus.Storage.Size,
+			}
+
+			if toolsetCRDSpec.Prometheus.Storage.AccessModes != nil {
+				prom.StorageSpec.AccessModes = toolsetCRDSpec.Prometheus.Storage.AccessModes
+			}
 		}
 
 		return prom

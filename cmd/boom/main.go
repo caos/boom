@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -88,6 +88,10 @@ func main() {
 
 	var gitCrdPrivateKeyBytes []byte
 
+	if localMode {
+		helper.InConfig = false
+	}
+
 	if gitOrbConfig != "" {
 		gitOrbConfig, err := ioutil.ReadFile(gitOrbConfig)
 		if err != nil {
@@ -144,7 +148,6 @@ func main() {
 				})
 				if goErr != nil {
 					recLogger.Error(goErr)
-					gitCrdError <- goErr
 				}
 				recLogger.Info("Iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
@@ -205,8 +208,6 @@ func main() {
 			setupLog.Error(err, "unable to apply crd")
 			os.Exit(1)
 		}
-
-		<-gitCrdError
 	}
-
+	<-gitCrdError
 }

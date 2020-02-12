@@ -82,13 +82,15 @@ type SecurityContext struct {
 }
 type Port struct {
 	Name       string `yaml:"name"`
-	Port       int    `yaml:"port"`
-	TargetPort int    `yaml:"targetPort"`
+	Port       uint16 `yaml:"port,omitempty"`
+	TargetPort uint16 `yaml:"targetPort,omitempty"`
+	NodePort   uint16 `yaml:"nodePort,omitempty"`
 }
 type Service struct {
-	Annotations interface{} `yaml:"annotations"`
-	Ports       []*Port     `yaml:"ports"`
-	Type        string      `yaml:"type"`
+	Annotations    interface{} `yaml:"annotations,omitempty"`
+	Ports          []*Port     `yaml:"ports"`
+	Type           string      `yaml:"type"`
+	LoadBalancerIP string      `yaml:"loadBalancerIP,omitempty"`
 }
 type ServiceAccount struct {
 	Create bool        `yaml:"create"`

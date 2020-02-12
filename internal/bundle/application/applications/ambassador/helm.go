@@ -2,19 +2,61 @@ package ambassador
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	argocdnet "github.com/caos/boom/internal/bundle/application/applications/argocd/network"
+	grafananet "github.com/caos/boom/internal/bundle/application/applications/grafana/network"
+
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
-func (a *Ambassador) SpecToHelmValues(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
-	a.spec = toolsetCRDSpec.Ambassador
+func (a *Ambassador) HelmPreApplySteps(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+
+	ret := make([]interface{}, 0)
+	if toolsetCRDSpec.Argocd.Network != nil {
+		host := crds.GetHostFromConfig(argocdnet.GetHostConfig(toolsetCRDSpec.Argocd.Network))
+		ret = append(ret, host)
+		mapping := crds.GetMappingFromConfig(argocdnet.GetMappingConfig(toolsetCRDSpec.Argocd.Network))
+		ret = append(ret, mapping)
+	}
+
+	if toolsetCRDSpec.Grafana.Network != nil {
+		host := crds.GetHostFromConfig(grafananet.GetHostConfig(toolsetCRDSpec.Grafana.Network))
+		ret = append(ret, host)
+		mapping := crds.GetMappingFromConfig(grafananet.GetMappingConfig(toolsetCRDSpec.Grafana.Network))
+		ret = append(ret, mapping)
+	}
+
+	return ret, nil
+}
+
+func (a *Ambassador) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+	spec := toolsetCRDSpec.Ambassador
 	imageTags := helm.GetImageTags()
 
 	values := helm.DefaultValues(imageTags)
-	if a.spec.ReplicaCount != 0 {
-		values.ReplicaCount = a.spec.ReplicaCount
+	if spec.ReplicaCount != 0 {
+		values.ReplicaCount = spec.ReplicaCount
+	}
+
+	if spec.Service != nil {
+		values.Service.Type = spec.Service.Type
+		values.Service.LoadBalancerIP = spec.Service.LoadBalancerIP
+		if spec.Service.Ports != nil {
+			ports := make([]*helm.Port, 0)
+			for _, v := range spec.Service.Ports {
+				ports = append(ports, &helm.Port{
+					Name:       v.Name,
+					Port:       v.Port,
+					TargetPort: v.TargetPort,
+					NodePort:   v.NodePort,
+				})
+			}
+			values.Service.Ports = ports
+		}
 	}
 
 	values.PodLabels = labels.GetApplicationLabels(info.GetName())

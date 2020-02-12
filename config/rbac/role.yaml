@@ -49,6 +49,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - getambassador.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - logging.banzaicloud.io
   resources:
   - '*'

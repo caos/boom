@@ -10,10 +10,10 @@ type Logs struct {
 	Ambassador             bool `json:"ambassador"`
 	Grafana                bool `json:"grafana"`
 	Argocd                 bool `json:"argocd"`
-	KubeStateMetrics       bool `json:"kube-state-metrics"`
-	PrometheusNodeExporter bool `json:"prometheus-node-exporter"`
-	PrometheusOperator     bool `json:"prometheus-operator"`
-	LoggingOperator        bool `json:"logging-operator"`
+	KubeStateMetrics       bool `json:"kube-state-metrics" yaml:"kube-state-metrics"`
+	PrometheusNodeExporter bool `json:"prometheus-node-exporter"  yaml:"prometheus-node-exporter"`
+	PrometheusOperator     bool `json:"prometheus-operator" yaml:"prometheus-operator"`
+	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
 	Loki                   bool `json:"loki"`
 	Prometheus             bool `json:"prometheus"`
 }

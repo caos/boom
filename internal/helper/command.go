@@ -1,8 +1,6 @@
 package helper
 
 import (
-	"bytes"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -22,15 +20,15 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	}
 	command = command[1:]
 
-	logger.WithFields(map[string]interface{}{
-		"cmd": command,
-	}).Debug("Executing")
+	kubectlLogger := logger.WithFields(map[string]interface{}{
+		"cmd":   command,
+		"logId": "CMD-sN18gqW3pTG8rUR",
+	})
 
-	if logger.IsVerbose() {
-		cmd.Stdout = os.Stdout
-	}
+	kubectlLogger.Debug("Executing")
 
-	var buf bytes.Buffer
-	cmd.Stderr = &buf
-	return errors.Wrap(cmd.Run(), buf.String())
+	out, err := cmd.CombinedOutput()
+	kubectlLogger.Debug(string(out))
+
+	return errors.Wrapf(err, "Error while executing command: Response: %s", string(out))
 }

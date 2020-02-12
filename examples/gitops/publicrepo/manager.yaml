@@ -22,6 +22,7 @@ spec:
       labels:
         control-plane: boom
     spec:
+      serviceAccountName: boom
       containers:
       - command:
         - /boom

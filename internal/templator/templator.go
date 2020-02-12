@@ -4,6 +4,7 @@ import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/logging"
 )
 
 type Templator interface {
@@ -25,6 +26,6 @@ type YamlApplication interface {
 
 type HelmApplication interface {
 	BaseApplication
-	SpecToHelmValues(spec *v1beta1.ToolsetSpec) interface{}
+	SpecToHelmValues(logging.Logger, *v1beta1.ToolsetSpec) interface{}
 	GetChartInfo() *chart.Chart
 }

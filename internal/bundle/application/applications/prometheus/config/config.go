@@ -13,7 +13,6 @@ type Config struct {
 	ReplicaCount            int
 	StorageSpec             *StorageSpec
 	AdditionalScrapeConfigs []*helm.AdditionalScrapeConfig
-	KubeVersion             string
 }
 
 type StorageSpec struct {

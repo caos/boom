@@ -10,7 +10,7 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
-		Port: "admin",
+		Port: "ambassador-admin",
 		Path: "/metrics",
 	}
 

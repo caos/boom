@@ -20,7 +20,7 @@ func main() {
 	var toolsDirectoryPath string
 
 	verbose := flag.Bool("verbose", false, "Print logs for debugging")
-	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "../../tools", "The local path where the tools folder should be")
+	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools folder should be")
 	flag.Parse()
 
 	logger := logcontext.Add(stdlib.New(os.Stdout))

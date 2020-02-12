@@ -38,7 +38,7 @@ type HelmApplication interface {
 	Application
 	GetChartInfo() *chart.Chart
 	GetImageTags() map[string]string
-	SpecToHelmValues(spec *v1beta1.ToolsetSpec) interface{}
+	SpecToHelmValues(logger logging.Logger, spec *v1beta1.ToolsetSpec) interface{}
 }
 
 type YAMLApplication interface {

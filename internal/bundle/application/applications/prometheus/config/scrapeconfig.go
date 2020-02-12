@@ -33,6 +33,12 @@ func getNodes() *helm.AdditionalScrapeConfig {
 	}
 	relabelings = append(relabelings, relabeling)
 
+	relabeling = &helm.RelabelConfig{
+		TargetLabel: "metrics_path",
+		Replacement: "/metrics",
+	}
+	relabelings = append(relabelings, relabeling)
+
 	sdconfig := &helm.KubernetesSdConfig{
 		Role: "node",
 	}
@@ -66,6 +72,12 @@ func getCadvisor() *helm.AdditionalScrapeConfig {
 		Regex:        "(.+)",
 		TargetLabel:  "__metrics_path__",
 		Replacement:  "/api/v1/nodes/${1}/proxy/metrics/cadvisor",
+	}
+	relabelings = append(relabelings, relabeling)
+
+	relabeling = &helm.RelabelConfig{
+		TargetLabel: "metrics_path",
+		Replacement: "/metrics/cadvisor",
 	}
 	relabelings = append(relabelings, relabeling)
 

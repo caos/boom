@@ -38,15 +38,221 @@ spec:
               properties:
                 deploy:
                   type: boolean
-                loadBalancerIP:
-                  type: string
                 replicaCount:
                   type: integer
+                service:
+                  properties:
+                    loadBalancerIP:
+                      type: string
+                    ports:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          nodePort:
+                            type: integer
+                          port:
+                            type: integer
+                          targetPort:
+                            type: integer
+                        required:
+                        - name
+                        type: object
+                      type: array
+                    type:
+                      type: string
+                  type: object
               type: object
             argocd:
               properties:
+                auth:
+                  properties:
+                    github:
+                      properties:
+                        config:
+                          properties:
+                            clientIDKey:
+                              type: string
+                            clientSecretKey:
+                              type: string
+                            loadAllGroups:
+                              type: boolean
+                            orgs:
+                              items:
+                                properties:
+                                  name:
+                                    type: string
+                                  teams:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              type: array
+                            secretName:
+                              type: string
+                            teamNameField:
+                              type: string
+                            useLoginAsID:
+                              type: boolean
+                          type: object
+                        id:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    gitlab:
+                      properties:
+                        config:
+                          properties:
+                            baseURL:
+                              type: string
+                            clientIDKey:
+                              type: string
+                            clientSecretKey:
+                              type: string
+                            groups:
+                              items:
+                                type: string
+                              type: array
+                            secretName:
+                              type: string
+                            useLoginAsID:
+                              type: boolean
+                          type: object
+                        id:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    google:
+                      properties:
+                        config:
+                          properties:
+                            adminEmail:
+                              type: string
+                            clientIDKey:
+                              type: string
+                            clientSecretKey:
+                              type: string
+                            groups:
+                              items:
+                                type: string
+                              type: array
+                            hostedDomains:
+                              items:
+                                type: string
+                              type: array
+                            secretName:
+                              type: string
+                            serviceAccountFilePath:
+                              type: string
+                            serviceAccountJSONKey:
+                              type: string
+                          type: object
+                        id:
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    oidc:
+                      properties:
+                        clientIDKey:
+                          type: string
+                        clientSecretKey:
+                          type: string
+                        issuer:
+                          type: string
+                        name:
+                          type: string
+                        requestedIDTokenClaims:
+                          additionalProperties:
+                            properties:
+                              essential:
+                                type: boolean
+                              values:
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          type: object
+                        requestedScopes:
+                          items:
+                            type: string
+                          type: array
+                        secretName:
+                          type: string
+                      type: object
+                  type: object
+                customImage:
+                  properties:
+                    enabled:
+                      type: boolean
+                    gopassPGPKey:
+                      type: string
+                    gopassSSHKey:
+                      type: string
+                    gopassStores:
+                      items:
+                        properties:
+                          directory:
+                            type: string
+                          storeName:
+                            type: string
+                        type: object
+                      type: array
+                    imagePullSecret:
+                      type: string
+                  type: object
                 deploy:
                   type: boolean
+                network:
+                  properties:
+                    acmeAuthority:
+                      type: string
+                    domain:
+                      type: string
+                    email:
+                      type: string
+                  required:
+                  - domain
+                  type: object
+                repositories:
+                  items:
+                    properties:
+                      certificateSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      passwordSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      url:
+                        type: string
+                      usernameSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    type: object
+                  type: array
               type: object
             grafana:
               properties:
@@ -58,6 +264,75 @@ spec:
                       type: string
                     userKey:
                       type: string
+                  type: object
+                auth:
+                  properties:
+                    genericOAuth:
+                      properties:
+                        allowedDomains:
+                          items:
+                            type: string
+                          type: array
+                        apiURL:
+                          type: string
+                        authURL:
+                          type: string
+                        clientIDKey:
+                          type: string
+                        clientSecret:
+                          type: string
+                        scopes:
+                          items:
+                            type: string
+                          type: array
+                        secretName:
+                          type: string
+                        tokenURL:
+                          type: string
+                      type: object
+                    github:
+                      properties:
+                        allowedOrganizations:
+                          items:
+                            type: string
+                          type: array
+                        clientIDKey:
+                          type: string
+                        clientSecretKey:
+                          type: string
+                        secretName:
+                          type: string
+                        teamIDs:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    gitlab:
+                      properties:
+                        allowedGroups:
+                          items:
+                            type: string
+                          type: array
+                        clientIDKey:
+                          type: string
+                        clientSecretKey:
+                          type: string
+                        secretName:
+                          type: string
+                      type: object
+                    google:
+                      properties:
+                        allowedDomains:
+                          items:
+                            type: string
+                          type: array
+                        clientIDKey:
+                          type: string
+                        clientSecretKey:
+                          type: string
+                        secretName:
+                          type: string
+                      type: object
                   type: object
                 dashboardproviders:
                   items:
@@ -87,6 +362,28 @@ spec:
                   type: array
                 deploy:
                   type: boolean
+                network:
+                  properties:
+                    acmeAuthority:
+                      type: string
+                    domain:
+                      type: string
+                    email:
+                      type: string
+                  required:
+                  - domain
+                  type: object
+                storage:
+                  properties:
+                    accessModes:
+                      items:
+                        type: string
+                      type: array
+                    size:
+                      type: string
+                    storageClass:
+                      type: string
+                  type: object
               type: object
             kube-state-metrics:
               properties:
@@ -95,12 +392,21 @@ spec:
                 replicaCount:
                   type: integer
               type: object
-            kubeVersion:
-              type: string
             logging-operator:
               properties:
                 deploy:
                   type: boolean
+                fluentdStorage:
+                  properties:
+                    accessModes:
+                      items:
+                        type: string
+                      type: array
+                    size:
+                      type: string
+                    storageClass:
+                      type: string
+                  type: object
               type: object
             loki:
               properties:
@@ -120,6 +426,8 @@ spec:
                       type: boolean
                     loki:
                       type: boolean
+                    prometheus:
+                      type: boolean
                     prometheus-node-exporter:
                       type: boolean
                     prometheus-operator:
@@ -131,6 +439,7 @@ spec:
                   - kube-state-metrics
                   - logging-operator
                   - loki
+                  - prometheus
                   - prometheus-node-exporter
                   - prometheus-operator
                   type: object
