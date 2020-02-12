@@ -6,6 +6,7 @@ import (
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -37,9 +38,9 @@ func (a *Ambassador) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec)
 }
 
 func (a *Ambassador) GetName() name.Application {
-	return GetName()
+	return info.GetName()
 }
 
 func (a *Ambassador) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

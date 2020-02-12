@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
+	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 )
 
 var (
@@ -68,11 +70,17 @@ func New(spec *toolsetsv1beta1.ToolsetSpec) *Config {
 		conf.AddDashboardProvider(provider)
 	}
 
-	datasourceProm := strings.Join([]string{"http://prometheus-operated.caos-system:9090"}, "")
-	conf.AddDatasourceURL("prometheus", "prometheus", datasourceProm)
+	if spec.PrometheusOperator.Deploy && spec.Prometheus.Deploy {
+		serviceName := strings.Join([]string{prometheusinfo.GetInstanceName(), "prometheus"}, "-")
+		datasourceProm := strings.Join([]string{"http://", serviceName, ".", prometheusinfo.GetNamespace(), ":9090"}, "")
+		conf.AddDatasourceURL(serviceName, "prometheus", datasourceProm)
+	}
 
-	datasourceLoki := strings.Join([]string{"http://loki.caos-system:3100"}, "")
-	conf.AddDatasourceURL("loki", "loki", datasourceLoki)
+	if spec.Loki.Deploy {
+		serviceName := lokiinfo.GetName().String()
+		datasourceLoki := strings.Join([]string{"http://", serviceName, ".", lokiinfo.GetNamespace(), ":3100"}, "")
+		conf.AddDatasourceURL(serviceName, "loki", datasourceLoki)
+	}
 
 	return conf
 }

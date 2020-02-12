@@ -44,6 +44,11 @@ type Fluentd struct {
 type Metrics struct {
 	Port int `yaml:"port"`
 }
+type Image struct {
+	PullPolicy string `yaml:"pullPolicy"`
+	Repository string `yaml:"repository"`
+	Tag        string `yaml:"tag"`
+}
 
 type FilterKubernetes struct {
 	KubeTagPrefix string `yaml:"Kube_Tag_Prefix"`
@@ -103,7 +108,7 @@ func New(conf *Config) *Logging {
 				Image: &Image{
 					Repository: "fluent/fluent-bit",
 					Tag:        "1.3.6",
-					PullPolicy: "Always",
+					PullPolicy: "IfNotPresent",
 				},
 			},
 		},

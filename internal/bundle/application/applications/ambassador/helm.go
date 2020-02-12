@@ -7,6 +7,8 @@ import (
 
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -57,6 +59,7 @@ func (a *Ambassador) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *too
 		}
 	}
 
+	values.PodLabels = labels.GetApplicationLabels(info.GetName())
 	return values
 }
 

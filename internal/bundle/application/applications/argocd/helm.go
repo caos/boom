@@ -7,6 +7,8 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/config"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -86,6 +88,11 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 			values.Server.Config.URL = strings.Join([]string{"https://", spec.Network.Domain}, "")
 		}
 	}
+
+	appLabels := labels.GetApplicationLabels(info.GetName())
+	values.Controller.PodLabels = appLabels
+	values.Server.PodLabels = appLabels
+	values.RepoServer.PodLabels = appLabels
 
 	return values
 }

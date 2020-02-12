@@ -3,6 +3,7 @@ package prometheusoperator
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/helm"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -11,6 +12,7 @@ func (p *PrometheusOperator) SpecToHelmValues(logger logging.Logger, toolset *to
 	// spec := toolset.PrometheusNodeExporter
 	values := helm.DefaultValues(p.GetImageTags())
 
+	values.CommonLabels = labels.GetApplicationLabels(p.GetName())
 	// if spec.ReplicaCount != 0 {
 	// 	values.ReplicaCount = spec.ReplicaCount
 	// }
