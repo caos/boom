@@ -90,12 +90,11 @@ func setBundle(c Crd, bundle name.Bundle) {
 	logger := logcontext.Add(stdlib.New(os.Stdout))
 	ctrl.SetLogger(kubebuilder.New(logger))
 	bundleConfig := &bundleconfig.Config{
-		Logger:                  logger,
-		CrdName:                 "caos_test",
-		BundleName:              bundle,
-		BaseDirectoryPath:       "../../../tools",
-		DashboardsDirectoryPath: "../../../dashboards",
-		Templator:               yaml.GetName(),
+		Logger:            logger,
+		CrdName:           "caos_test",
+		BundleName:        bundle,
+		BaseDirectoryPath: "../../../tools",
+		Templator:         yaml.GetName(),
 	}
 
 	c.SetBundle(bundleConfig)

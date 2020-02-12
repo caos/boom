@@ -9,8 +9,8 @@ import (
 	glogs "github.com/caos/boom/internal/bundle/application/applications/grafana/logs"
 	ksmlogs "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/logs"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
-	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	lologs "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logs"
+	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	plogs "github.com/caos/boom/internal/bundle/application/applications/prometheus/logs"
 	pnelogs "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/logs"
 	pologs "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/logs"
@@ -29,7 +29,7 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 	if len(flows) > 0 {
 
 		//logging resource so that fluentd and fluentbit are deployed
-		ret = append(ret, getLogging())
+		ret = append(ret, getLogging(toolsetCRDSpec))
 		for _, output := range outputs {
 			ret = append(ret, output)
 		}

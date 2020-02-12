@@ -104,8 +104,9 @@ type GrafanaValues struct {
 	Plugins                  []string                         `yaml:"plugins,omitempty"`
 	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
 	Env                      map[string]string                `yaml:"env,omitempty"`
-	Service                  *Service                        `yaml:"service,omitempty"`
-	PodLabels                map[string]string               `yaml:"podLabels,omitempty"`
+	Service                  *Service                         `yaml:"service,omitempty"`
+	Labels                   map[string]string                `yaml:"podLabels,omitempty"`
+	PodLabels                map[string]string                `yaml:"podLabels,omitempty"`
 }
 
 type Rules struct {

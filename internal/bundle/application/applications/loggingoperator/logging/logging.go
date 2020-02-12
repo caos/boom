@@ -53,11 +53,6 @@ type Image struct {
 type FilterKubernetes struct {
 	KubeTagPrefix string `yaml:"Kube_Tag_Prefix"`
 }
-type Image struct {
-	PullPolicy string `yaml:"pullPolicy,omitempty"`
-	Repository string `yaml:"repository,omitempty"`
-	Tag        string `yaml:"tag,omitempty"`
-}
 
 type Fluentbit struct {
 	Metrics             *Metrics           `yaml:"metrics,omitempty"`

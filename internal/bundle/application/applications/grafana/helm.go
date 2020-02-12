@@ -137,7 +137,7 @@ func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1bet
 			}
 		}
 	}
-  
+
 	appLabels := labels.GetApplicationLabels(info.GetName())
 	values.Grafana.Labels = appLabels
 	values.Grafana.PodLabels = appLabels

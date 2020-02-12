@@ -35,8 +35,10 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/controllers"
 	"github.com/caos/boom/internal/app"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kustomize"
+
 	// +kubebuilder:scaffold:imports
 
 	gconfig "github.com/caos/boom/internal/bundle/application/applications/grafana/config"
@@ -89,7 +91,7 @@ func main() {
 	var gitCrdPrivateKeyBytes []byte
 
 	if localMode {
-		helper.InConfig = false
+		clientgo.InConfig = false
 	}
 
 	if gitOrbConfig != "" {

@@ -6,11 +6,12 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
-	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
+
 func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
 	version, err := kubectl.NewVersion().GetKubeVersion(logger)
 	if err != nil {
