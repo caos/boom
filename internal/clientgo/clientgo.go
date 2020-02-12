@@ -1,4 +1,4 @@
-package helper
+package clientgo
 
 import (
 	"os"
@@ -7,6 +7,8 @@ import (
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -69,4 +71,37 @@ func GetSecret(name, namespace string) (*v1.Secret, error) {
 	}
 
 	return secret, nil
+}
+
+type Resource struct {
+	Kind      string
+	Name      string
+	Namespace string
+	Labels    map[string]string
+}
+
+func GetResource(group, version, resource, namespace, name string) (*Resource, error) {
+	res := schema.GroupVersionResource{Group: group, Version: version, Resource: resource}
+
+	conf, err := GetClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := dynamic.NewForConfig(conf)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := clientset.Resource(res).Namespace(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Resource{
+		Kind:      result.GetKind(),
+		Name:      result.GetName(),
+		Namespace: result.GetNamespace(),
+		Labels:    result.GetLabels(),
+	}, nil
 }

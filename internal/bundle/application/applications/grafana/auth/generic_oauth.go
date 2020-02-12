@@ -4,15 +4,16 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/clientgo"
 )
 
 func GetGenericOAuthConfig(spec *toolsetsv1beta1.GrafanaGenericOAuth) (map[string]string, error) {
-	secret, err := helper.GetSecret(spec.SecretName, "caos-system")
+	secret, err := clientgo.GetSecret(spec.SecretName, "caos-system")
 	if err != nil {
 		return nil, err
 	}
 
+	
 	clientID := string(secret.Data[spec.ClientIDKey])
 	clientSecret := string(secret.Data[spec.ClientSecretKey])
 	allowedDomains := strings.Join(spec.AllowedDomains, " ")
