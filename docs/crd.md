@@ -4,6 +4,9 @@
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `labelSelectDelete`                | Flag if current state should be read an used for deleting                       |                                   |
+| `preApply`                         | Spec for the yaml-files applied before applications                             |                                   |
+| `postApply`                        | Spec for the yaml-files applied after applications                              |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
 | `logging-operator`                 | Spec for the Banzaicloud Logging-Operator                                       |                                   |
 | `prometheus-node-exporter`         | Spec for the Prometheus-Node-Exporter                                           |                                   |
@@ -13,6 +16,20 @@
 | `argocd`                           | Spec for the Argo-CD                                                            |                                   |
 | `prometheus`                       | Spec for the Prometheus instance                                                |                                   |
 | `loki`                             | Spec for the Loki instance                                                      |                                   |
+
+### Pre-Apply
+
+| Parameter                          | Description                                                                     | Default                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `folder`                           | Local folder which should be applied                                            |                                   |
+
+### Post-Apply
+
+| Parameter                          | Description                                                                     | Default                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `folder`                           | Local folder which should be applied                                            |                                   |
 
 ### Prometheus-Operator
 
