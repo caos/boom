@@ -8,7 +8,7 @@ import (
 
 func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	appName := info.GetName()
-	monitorlabels := labels.GetMonitorLabels(instanceName)
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
 	ls := labels.GetApplicationLabels(appName)
 
 	relabelings := make([]*servicemonitor.ConfigRelabeling, 0)

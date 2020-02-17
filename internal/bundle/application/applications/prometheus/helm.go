@@ -70,8 +70,6 @@ func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1b
 
 	values.FullnameOverride = info.GetInstanceName()
 
-	values.CommonLabels = labels.GetApplicationLabels(info.GetName())
-
 	return values
 }
 

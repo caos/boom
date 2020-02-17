@@ -64,7 +64,7 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 		prom := &Config{
 			Prefix:                  "",
 			Namespace:               "caos-system",
-			MonitorLabels:           labels.GetMonitorLabels(instanceName),
+			MonitorLabels:           labels.GetMonitorSelectorLabels(instanceName),
 			ServiceMonitors:         servicemonitors,
 			AdditionalScrapeConfigs: getScrapeConfigs(),
 		}

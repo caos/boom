@@ -33,10 +33,6 @@ func (g *Grafana) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return false
 }
 
-func (g *Grafana) Initial() bool {
-	return g.spec == nil
-}
-
 func (g *Grafana) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	if g.spec == nil {
 		return true

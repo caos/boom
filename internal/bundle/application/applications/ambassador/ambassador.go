@@ -1,8 +1,6 @@
 package ambassador
 
 import (
-	"reflect"
-
 	"github.com/caos/orbiter/logging"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -23,18 +21,6 @@ func New(logger logging.Logger) *Ambassador {
 
 func (a *Ambassador) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.Ambassador.Deploy
-}
-
-func (a *Ambassador) Initial() bool {
-	return a.spec == nil
-}
-
-func (a *Ambassador) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return !reflect.DeepEqual(toolsetCRDSpec.Ambassador, a.spec)
-}
-
-func (a *Ambassador) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.Ambassador
 }
 
 func (a *Ambassador) GetName() name.Application {

@@ -16,16 +16,16 @@ type Templator interface {
 
 type BaseApplication interface {
 	GetName() name.Application
-	GetNamespace() string
 }
 
 type YamlApplication interface {
 	BaseApplication
-	GetYaml() interface{}
+	GetYaml(logging.Logger, *v1beta1.ToolsetSpec) interface{}
 }
 
 type HelmApplication interface {
 	BaseApplication
+	GetNamespace() string
 	SpecToHelmValues(logging.Logger, *v1beta1.ToolsetSpec) interface{}
 	GetChartInfo() *chart.Chart
 }

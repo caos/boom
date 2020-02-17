@@ -1,13 +1,15 @@
 package metrics
 
 import (
+	"github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
 )
 
 func GetServicemonitor(instanceName string) *servicemonitor.Config {
-	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := make(map[string]string, 0)
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port: "ambassador-admin",

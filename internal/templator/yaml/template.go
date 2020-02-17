@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/templator"
 )
 
@@ -19,25 +20,40 @@ func (y *YAML) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return y
 	}
 
-	yamlInterface := app.GetYaml()
+	yamlInterface := app.GetYaml(y.logger, spec)
 	resultfilepath := y.GetResultsFilePath(app.GetName(), y.overlay, y.templatorDirectoryPath)
+	resultfiledirectory := y.getResultsFileDirectory(app.GetName(), y.overlay, y.templatorDirectoryPath)
 
 	resultAbsFilePath, err := filepath.Abs(resultfilepath)
 	if err != nil {
 		y.status = err
 		return y
 	}
+	resultAbsFileDirectory, err := filepath.Abs(resultfiledirectory)
+	if err != nil {
+		y.status = err
+		return y
+	}
+	err = os.RemoveAll(resultAbsFileDirectory)
+	if err != nil {
+		y.status = err
+		return y
+	}
+	err = os.MkdirAll(resultAbsFileDirectory, os.ModePerm)
+	if err != nil {
+		y.status = err
+		return y
+	}
 
-	fmt.Println(yamlInterface)
-	// if yamlStr, isString := yamlInterface.(string); isString {
-	// 	y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
-	// } else {
-	// 	y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
-	// }
-	// if y.GetStatus() != nil {
-	// 	return y
-	// }
+	if yamlStr, isString := yamlInterface.(string); isString {
+		y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
+	} else {
+		y.status = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
+	}
+	if y.GetStatus() != nil {
+		return y
+	}
 
-	y.status = resultFunc(resultAbsFilePath, app.GetNamespace())
+	y.status = resultFunc(resultAbsFilePath, "")
 	return y
 }

@@ -17,7 +17,7 @@ func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 
 func getFluentd(instanceName string) *servicemonitor.Config {
 	appName := info.GetName()
-	monitorlabels := labels.GetMonitorLabels(instanceName)
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
 	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -40,7 +40,7 @@ func getFluentd(instanceName string) *servicemonitor.Config {
 
 func getFluentbit(instanceName string) *servicemonitor.Config {
 	appName := info.GetName()
-	monitorlabels := labels.GetMonitorLabels(instanceName)
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
 	ls := make(map[string]string, 0)
 
 	endpoint := &servicemonitor.ConfigEndpoint{

@@ -7,8 +7,6 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/config"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
-	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
-	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -67,7 +65,7 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 	}
 
 	conf := config.GetFromSpec(logger, spec)
-	if conf.Repositories != "" {
+	if conf.Repositories != "" && conf.Repositories != "[]\n" {
 		values.Server.Config.Repositories = conf.Repositories
 	}
 
@@ -81,18 +79,13 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 			values.Server.Config.OIDC = conf.OIDC
 		}
 
-		if conf.Connectors != "" {
+		if conf.Connectors != "" && conf.Connectors != "{}\n" {
 			values.Server.Config.Dex = conf.Connectors
 
 			values.Dex = helm.DefaultDexValues(imageTags)
 			values.Server.Config.URL = strings.Join([]string{"https://", spec.Network.Domain}, "")
 		}
 	}
-
-	appLabels := labels.GetApplicationLabels(info.GetName())
-	values.Controller.PodLabels = appLabels
-	values.Server.PodLabels = appLabels
-	values.RepoServer.PodLabels = appLabels
 
 	return values
 }

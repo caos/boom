@@ -8,11 +8,9 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
-	"github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/kustomize"
-	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
@@ -138,13 +136,6 @@ func (g *Grafana) SpecToHelmValues(logger logging.Logger, toolset *toolsetsv1bet
 		}
 	}
 
-	appLabels := labels.GetApplicationLabels(info.GetName())
-	values.Grafana.Labels = appLabels
-	values.Grafana.PodLabels = appLabels
-	service := &helm.Service{
-		Labels: appLabels,
-	}
-	values.Grafana.Service = service
 	return values
 }
 

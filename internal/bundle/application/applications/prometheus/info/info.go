@@ -5,7 +5,7 @@ import "github.com/caos/boom/internal/name"
 const (
 	applicationName name.Application = "prometheus"
 	instanceName    string           = "caos"
-	orderNumber     int              = 1
+	orderNumber     int              = 2
 	namespace       string           = "caos-system"
 )
 

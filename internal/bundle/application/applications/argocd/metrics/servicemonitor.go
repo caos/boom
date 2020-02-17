@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	"github.com/caos/boom/internal/labels"
 )
@@ -17,8 +18,9 @@ func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 }
 
 func getSMServer(instanceName string) *servicemonitor.Config {
-	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := make(map[string]string, 0)
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
 
 	// argocd-server
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -40,8 +42,9 @@ func getSMServer(instanceName string) *servicemonitor.Config {
 }
 
 func getSMRepoServer(instanceName string) *servicemonitor.Config {
-	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := make(map[string]string, 0)
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
 
 	// argocd-repo-server
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -64,8 +67,9 @@ func getSMRepoServer(instanceName string) *servicemonitor.Config {
 }
 
 func getSMApplicationController(instanceName string) *servicemonitor.Config {
-	monitorlabels := labels.GetMonitorLabels(instanceName)
-	ls := make(map[string]string, 0)
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
 
 	//argocd-application-controller
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -78,7 +82,7 @@ func getSMApplicationController(instanceName string) *servicemonitor.Config {
 	ls["app.kubernetes.io/component"] = "application-controller"
 
 	return &servicemonitor.Config{
-		Name:                  "application-controller-servicemonitor",
+		Name:                  "argocd-application-controller-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
 		ServiceMatchingLabels: ls,

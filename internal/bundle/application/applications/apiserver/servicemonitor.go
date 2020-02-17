@@ -6,7 +6,7 @@ import (
 )
 
 func GetServicemonitor(instanceName string) *servicemonitor.Config {
-	monitorlabels := labels.GetMonitorLabels(instanceName)
+	monitorlabels := labels.GetMonitorLabels(instanceName, "prometheus")
 
 	metricsRelabelings := make([]*servicemonitor.ConfigMetricRelabeling, 0)
 	relabeling := &servicemonitor.ConfigMetricRelabeling{

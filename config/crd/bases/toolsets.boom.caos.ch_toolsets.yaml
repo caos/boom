@@ -187,7 +187,7 @@ spec:
                   properties:
                     enabled:
                       type: boolean
-                    gopassPGPKey:
+                    gopassGPGKey:
                       type: string
                     gopassSSHKey:
                       type: string
@@ -410,6 +410,8 @@ spec:
               type: object
             loki:
               properties:
+                clusterOutput:
+                  type: boolean
                 deploy:
                   type: boolean
                 logs:
@@ -457,6 +459,20 @@ spec:
               type: object
             namespace:
               type: string
+            postApply:
+              properties:
+                deploy:
+                  type: boolean
+                folder:
+                  type: string
+              type: object
+            preApply:
+              properties:
+                deploy:
+                  type: boolean
+                folder:
+                  type: string
+              type: object
             prometheus:
               properties:
                 deploy:

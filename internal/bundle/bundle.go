@@ -5,11 +5,11 @@ import (
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
-	"github.com/caos/boom/internal/helper"
-	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
+	"github.com/caos/boom/internal/templator/helm"
 	helperTemp "github.com/caos/boom/internal/templator/helper"
+	"github.com/caos/boom/internal/templator/yaml"
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 )
@@ -17,19 +17,22 @@ import (
 type Bundle struct {
 	baseDirectoryPath string
 	Applications      map[name.Application]application.Application
-	Templator         templator.Templator
+	HelmTemplator     templator.Templator
+	YamlTemplator     templator.Templator
 	logger            logging.Logger
 	status            error
 }
 
 func New(conf *config.Config) *Bundle {
 	apps := make(map[name.Application]application.Application, 0)
-	templator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, conf.Templator)
+	helmTemplator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, helm.GetName())
+	yamlTemplator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, yaml.GetName())
 
 	b := &Bundle{
 		baseDirectoryPath: conf.BaseDirectoryPath,
 		logger:            conf.Logger,
-		Templator:         templator,
+		HelmTemplator:     helmTemplator,
+		YamlTemplator:     yamlTemplator,
 		Applications:      apps,
 		status:            nil,
 	}
@@ -45,7 +48,11 @@ func (b *Bundle) CleanUp() *Bundle {
 		return b
 	}
 
-	b.status = b.Templator.CleanUp().GetStatus()
+	b.status = b.HelmTemplator.CleanUp().GetStatus()
+	if b.GetStatus() != nil {
+		return b
+	}
+	b.status = b.YamlTemplator.CleanUp().GetStatus()
 	return b
 }
 
@@ -99,7 +106,7 @@ func (b *Bundle) AddApplication(app application.Application) *Bundle {
 func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
 	applicationCount := 0
 	// go through list of application until every application is reconciled
-	// and this orderNumber by orderNumber (default is 0)
+	// and this orderNumber by orderNumber (default is 1)
 	for orderNumber := 0; applicationCount < len(b.Applications); orderNumber++ {
 		for appName := range b.Applications {
 			//if application has the same orderNumber as currently iterating the reconcile the application
@@ -135,27 +142,29 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	b.logger.WithFields(logFields).Info("Reconciling")
 
 	deploy := app.Deploy(spec)
-	var command string
-	if deploy {
-		command = "apply"
-	} else if !deploy && app.Changed(spec) && !app.Initial() {
-		command = "delete"
-	}
 
-	resultFunc := func(resultFilePath, namespace string) error {
-		kubectlCmd := kubectl.New(command).AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-		return errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath)
-	}
-
-	if command == "" {
-		resultFunc = func(resultFilePath, namespace string) error { return nil }
-	}
-
-	b.status = b.Templator.Template(app, spec, resultFunc).GetStatus()
-	if b.status != nil {
+	if !deploy && spec.LabelSelectDelete {
+		b.status = deleteWithLabels(b.logger, app)
 		return b
 	}
 
-	app.SetAppliedSpec(spec)
+	var resultFunc func(string, string) error
+	if deploy {
+		resultFunc = apply(b.logger, app)
+	} else {
+		resultFunc = delete(b.logger, app)
+	}
+
+	_, usedHelm := app.(application.HelmApplication)
+	if usedHelm {
+		b.status = b.HelmTemplator.Template(app, spec, resultFunc).GetStatus()
+		if b.status != nil {
+			return b
+		}
+	}
+	_, usedYaml := app.(application.YAMLApplication)
+	if usedYaml {
+		b.status = b.YamlTemplator.Template(app, spec, resultFunc).GetStatus()
+	}
 	return b
 }

@@ -105,7 +105,7 @@ type GrafanaValues struct {
 	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
 	Env                      map[string]string                `yaml:"env,omitempty"`
 	Service                  *Service                         `yaml:"service,omitempty"`
-	Labels                   map[string]string                `yaml:"podLabels,omitempty"`
+	Labels                   map[string]string                `yaml:"labels,omitempty"`
 	PodLabels                map[string]string                `yaml:"podLabels,omitempty"`
 }
 
