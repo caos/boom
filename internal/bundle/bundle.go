@@ -1,6 +1,8 @@
 package bundle
 
 import (
+	"sync"
+
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/bundle/bundles"
@@ -108,22 +110,28 @@ func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
 	// go through list of application until every application is reconciled
 	// and this orderNumber by orderNumber (default is 1)
 	for orderNumber := 0; applicationCount < len(b.Applications); orderNumber++ {
+		var wg sync.WaitGroup
 		for appName := range b.Applications {
 			//if application has the same orderNumber as currently iterating the reconcile the application
 			if application.GetOrderNumber(appName) == orderNumber {
-				if err := b.ReconcileApplication(appName, spec).GetStatus(); err != nil {
+				wg.Add(1)
+				go b.ReconcileApplication(appName, spec, &wg)
+				if err := b.GetStatus(); err != nil {
 					b.status = err
 					return b
 				}
 				applicationCount++
 			}
 		}
+		wg.Wait()
 	}
 
 	return b
 }
 
-func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.ToolsetSpec) *Bundle {
+func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup) *Bundle {
+	defer wg.Done()
+
 	if b.status != nil {
 		return b
 	}
