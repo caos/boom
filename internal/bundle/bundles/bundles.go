@@ -7,8 +7,6 @@ import (
 	kubestatemetricsinfo "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
 	loggingoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
-	postapplyinfo "github.com/caos/boom/internal/bundle/application/applications/postapply/info"
-	preapplyinfo "github.com/caos/boom/internal/bundle/application/applications/preapply/info"
 	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	prometheusnodeexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
@@ -40,7 +38,6 @@ func Get(bundle name.Bundle) []name.Application {
 func GetCaos() []name.Application {
 
 	apps := make([]name.Application, 0)
-	apps = append(apps, preapplyinfo.GetName())
 	apps = append(apps, ambassadorinfo.GetName())
 	apps = append(apps, argocdinfo.GetName())
 	apps = append(apps, prometheusoperatorinfo.GetName())
@@ -50,7 +47,6 @@ func GetCaos() []name.Application {
 	apps = append(apps, prometheusinfo.GetName())
 	apps = append(apps, loggingoperatorinfo.GetName())
 	apps = append(apps, lokiinfo.GetName())
-	apps = append(apps, postapplyinfo.GetName())
 
 	return apps
 }

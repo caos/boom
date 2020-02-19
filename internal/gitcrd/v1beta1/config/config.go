@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	Logger           logging.Logger
-	Git              *git.Git
+	Git              *git.Client
 	CrdDirectoryPath string
 	CrdPath          string
 }

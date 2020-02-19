@@ -14,10 +14,6 @@ import (
 	loggingoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loki"
 	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
-	"github.com/caos/boom/internal/bundle/application/applications/postapply"
-	postapplyinfo "github.com/caos/boom/internal/bundle/application/applications/postapply/info"
-	"github.com/caos/boom/internal/bundle/application/applications/preapply"
-	preapplyinfo "github.com/caos/boom/internal/bundle/application/applications/preapply/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
 	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
@@ -67,10 +63,6 @@ func New(logger logging.Logger, appName name.Application) Application {
 		return prometheus.New(logger)
 	case lokiinfo.GetName():
 		return loki.New(logger)
-	case preapplyinfo.GetName():
-		return preapply.New(logger)
-	case postapplyinfo.GetName():
-		return postapply.New(logger)
 	}
 
 	return nil
@@ -82,10 +74,6 @@ func GetOrderNumber(appName name.Application) int {
 		return prometheusinfo.GetOrderNumber()
 	case lokiinfo.GetName():
 		return lokiinfo.GetOrderNumber()
-	case preapplyinfo.GetName():
-		return preapplyinfo.GetOrderNumber()
-	case postapplyinfo.GetName():
-		return postapplyinfo.GetOrderNumber()
 	}
 
 	return 1

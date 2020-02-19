@@ -30,7 +30,7 @@ func New(conf *config.Config) (Crd, error) {
 		"version": conf.Version,
 	})
 
-	crdLogger.Info("New CDR")
+	crdLogger.Info("New CRD")
 
 	if conf.Version != "v1beta1" {
 		return nil, errors.Errorf("Unknown CRD version %s", conf.Version)

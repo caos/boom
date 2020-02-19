@@ -1,11 +1,13 @@
 package gitcrd
 
 import (
-	"path/filepath"
+	"context"
+	"strings"
 
 	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/helper"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -17,6 +19,7 @@ import (
 type GitCrd interface {
 	SetBundle(*bundleconfig.Config)
 	Reconcile()
+	WriteBackCurrentState()
 	CleanUp()
 	GetStatus() error
 	GetCrdContent() (*toolsetsv1beta1.Toolset, error)
@@ -30,30 +33,33 @@ func New(conf *config.Config) (GitCrd, error) {
 
 	conf.Logger.WithFields(logFields).Info("New GitCRD")
 
-	git, err := git.New(conf.Logger, conf.CrdDirectoryPath, conf.CrdUrl, conf.PrivateKey)
+	git := git.New(context.Background(), conf.Logger, "boom", "boom@caos.ch", conf.CrdUrl)
+	err := git.Init(conf.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	crdFilePath := filepath.Join(conf.CrdDirectoryPath, conf.CrdPath)
-	group, err := helper.GetApiGroupFromYaml(crdFilePath)
+	err = git.Clone()
 	if err != nil {
-		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}
 
-	if group != "boom.caos.ch" {
-		return nil, errors.Errorf("Unknown CRD apiGroup %s", group)
-	}
+	crdFile, err := git.Read(conf.CrdPath)
 
-	version, err := helper.GetVersionFromYaml(crdFilePath)
+	var crdFileStruct helper.Resource
+	err = yaml.Unmarshal(crdFile, &crdFileStruct)
 	if err != nil {
 		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}
 
-	if version != "v1beta1" {
-		return nil, errors.Errorf("Unknown CRD version %s", version)
+	parts := strings.Split(crdFileStruct.ApiVersion, "/")
+	if parts[0] != "boom.caos.ch" {
+		return nil, errors.Errorf("Unknown CRD apiGroup %s", parts[0])
+	}
+
+	if parts[1] != "v1beta1" {
+		return nil, errors.Errorf("Unknown CRD version %s", parts[1])
 	}
 
 	crdLogger := conf.Logger.WithFields(map[string]interface{}{

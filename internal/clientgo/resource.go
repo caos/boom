@@ -178,10 +178,12 @@ func ListResources(logger logging.Logger, labels map[string]string) ([]*Resource
 			if err != nil {
 				return nil, err
 			}
+
 			labelStrs := make(map[string]string)
 			for k, label := range labels {
 				labelStrs[k] = label.(string)
 			}
+
 			resourceList = append(resourceList, &Resource{
 				Group:     resourceInfo.Group,
 				Version:   resourceInfo.Version,

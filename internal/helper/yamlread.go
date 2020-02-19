@@ -2,7 +2,6 @@ package helper
 
 import (
 	"io/ioutil"
-	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -37,34 +36,4 @@ func YamlToString(path string) (string, error) {
 	}
 
 	return string(data), nil
-}
-
-func GetVersionFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-
-	if resource.ApiVersion == "" {
-		return "", errors.New("No attribute apiVersion in yaml")
-	}
-
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[1], nil
-}
-
-func GetApiGroupFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-
-	if resource.ApiVersion == "" {
-		return "", errors.New("No attribute apiVersion in yaml")
-	}
-
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[0], nil
 }

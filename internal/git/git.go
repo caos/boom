@@ -1,200 +1,288 @@
 package git
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/ssh"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
-	git "gopkg.in/src-d/go-git.v4"
+	"github.com/caos/orbiter/logging"
+	"golang.org/x/crypto/ssh"
+	"gopkg.in/src-d/go-billy.v4"
+	"gopkg.in/src-d/go-billy.v4/memfs"
+	gogit "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
-type Git struct {
-	url       string
-	localPath string
-	Repo      *git.Repository
-	prevTree  *object.Tree
+type Client struct {
 	logger    logging.Logger
+	ctx       context.Context
+	committer string
+	email     string
 	auth      *gitssh.PublicKeys
+	repo      *gogit.Repository
+	fs        billy.Filesystem
+	workTree  *gogit.Worktree
+	progress  io.Writer
+	repoURL   string
 }
 
-func New(logger logging.Logger, localPath, url string, privateKey []byte) (*Git, error) {
-
-	logFields := map[string]interface{}{
-		"logID": "GIT-4Sia0VjJ79gb7cw",
+func New(ctx context.Context, logger logging.Logger, committer, email, repoURL string) *Client {
+	newClient := &Client{
+		ctx:       ctx,
+		logger:    logger,
+		committer: committer,
+		repoURL:   repoURL,
 	}
 
-	auth, err := parsePrivateKey(privateKey)
-	if err != nil {
-		return nil, err
+	if logger.IsVerbose() {
+		newClient.progress = os.Stdout
 	}
-
-	repoLogger := logger.WithFields(map[string]interface{}{
-		"url":       url,
-		"localpath": localPath,
-	})
-
-	g := &Git{
-		logger:    repoLogger,
-		auth:      auth,
-		localPath: localPath,
-		url:       url,
-	}
-
-	g.logger.WithFields(logFields).Debug("Clone repository...")
-	repo, err := g.cloneRepo()
-	if err != nil {
-		return nil, err
-	}
-	g.Repo = repo
-
-	g.logger.WithFields(logFields).Debug("Cloned...")
-	ref, err := g.Repo.Head()
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to get head from repo ")
-	}
-
-	g.logger.WithFields(logFields).Debug("Get last commit...")
-	commit, err := g.Repo.CommitObject(ref.Hash())
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to get last commit from repo ")
-	}
-
-	prevTree, err := commit.Tree()
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to get tree of last commit from repo ")
-	}
-	g.prevTree = prevTree
-	g.logger.WithFields(logFields).Info("Cloned new GitCRD")
-
-	return g, nil
+	return newClient
 }
 
-func parsePrivateKey(privateKey []byte) (*gitssh.PublicKeys, error) {
-
-	if privateKey != nil {
-		var auth *gitssh.PublicKeys
-		signer, err := ssh.ParsePrivateKey(privateKey)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error while parsing private key")
-		}
-
-		auth = &gitssh.PublicKeys{User: "git", Signer: signer}
-		auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
-		return auth, nil
+func (g *Client) Init(deploykey []byte) error {
+	signer, err := ssh.ParsePrivateKey(deploykey)
+	if err != nil {
+		return errors.Wrap(err, "parsing deployment key failed")
 	}
 
-	return nil, nil
+	g.auth = &gitssh.PublicKeys{
+		User:   "git",
+		Signer: signer,
+	}
+
+	// TODO: Fix
+	g.auth.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	return nil
 }
 
-func (g *Git) cloneRepo() (*git.Repository, error) {
-	os.RemoveAll(g.localPath)
+func (g *Client) Clone() error {
 
-	cloneOptions := &git.CloneOptions{
-		URL:          g.url,
+	g.fs = memfs.New()
+
+	var err error
+	g.repo, err = gogit.CloneContext(g.ctx, memory.NewStorage(), g.fs, &gogit.CloneOptions{
+		URL:          g.repoURL,
+		Auth:         g.auth,
 		SingleBranch: true,
 		Depth:        1,
+		Progress:     g.progress,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "cloning repository from %s failed", g.repoURL)
+	}
+	g.logger.Debug("Repository cloned")
+
+	g.workTree, err = g.repo.Worktree()
+	if err != nil {
+		return errors.Wrapf(err, "getting worktree from repository with url %s failed", g.repoURL)
 	}
 
-	if g.auth != nil {
-		cloneOptions.Auth = g.auth
-	}
-
-	ctx := context.TODO()
-	toCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	repo, err := git.PlainCloneContext(toCtx, g.localPath, false, cloneOptions)
-	cancel()
-	return repo, errors.Wrap(err, "Error while cloning repository")
+	return nil
 }
 
-func (g *Git) ReloadRepo() error {
-
-	logFields := map[string]interface{}{
-		"logID": "GIT-vjrsm5kdQkuF6mo",
-	}
-	g.logger.WithFields(logFields).Info("Reloading repository")
-
-	g.logger.WithFields(logFields).Debug("Remove old source in filesystem")
-	err := os.RemoveAll(g.localPath)
+func (g *Client) Read(path string) ([]byte, error) {
+	readLogger := g.logger.WithFields(map[string]interface{}{
+		"path": path,
+	})
+	readLogger.Debug("Reading file")
+	file, err := g.fs.Open(path)
 	if err != nil {
-		return errors.Wrap(err, "Error while removing old source inf filesystem")
+		if os.IsNotExist(errors.Cause(err)) {
+			return make([]byte, 0), nil
+		}
+		return nil, errors.Wrapf(err, "opening %s from worktree failed", path)
+	}
+	defer file.Close()
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, errors.Wrapf(err, "reading %s from worktree failed", path)
+	}
+	if readLogger.IsVerbose() {
+		readLogger.Debug("File read")
+		fmt.Println(string(fileBytes))
+	}
+	return fileBytes, nil
+}
+
+func (g *Client) ReadFolder(path string) (map[string][]byte, error) {
+	readLogger := g.logger.WithFields(map[string]interface{}{
+		"path": path,
+	})
+	readLogger.Debug("Reading folder")
+	dirBytes := make(map[string][]byte, 0)
+	files, err := g.fs.ReadDir(path)
+	if err != nil {
+		if os.IsNotExist(errors.Cause(err)) {
+			return make(map[string][]byte, 0), nil
+		}
+		return nil, errors.Wrapf(err, "opening %s from worktree failed", path)
+	}
+	for _, file := range files {
+		filePath := filepath.Join(path, file.Name())
+		fileBytes, err := g.Read(filePath)
+		if err != nil {
+			return nil, err
+		}
+		dirBytes[file.Name()] = fileBytes
 	}
 
-	g.logger.WithFields(logFields).Debug("Clone repository")
-	repo, err := g.cloneRepo()
+	if readLogger.IsVerbose() {
+		readLogger.Debug("Folder read")
+		fmt.Println(dirBytes)
+	}
+	return dirBytes, nil
+}
+
+type File struct {
+	Path    string
+	Content []byte
+}
+
+func (g *Client) Commit(msg string, files ...File) (bool, error) {
+	clean, err := g.stage(files...)
+	if err != nil {
+		return false, err
+	}
+
+	if clean {
+		return false, nil
+	}
+
+	return true, g.commit(msg)
+}
+
+func (g *Client) UpdateRemote(msg string, files ...File) error {
+	if err := g.Clone(); err != nil {
+		return errors.Wrap(err, "recloning before committing changes failed")
+	}
+
+	changed, err := g.Commit(msg, files...)
 	if err != nil {
 		return err
 	}
 
-	g.Repo = repo
-	g.logger.WithFields(logFields).Info("Repository reloaded")
+	if !changed {
+		g.logger.Info("No changes")
+		return nil
+	}
+
+	return g.Push()
+}
+
+func (g *Client) UpdateRemoteUntilItWorks(msg string, path string, overwrite func([]byte) ([]byte, error), force bool) ([]byte, error) {
+
+	if err := g.Clone(); err != nil {
+		return nil, errors.Wrap(err, "recloning before committing changes failed")
+	}
+
+	newContent, err := g.Read(path)
+	if err != nil && !force {
+		return nil, errors.Wrap(err, "reloading file before committing changes failed")
+	}
+
+	overwritten, err := overwrite(newContent)
+	if err != nil {
+		return nil, err
+	}
+
+	clean, err := g.stage(File{Path: path, Content: overwritten})
+	if err != nil {
+		return nil, err
+	}
+
+	if clean {
+		g.logger.Info("No changes")
+		return overwritten, nil
+	}
+
+	if err := g.commit(msg); err != nil {
+		return nil, err
+	}
+
+	if err := g.Push(); err != nil && strings.Contains(err.Error(), "command error on refs/heads/master: cannot lock ref 'refs/heads/master': is at ") {
+		g.logger.Debug("Undoing latest commit")
+		if resetErr := g.workTree.Reset(&gogit.ResetOptions{
+			Mode: gogit.HardReset,
+		}); resetErr != nil {
+			return overwritten, errors.Wrap(resetErr, "undoing the latest commit failed")
+		}
+
+		newLatestFiles, err := g.UpdateRemoteUntilItWorks(msg, path, overwrite, force)
+		return newLatestFiles, errors.Wrap(err, "pushing failed")
+	}
+	return overwritten, nil
+}
+
+func (g *Client) stage(files ...File) (bool, error) {
+	for _, f := range files {
+		updateLogger := g.logger.WithFields(map[string]interface{}{
+			"path": f.Path,
+		})
+
+		updateLogger.Debug("Overwriting local index")
+
+		file, err := g.fs.Create(f.Path)
+		if err != nil {
+			return true, errors.Wrapf(err, "creating file %s in worktree failed", f.Path)
+		}
+		defer file.Close()
+
+		if _, err := io.Copy(file, bytes.NewReader(f.Content)); err != nil {
+			return true, errors.Wrapf(err, "writing file %s in worktree failed", f.Path)
+		}
+
+		_, err = g.workTree.Add(f.Path)
+		if err != nil {
+			return true, errors.Wrapf(err, "staging worktree changes in file %s failed", f.Path)
+		}
+	}
+
+	status, err := g.workTree.Status()
+	if err != nil {
+		return true, errors.Wrap(err, "querying worktree status failed")
+	}
+
+	return status.IsClean(), nil
+}
+
+func (g *Client) commit(msg string) error {
+
+	if _, err := g.workTree.Commit(msg, &gogit.CommitOptions{
+		Author: &object.Signature{
+			Name:  g.committer,
+			Email: g.email,
+			When:  time.Now(),
+		},
+	}); err != nil {
+		return errors.Wrap(err, "committing changes failed")
+	}
+	g.logger.Debug("Changes commited")
 	return nil
 }
 
-// func (g *Git) IsFileChanged(path string) (changed bool, err error) {
+func (g *Client) Push() error {
 
-// 	var action string
-// 	defer func() {
-// 		if err != nil {
-// 			err = errors.Wrapf(err, "Failed to %s of repo", action)
-// 		}
-// 	}()
+	err := g.repo.PushContext(g.ctx, &gogit.PushOptions{
+		RemoteName: "origin",
+		//			RefSpecs:   refspecs,
+		Auth:     g.auth,
+		Progress: g.progress,
+	})
+	if err != nil {
+		return errors.Wrap(err, "pushing repository failed")
+	}
 
-// 	w, err := g.Repo.Worktree()
-// 	if err != nil {
-// 		action = "get workingtree"
-// 		return false, err
-// 	}
-// 	w.
-// 		err = w.Pull(&git.PullOptions{
-// 		RemoteName: "origin",
-// 		Auth:       g.auth,
-// 	})
-
-// 	if err == git.NoErrAlreadyUpToDate {
-// 		return false, nil
-// 	}
-
-// 	if err != nil {
-// 		action = "pull"
-// 		return false, err
-// 	}
-
-// 	ref, err := g.Repo.Head()
-// 	if err != nil {
-// 		action = "get the head"
-// 		return false, err
-// 	}
-
-// 	commit, err := g.Repo.CommitObject(ref.Hash())
-// 	if err != nil {
-// 		action = "get last commit"
-// 		return false, err
-// 	}
-
-// 	currentTree, err := commit.Tree()
-// 	if err != nil {
-// 		action = "get tree of last commit"
-// 		return false, err
-// 	}
-
-// 	changes, err := currentTree.Diff(g.prevTree)
-// 	if err != nil {
-// 		action = "diff changes"
-// 		return false, err
-// 	}
-// 	g.prevTree = currentTree
-
-// 	for _, c := range changes {
-// 		if c.To.Name == path {
-// 			return true, nil
-// 		}
-// 	}
-// 	return false, nil
-
-// }
+	g.logger.Info("Repository pushed")
+	return nil
+}

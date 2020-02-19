@@ -65,8 +65,6 @@ func main() {
 	var metricsAddr string
 	var toolsDirectoryPath, dashboardsDirectoryPath string
 	var gitOrbConfig, gitCrdPath, gitCrdURL, gitCrdPrivateKey, gitCrdDirectoryPath string
-	var gitPreApplyDirectory, gitPostApplyDirectory string
-	var gitPreApply, gitPostApply bool
 	var enableLeaderElection, localMode bool
 	var intervalSeconds int
 	verbose := flag.Bool("verbose", false, "Print logs for debugging")
@@ -81,11 +79,6 @@ func main() {
 	flag.StringVar(&gitCrdPrivateKey, "git-crd-private-key", "", "Path to private key required to clone the git-repo for the CRD")
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
 	flag.StringVar(&gitCrdPath, "git-crd-path", "crd.yaml", "The path to the CRD in the cloned git-repo ")
-
-	flag.BoolVar(&gitPreApply, "git-pre-apply", false, "Enable the apply of the files in the pre-apply-directory")
-	flag.StringVar(&gitPreApplyDirectory, "git-pre-apply-directory", "boom/pre", "Directory which contains files to apply before reconisiling")
-	flag.BoolVar(&gitPostApply, "git-post-apply", false, "Enable the apply of the files in the post-apply-directory")
-	flag.StringVar(&gitPostApplyDirectory, "git-post-apply-directory", "boom/post", "Directory which contains files to apply after reconisiling")
 
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools folder should be")
 	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "/dashboards", "The local path where the dashboards folder should be")
@@ -152,6 +145,21 @@ func main() {
 			for {
 				started := time.Now()
 				goErr := app.ReconcileGitCrds()
+				recLogger := logger.WithFields(map[string]interface{}{
+					"took": time.Since(started),
+				})
+				if goErr != nil {
+					recLogger.Error(goErr)
+				}
+				recLogger.Info("Iteration done")
+				time.Sleep(time.Duration(intervalSeconds) * time.Second)
+			}
+		}()
+
+		go func() {
+			for {
+				started := time.Now()
+				goErr := app.WriteBackCurrentState()
 				recLogger := logger.WithFields(map[string]interface{}{
 					"took": time.Since(started),
 				})

@@ -2,6 +2,7 @@ package bundle
 
 import (
 	"os"
+	"sync"
 
 	"github.com/caos/boom/api/v1beta1"
 	application "github.com/caos/boom/internal/bundle/application/mock"
@@ -106,7 +107,9 @@ func TestBundle_ReconcileApplication(t *testing.T) {
 	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
 	b.AddApplication(app.Application())
 
-	err := b.ReconcileApplication(app.Application().GetName(), spec).GetStatus()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	err := b.ReconcileApplication(app.Application().GetName(), spec, &wg).GetStatus()
 	assert.NoError(t, err)
 }
 
@@ -117,7 +120,9 @@ func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
 	app := application.NewTestYAMLApplication(t)
 	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
 
-	err := b.ReconcileApplication(app.Application().GetName(), nil).GetStatus()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	err := b.ReconcileApplication(app.Application().GetName(), nil, &wg).GetStatus()
 	assert.Error(t, err)
 }
 

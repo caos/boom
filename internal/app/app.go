@@ -94,12 +94,26 @@ func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
 }
 
 func (a *App) ReconcileGitCrds() error {
+	a.logger.WithFields(map[string]interface{}{
+		"logID": "APP-aZAeIqcAmHzflSB",
+	}).Info("Started reconciling of GitCRDs")
 	for _, crdGit := range a.GitCrds {
-		a.logger.WithFields(map[string]interface{}{
-			"logID": "APP-aZAeIqcAmHzflSB",
-		}).Info("Started reconciling of GitCRDs")
-
 		crdGit.Reconcile()
+		err := crdGit.GetStatus()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *App) WriteBackCurrentState() error {
+	a.logger.WithFields(map[string]interface{}{
+		"logID": "APP-dsVBh3zFCGcTi5j",
+	}).Info("Started writeback of currentstate of GitCRDs")
+	for _, crdGit := range a.GitCrds {
+		crdGit.WriteBackCurrentState()
+
 		err := crdGit.GetStatus()
 		if err != nil {
 			return err
