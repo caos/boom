@@ -22,14 +22,14 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `folder`                           | Local folder which should be applied                                            |                                   |
+| `folder`                           | Relative path of folder in cloned git repository which should be applied        |                                   |
 
 ### Post-Apply
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `folder`                           | Local folder which should be applied                                            |                                   |
+| `folder`                           | Relative path of folder in cloned git repository which should be applied        |                                   |
 
 ### Prometheus-Operator
 

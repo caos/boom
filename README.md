@@ -32,12 +32,19 @@ The operator works by reading a configuration (crd) located in a GIT Repository.
 In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly created `k8s` cluster.
 
 ```yaml
-apiVersion: boom.caos.ch/v1beta1
+aapiVersion: boom.caos.ch/v1beta1
 kind: Toolset
 metadata:
   name: caos
   namespace: caos-system
 spec:
+  labelSelectDelete: false
+  preApply:
+    deploy: true
+    folder: preapply
+  postApply:
+    deploy: true
+    folder: postapply
   prometheus-operator:
     deploy: true
   logging-operator:
@@ -47,15 +54,31 @@ spec:
   grafana:
     deploy: true
   ambassador:
-    deploy: false
+    deploy: true
+    service:
+      type: LoadBalancer
   kube-state-metrics:
     deploy: true
   argocd:
     deploy: false
+    customImage:
+      enabled: false
+      imagePullSecret: github-image
+      gopassGPGKey: "gpg"
+      gopassSSHKey: "ssh"
+      gopassStores:
+      - directory: "directory"
+        storeName: "store"
   prometheus:
     deploy: true
+    storage:
+      size: 5Gi
+      storageClass: standard
   loki:
-    deploy: false
+    deploy: true
+    storage:
+      size: 5Gi
+      storageClass: standard
 ```
 
 ## How to use it
