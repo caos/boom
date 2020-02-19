@@ -1,6 +1,8 @@
 package current
 
 import (
+	"sort"
+
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/orbiter/logging"
@@ -23,6 +25,8 @@ func Get(logger logging.Logger) *Current {
 	if err != nil {
 		return nil
 	}
+
+	sort.Sort(clientgo.ResourceSorter(resources))
 
 	return &Current{
 		APIVersion: "boom.caos.ch/v1beta1",

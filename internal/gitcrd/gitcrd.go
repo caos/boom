@@ -7,7 +7,6 @@ import (
 	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/helper"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -33,7 +32,7 @@ func New(conf *config.Config) (GitCrd, error) {
 
 	conf.Logger.WithFields(logFields).Info("New GitCRD")
 
-	git := git.New(context.Background(), conf.Logger, "boom", "boom@caos.ch", conf.CrdUrl)
+	git := git.New(context.Background(), conf.Logger, conf.User, conf.Email, conf.CrdUrl)
 	err := git.Init(conf.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -44,11 +43,8 @@ func New(conf *config.Config) (GitCrd, error) {
 		return nil, err
 	}
 
-	crdFile, err := git.Read(conf.CrdPath)
-
-	var crdFileStruct helper.Resource
-	err = yaml.Unmarshal(crdFile, &crdFileStruct)
-	if err != nil {
+	crdFileStruct := &helper.Resource{}
+	if err := git.ReadYamlIntoStruct(conf.CrdPath, crdFileStruct); err != nil {
 		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}

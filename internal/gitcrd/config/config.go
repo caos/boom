@@ -10,4 +10,6 @@ type Config struct {
 	CrdDirectoryPath string
 	CrdPath          string
 	PrivateKey       []byte
+	User             string
+	Email            string
 }

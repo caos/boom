@@ -1,6 +1,6 @@
 module github.com/caos/boom
 
-go 1.13.4
+go 1.13
 
 require (
 	github.com/caos/orbiter v0.15.2

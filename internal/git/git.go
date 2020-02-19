@@ -21,6 +21,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"gopkg.in/src-d/go-git.v4/storage/memory"
+	"gopkg.in/yaml.v3"
 )
 
 type Client struct {
@@ -113,6 +114,15 @@ func (g *Client) Read(path string) ([]byte, error) {
 		fmt.Println(string(fileBytes))
 	}
 	return fileBytes, nil
+}
+
+func (g *Client) ReadYamlIntoStruct(path string, struc interface{}) error {
+	data, err := g.Read(path)
+	if err != nil {
+		return err
+	}
+
+	return errors.Wrapf(yaml.Unmarshal(data, struc), "Error while unmarshaling yaml %s to struct", path)
 }
 
 func (g *Client) ReadFolder(path string) (map[string][]byte, error) {

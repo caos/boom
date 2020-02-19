@@ -30,6 +30,19 @@ type Resource struct {
 	Labels    map[string]string
 }
 
+type ResourceSorter []*Resource
+
+func (a ResourceSorter) Len() int      { return len(a) }
+func (a ResourceSorter) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ResourceSorter) Less(i, j int) bool {
+	return (a[i].Group < a[j].Group ||
+		(a[i].Group == a[j].Group && a[i].Version < a[j].Version) ||
+		(a[i].Group == a[j].Group && a[i].Version == a[j].Version && a[i].Resource < a[j].Resource) ||
+		(a[i].Group == a[j].Group && a[i].Version == a[j].Version && a[i].Resource == a[j].Resource && a[i].Kind < a[j].Kind) ||
+		(a[i].Group == a[j].Group && a[i].Version == a[j].Version && a[i].Resource == a[j].Resource && a[i].Kind == a[j].Kind && a[i].Name < a[j].Name) ||
+		(a[i].Group == a[j].Group && a[i].Version == a[j].Version && a[i].Resource == a[j].Resource && a[i].Kind == a[j].Kind && a[i].Name == a[j].Name && a[i].Namespace < a[j].Namespace))
+}
+
 func GetResource(group, version, resource, namespace, name string) (*Resource, error) {
 	res := schema.GroupVersionResource{Group: group, Version: version, Resource: resource}
 	conf, err := getClusterConfig()

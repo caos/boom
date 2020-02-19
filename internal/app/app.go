@@ -16,17 +16,15 @@ import (
 
 type App struct {
 	ToolsDirectoryPath string
-	CrdDirectoryPath   string
 	GitCrds            []gitcrd.GitCrd
 	Crds               map[string]crd.Crd
 	logger             logging.Logger
 }
 
-func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
+func New(logger logging.Logger, toolsDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
 
 	app := &App{
 		ToolsDirectoryPath: toolsDirectoryPath,
-		CrdDirectoryPath:   crdDirectoryPath,
 		logger:             logger,
 	}
 
@@ -60,17 +58,8 @@ func (a *App) CleanUp() error {
 	return nil
 }
 
-func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
-
-	gitcrdConf := &gitcrdconfig.Config{
-		Logger:           a.logger,
-		CrdDirectoryPath: a.CrdDirectoryPath,
-		CrdUrl:           url,
-		PrivateKey:       privateKey,
-		CrdPath:          crdPath,
-	}
-
-	c, err := gitcrd.New(gitcrdConf)
+func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
+	c, err := gitcrd.New(gitCrdConf)
 	if err != nil {
 		return err
 	}

@@ -1,7 +1,6 @@
 package v1beta1
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/caos/boom/internal/crd"
 	"github.com/caos/boom/internal/crd/v1beta1"
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
-	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -18,8 +17,6 @@ import (
 	crdconfig "github.com/caos/boom/internal/crd/config"
 	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/git"
-
-	"github.com/caos/boom/internal/helper"
 )
 
 type GitCrd struct {
@@ -95,14 +92,10 @@ func (c *GitCrd) Reconcile() {
 		return
 	}
 
-	if toolsetCRD.Spec.PreApply != nil || toolsetCRD.Spec.PreApply.Deploy {
-		command := "delete"
-		if toolsetCRD.Spec.PostApply.Deploy {
-			command = "apply"
-		}
-
-		err := c.ApplyFolders(c.git, command, toolsetCRD.Spec.PreApply.Folder)
-		if err != nil {
+	// pre-steps
+	if toolsetCRD.Spec.PreApply != nil {
+		pre := toolsetCRD.Spec.PreApply
+		if err := helper.UseFolder(c.logger, c.git, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -115,45 +108,15 @@ func (c *GitCrd) Reconcile() {
 		return
 	}
 
+	// post-steps
 	if toolsetCRD.Spec.PostApply != nil {
-		command := "delete"
-		if toolsetCRD.Spec.PostApply.Deploy {
-			command = "apply"
-		}
+		post := toolsetCRD.Spec.PostApply
 
-		err := c.ApplyFolders(c.git, command, toolsetCRD.Spec.PostApply.Folder)
-		if err != nil {
+		if err := helper.UseFolder(c.logger, c.git, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
 			c.status = err
 			return
 		}
 	}
-
-}
-
-func (c *GitCrd) ApplyFolders(git *git.Client, command, folderRelativePath string) error {
-	err := git.Clone()
-	if err != nil {
-		return err
-	}
-
-	folderPath := filepath.Join(c.crdDirectoryPath, folderRelativePath)
-	err = helper.RecreatePath(folderPath)
-	if err != nil {
-		return err
-	}
-
-	files, err := git.ReadFolder(folderRelativePath)
-	for filename, file := range files {
-		filePath := filepath.Join(folderPath, filename)
-		err := ioutil.WriteFile(filePath, file, os.ModePerm)
-		if err != nil {
-			return err
-		}
-	}
-
-	applyCmd := kubectl.New(command).AddParameter("-f", folderPath).Build()
-	err = helper.Run(c.logger, applyCmd)
-	return err
 }
 
 func (c *GitCrd) GetCrdContent() (*toolsetsv1beta1.Toolset, error) {
@@ -161,10 +124,8 @@ func (c *GitCrd) GetCrdContent() (*toolsetsv1beta1.Toolset, error) {
 		return nil, err
 	}
 
-	data, err := c.git.Read(c.crdPath)
-
 	toolsetCRD := &toolsetsv1beta1.Toolset{}
-	err = yaml.Unmarshal(data, toolsetCRD)
+	err := c.git.ReadYamlIntoStruct(c.crdPath, toolsetCRD)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
 	}
