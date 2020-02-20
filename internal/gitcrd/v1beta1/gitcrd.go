@@ -144,7 +144,7 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
-	if !toolsetCRD.Spec.CurrentState.WriteBack {
+	if toolsetCRD.Spec.CurrentState == nil || !toolsetCRD.Spec.CurrentState.WriteBack {
 		c.logger.Info("Write-back is deactivated, canceling")
 		return
 	}
