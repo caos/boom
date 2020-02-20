@@ -21,6 +21,12 @@ func GetApplicationLabels(appName name.Application) map[string]string {
 	return labels
 }
 
+func GetForApplicationLabels(appName name.Application) map[string]string {
+	labels := GetGlobalLabels()
+	labels["boom.caos.ch/for-application"] = appName.String()
+	return labels
+}
+
 func GetMonitorLabels(instanceName string, appName name.Application) map[string]string {
 	labels := GetApplicationLabels(appName)
 	addLabels := GetMonitorSelectorLabels(instanceName)

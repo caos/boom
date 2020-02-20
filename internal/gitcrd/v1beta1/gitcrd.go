@@ -30,16 +30,17 @@ type GitCrd struct {
 
 func New(conf *config.Config) (*GitCrd, error) {
 
-	gitCrd := &GitCrd{
-		crdDirectoryPath: conf.CrdDirectoryPath,
-		crdPath:          conf.CrdPath,
-		git:              conf.Git,
-		logger:           conf.Logger,
-	}
-
 	crdLogger := conf.Logger.WithFields(map[string]interface{}{
 		"version": "v1beta1",
 	})
+
+	gitConf := *conf.Git
+	gitCrd := &GitCrd{
+		crdDirectoryPath: conf.CrdDirectoryPath,
+		crdPath:          conf.CrdPath,
+		git:              &gitConf,
+		logger:           crdLogger,
+	}
 
 	crdConf := &crdconfig.Config{
 		Logger:  crdLogger,
@@ -65,9 +66,19 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 		return
 	}
 
+	toolsetCRD, err := c.getCrdContent()
+	if err != nil {
+		c.status = err
+		return
+	}
+
+	logger := c.logger.WithFields(map[string]interface{}{
+		"CRD": toolsetCRD.GetName(),
+	})
+
 	bundleConf := &bundleconfig.Config{
-		Logger:            conf.Logger,
-		CrdName:           conf.CrdName,
+		Logger:            logger,
+		CrdName:           toolsetCRD.GetName(),
 		BundleName:        conf.BundleName,
 		BaseDirectoryPath: conf.BaseDirectoryPath,
 		Templator:         conf.Templator,
@@ -86,7 +97,15 @@ func (c *GitCrd) CleanUp() {
 }
 
 func (c *GitCrd) Reconcile() {
-	toolsetCRD, err := c.GetCrdContent()
+	if c.status != nil {
+		return
+	}
+
+	logger := c.logger.WithFields(map[string]interface{}{
+		"action": "reconiling",
+	})
+
+	toolsetCRD, err := c.getCrdContent()
 	if err != nil {
 		c.status = err
 		return
@@ -95,7 +114,7 @@ func (c *GitCrd) Reconcile() {
 	// pre-steps
 	if toolsetCRD.Spec.PreApply != nil {
 		pre := toolsetCRD.Spec.PreApply
-		if err := helper.UseFolder(c.logger, c.git, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
+		if err := helper.UseFolder(logger, c.git, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -111,15 +130,14 @@ func (c *GitCrd) Reconcile() {
 	// post-steps
 	if toolsetCRD.Spec.PostApply != nil {
 		post := toolsetCRD.Spec.PostApply
-
-		if err := helper.UseFolder(c.logger, c.git, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
+		if err := helper.UseFolder(logger, c.git, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
 			c.status = err
 			return
 		}
 	}
 }
 
-func (c *GitCrd) GetCrdContent() (*toolsetsv1beta1.Toolset, error) {
+func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 	if err := c.git.Clone(); err != nil {
 		return nil, err
 	}
@@ -138,18 +156,11 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
-	toolsetCRD, err := c.GetCrdContent()
-	if err != nil {
-		c.status = err
-		return
-	}
+	logger := c.logger.WithFields(map[string]interface{}{
+		"action": "current",
+	})
 
-	if toolsetCRD.Spec.CurrentState == nil || !toolsetCRD.Spec.CurrentState.WriteBack {
-		c.logger.Info("Write-back is deactivated, canceling")
-		return
-	}
-
-	curr := current.Get(c.logger)
+	curr := current.Get(logger)
 
 	content, err := yaml.Marshal(curr)
 	if err != nil {
@@ -157,14 +168,11 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
-	file := git.File{
-		Path:    filepath.Join(toolsetCRD.Spec.CurrentState.Folder, "current.yaml"),
-		Content: content,
-	}
+	currentFolder := filepath.Join("internal", "boom")
 
-	if err := c.git.Clone(); err != nil {
-		c.status = err
-		return
+	file := git.File{
+		Path:    filepath.Join(currentFolder, "current.yaml"),
+		Content: content,
 	}
 
 	c.status = c.git.UpdateRemote("current state changed", file)

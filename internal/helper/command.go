@@ -21,8 +21,7 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	command = command[1:]
 
 	kubectlLogger := logger.WithFields(map[string]interface{}{
-		"cmd":   command,
-		"logId": "CMD-sN18gqW3pTG8rUR",
+		"cmd": command,
 	})
 
 	kubectlLogger.Debug("Executing")

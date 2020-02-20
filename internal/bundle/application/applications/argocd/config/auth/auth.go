@@ -21,7 +21,6 @@ type connector struct {
 
 func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *Connectors {
 	logFields := map[string]interface{}{
-		"logID":       "AUTH-yYqnPDhTdTjQWiJ",
 		"application": "argocd",
 	}
 

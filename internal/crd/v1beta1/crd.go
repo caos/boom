@@ -29,6 +29,10 @@ func (c *Crd) GetStatus() error {
 }
 
 func (c *Crd) CleanUp() {
+	if c.GetStatus() != nil {
+		return
+	}
+
 	c.status = c.bundle.CleanUp().GetStatus()
 }
 
@@ -48,6 +52,9 @@ func New(conf *config.Config) *Crd {
 }
 
 func (c *Crd) SetBundle(conf *bundleconfig.Config) {
+	if c.GetStatus() != nil {
+		return
+	}
 	bundle := bundle.New(conf)
 
 	c.status = bundle.AddApplicationsByBundleName(conf.BundleName)
@@ -56,8 +63,6 @@ func (c *Crd) SetBundle(conf *bundleconfig.Config) {
 	}
 
 	c.bundle = bundle
-	c.status = nil
-	return
 }
 
 func (c *Crd) GetBundle() *bundle.Bundle {
@@ -69,13 +74,9 @@ func (c *Crd) ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) erro
 		return
 	}
 
-	logFields := map[string]interface{}{
-		"logID": "CRD-6e7csH4wkujsRYE",
-	}
-
 	if getToolsetCRD == nil {
 		c.status = errors.New("ToolsetCRDFunc is nil")
-		c.logger.WithFields(logFields).Error(c.status)
+		c.logger.Error(c.status)
 		return
 	}
 
@@ -92,40 +93,23 @@ func (c *Crd) Reconcile(toolsetCRD *toolsetsv1beta1.Toolset) {
 	if c.GetStatus() != nil {
 		return
 	}
-
 	logFields := map[string]interface{}{
-		"logID": "CRD-6e7csH4wkujsRYE",
+		"CRD":    toolsetCRD.Name,
+		"action": "reconciling",
 	}
+	logger := c.logger.WithFields(logFields)
 
 	if toolsetCRD == nil {
 		c.status = errors.New("ToolsetCRD is nil")
-		c.logger.WithFields(logFields).Error(c.status)
+		logger.Error(c.status)
 		return
-	}
-	logFields["CRD"] = toolsetCRD.Name
-
-	c.logger.WithFields(logFields).Info("Reconcile applications")
-
-	c.reconcileApplications(toolsetCRD.Name, toolsetCRD.Spec)
-}
-
-func (c *Crd) reconcileApplications(overlay string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Crd {
-	if c.GetStatus() != nil {
-		return c
-	}
-
-	logFields := map[string]interface{}{
-		"logID": "CRD-sOwmSVvpAQfO1PS",
-		"CRD":   overlay,
 	}
 
 	if c.bundle == nil {
 		c.status = errors.New("No bundle for crd")
-		c.logger.WithFields(logFields).Error(c.status)
-		return c
+		logger.Error(c.status)
+		return
 	}
 
-	c.status = c.bundle.Reconcile(toolsetCRDSpec).GetStatus()
-
-	return c
+	c.status = c.bundle.Reconcile(toolsetCRD.Spec).GetStatus()
 }

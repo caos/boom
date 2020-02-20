@@ -26,7 +26,6 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		"overlay":     h.overlay,
 	}
 
-	logFields["logID"] = "HELM-zqYnVAzGXHqBbhu"
 	h.logger.WithFields(logFields).Debug("Deleting old results")
 	h.status = h.deleteResults(app)
 	if h.status != nil {
@@ -78,26 +77,35 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
 		"overlay":     overlay,
+		"action":      "templating",
 	}
 	templateLogger := h.logger.WithFields(logFields)
-	logFields["logID"] = "HELM-siNod1Y2nYCVW0r"
 
-	h.logger.WithFields(logFields).Debug("Generate values with toolsetSpec")
+	templateLogger.Debug("Generate values with toolsetSpec")
 	chartInfo := app.GetChartInfo()
 	values := app.SpecToHelmValues(templateLogger, spec)
 
 	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
 	if err != nil {
+		templateLogger.Error(err)
 		return err
 	}
 
 	if err := helper.StructToYaml(values, valuesAbsFilePath); err != nil {
+		templateLogger.Error(err)
 		return err
 	}
 
-	h.logger.WithFields(logFields).Debug("Generate result through helm template")
-	out, err := helmcommand.Template(h.templatorDirectoryPath, chartInfo.Name, app.GetName().String(), app.GetNamespace(), valuesAbsFilePath)
+	templateLogger.Debug("Generate result through helm template")
+	out, err := helmcommand.Template(&helmcommand.TemplateConfig{
+		TempFolderPath:   h.templatorDirectoryPath,
+		ChartName:        chartInfo.Name,
+		ReleaseName:      app.GetName().String(),
+		ReleaseNamespace: app.GetNamespace(),
+		ValuesFilePath:   valuesAbsFilePath,
+	})
 	if err != nil {
+		templateLogger.Error(err)
 		return err
 	}
 

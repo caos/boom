@@ -24,9 +24,7 @@ type Crd interface {
 }
 
 func New(conf *config.Config) (Crd, error) {
-
 	crdLogger := conf.Logger.WithFields(map[string]interface{}{
-		"logID":   "CRD-OieUWt0rdMoRrIh",
 		"version": conf.Version,
 	})
 

@@ -64,10 +64,17 @@ func (r *ToolsetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return nil
 	}
 
-	if err := r.App.ReconcileCrd("v1beta1", req.NamespacedName.String(), getToolset); err != nil {
-		log.Error(err, "unable to reconcile Toolset")
+	var instance runtime.Object
+	if err := getToolset(instance); err != nil {
+		return ctrl.Result{}, err
 	}
-	r.Log.Info("Toolset sucessfully reconciled")
+
+	r.Log.WithValues("crd", instance).Info("Toolset found")
+
+	// if err := r.App.ReconcileCrd("v1beta1", req.NamespacedName.String(), getToolset); err != nil {
+	// 	log.Error(err, "unable to reconcile Toolset")
+	// }
+	// r.Log.Info("Toolset sucessfully reconciled")
 
 	return ctrl.Result{}, nil
 }

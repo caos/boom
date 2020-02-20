@@ -26,12 +26,10 @@ func (k *KubectlLabel) Apply(logger logging.Logger, labels map[string]string) er
 	cmd := k.kubectl.Build()
 
 	kubectlLogger := logger.WithFields(map[string]interface{}{
-		"cmd":   cmd,
-		"logId": "CMD-Z1rEGIQ2DgtMRM6",
+		"cmd": cmd,
 	})
 	kubectlLogger.Debug("Executing")
 
-	
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		err = errors.Wrap(err, "Error while executing command")

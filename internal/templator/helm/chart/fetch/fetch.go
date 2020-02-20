@@ -22,10 +22,8 @@ type ChartInfo struct {
 func All(logger logging.Logger, basePath string) error {
 	allApps := bundles.GetAll()
 
-	logFields := map[string]interface{}{
-		"logID": "HELM-Ay5T4nn9kKWTSWU",
-	}
-	logger.WithFields(logFields).Info("Init Helm")
+	logger.Info("Init Helm")
+
 	// helm init to create a HELMHOME
 	if err := helmcommand.Init(basePath); err != nil {
 		return err
@@ -34,7 +32,7 @@ func All(logger logging.Logger, basePath string) error {
 	//indexes in a map so that no doublicates exist
 	indexes := make(map[*ChartKey]*chart.Index, 0)
 	charts := make([]*ChartInfo, 0)
-	logger.WithFields(logFields).Info("Preparing lists of indexes and charts")
+	logger.Info("Preparing lists of indexes and charts")
 
 	for _, appName := range allApps {
 		app := application.New(nil, appName)
@@ -66,14 +64,13 @@ func All(logger logging.Logger, basePath string) error {
 			}
 		} else {
 			logFields := map[string]interface{}{
-				"logID":       "HELM-Ay5T4nn9kKWTSWU",
 				"application": appName.String(),
 			}
 			logger.WithFields(logFields).Info("Not helm templated")
 		}
 	}
 
-	logger.WithFields(logFields).Info("Adding all indexes")
+	logger.Info("Adding all indexes")
 	// add all indexes in a map so that no dublicates exist
 	for _, v := range indexes {
 		if err := addIndex(logger, basePath, v); err != nil {
@@ -81,12 +78,12 @@ func All(logger logging.Logger, basePath string) error {
 		}
 	}
 
-	logger.WithFields(logFields).Info("Repo update")
+	logger.Info("Repo update")
 	if err := helmcommand.RepoUpdate(basePath); err != nil {
 		return err
 	}
 
-	logger.WithFields(logFields).Info("Fetching all charts")
+	logger.Info("Fetching all charts")
 	for _, chart := range charts {
 		if err := fetch(logger, basePath, chart); err != nil {
 			return err
@@ -100,22 +97,27 @@ func fetch(logger logging.Logger, basePath string, chart *ChartInfo) error {
 	logFields := map[string]interface{}{
 		"application": chart.Name,
 		"version":     chart.Version,
-		"logID":       "HELM-HkLTnAhAJnAyPq8",
 	}
-	if chart.IndexName != "" {
-		logFields["indexname"] = chart.IndexName
-	}
+	logFields["indexname"] = chart.IndexName
 
 	logger.WithFields(logFields).Info("Fetching chart")
-	return helmcommand.FetchChart(basePath, chart.Name, chart.Version, chart.IndexName)
+	return helmcommand.FetchChart(&helmcommand.FetchConfig{
+		TempFolderPath: basePath,
+		ChartName: chart.Name, 
+		ChartVersion: chart.Version, 
+		IndexName: chart.IndexName,
+	)}
 }
 
 func addIndex(logger logging.Logger, basePath string, index *chart.Index) error {
 	logFields := map[string]interface{}{
 		"index": index.Name,
 		"url":   index.URL,
-		"logID": "HELM-RsDBpIgtiJkgQVs",
 	}
 	logger.WithFields(logFields).Info("Adding index")
-	return helmcommand.AddIndex(basePath, index.Name, index.URL)
+	return helmcommand.AddIndex(&helmcommand.IndexConfig{
+		TempFolderPath: basePath,
+		IndexName:      index.Name,
+		IndexURL:       index.URL,
+	})
 }

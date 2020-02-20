@@ -158,7 +158,7 @@ func main() {
 				if goErr != nil {
 					recLogger.Error(goErr)
 				}
-				recLogger.Info("Iteration done")
+				recLogger.Info("Reconciling iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()
@@ -173,7 +173,7 @@ func main() {
 				if goErr != nil {
 					recLogger.Error(goErr)
 				}
-				recLogger.Info("Iteration done")
+				recLogger.Info("Current state iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()

@@ -6,6 +6,27 @@ import (
 	"strings"
 )
 
+type File struct {
+	Namespace    string   `yaml:"namespace"`
+	Transformers []string `yaml:"transformers,omitempty"`
+	Resources    []string `yaml:"resources"`
+}
+type LabelTransformer struct {
+	ApiVersion string            `yaml:"apiVersion"`
+	Kind       string            `yaml:"kind"`
+	Metadata   *Metadata         `yaml:"metadata"`
+	Labels     map[string]string `yaml:"labels"`
+	FieldSpecs []*FieldSpec      `yaml:"fieldSpecs"`
+}
+type Metadata struct {
+	Name string `yaml:"name"`
+}
+type FieldSpec struct {
+	Kind   string `yaml:"kind,omitempty"`
+	Path   string `yaml:"path"`
+	Create bool   `yaml:"create"`
+}
+
 type Kustomize struct {
 	path  string
 	apply bool

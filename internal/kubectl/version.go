@@ -37,8 +37,7 @@ func (k *KubectlVersion) GetKubeVersion(logger logging.Logger) (string, error) {
 	cmd := k.kubectl.Build()
 
 	kubectlLogger := logger.WithFields(map[string]interface{}{
-		"cmd":   cmd,
-		"logId": "CMD-sN18gqW3pTG8rUR",
+		"cmd": cmd,
 	})
 	kubectlLogger.Debug("Executing")
 

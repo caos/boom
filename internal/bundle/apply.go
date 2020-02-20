@@ -1,9 +1,11 @@
 package bundle
 
 import (
+	"path/filepath"
+
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/helper"
-	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
@@ -12,31 +14,48 @@ import (
 func apply(logger logging.Logger, app application.Application) func(resultFilePath, namespace string) error {
 
 	logFields := map[string]interface{}{
-		"application": app.GetName().String,
-		"logID":       "CRD-7ifHfIFSKZ2jKgZ",
-		"command":     "apply",
+		"command": "apply",
 	}
 
 	resultFunc := func(resultFilePath, namespace string) error {
-		// apply resources
-		kubectlCmd := kubectl.New("apply").AddParameter("-f", resultFilePath)
-		if namespace != "" {
-			kubectlCmd.AddParameter("-n", namespace)
+		resultFileDirPath := filepath.Dir(resultFilePath)
+		resultFileKustomizePath := filepath.Join(resultFileDirPath, "kustomization.yaml")
+		resultFileTransformerPath := filepath.Join(resultFileDirPath, "transformer.yaml")
+
+		transformer := &kustomize.LabelTransformer{
+			ApiVersion: "builtin",
+			Kind:       "LabelTransformer",
+			Metadata: &kustomize.Metadata{
+				Name: "LabelTransformer",
+			},
+			Labels:     labels.GetApplicationLabels(app.GetName()),
+			FieldSpecs: []*kustomize.FieldSpec{&kustomize.FieldSpec{Path: "metadata/labels", Create: true}},
 		}
-		err := helper.Run(logger.WithFields(logFields), kubectlCmd.Build())
+		if err := helper.StructToYaml(transformer, resultFileTransformerPath); err != nil {
+			return err
+		}
+
+		kustomizeFile := kustomize.File{
+			Namespace:    "caos-system",
+			Resources:    []string{filepath.Base(resultFilePath)},
+			Transformers: []string{filepath.Base(resultFileTransformerPath)},
+		}
+		if err := helper.StructToYaml(kustomizeFile, resultFileKustomizePath); err != nil {
+			return err
+		}
+
+		// apply resources
+		cmd, err := kustomize.New(resultFileDirPath, true)
+		if err != nil {
+			return err
+		}
+		err = helper.Run(logger.WithFields(logFields), cmd.Build())
 		if err != nil {
 			return errors.Wrapf(err, "Failed to apply with file %s", resultFilePath)
 		}
-		// label resources
-		kubectlLabel := kubectl.NewLabel(resultFilePath)
-		if namespace != "" {
-			kubectlLabel.AddParameter("-n", namespace)
-		}
-		err = kubectlLabel.Apply(logger.WithFields(logFields), labels.GetApplicationLabels(app.GetName()))
-		return errors.Wrapf(err, "Failed to label with file %s", resultFilePath)
 
 		//TODO cleanup unnecessary resources
-
+		return nil
 	}
 
 	return resultFunc

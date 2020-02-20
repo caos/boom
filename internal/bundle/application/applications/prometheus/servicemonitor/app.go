@@ -1,16 +1,16 @@
 package servicemonitor
 
 type ConfigEndpoint struct {
-	Port               string
-	TargetPort         string
-	Interval           string
-	Scheme             string
-	Path               string
-	BearerTokenFile    string
-	MetricsRelabelings []*ConfigMetricRelabeling
-	Relabelings        []*ConfigRelabeling
-	TLSConfig          *ConfigTLSConfig
-	HonorLabels        bool
+	Port              string
+	TargetPort        string
+	Interval          string
+	Scheme            string
+	Path              string
+	BearerTokenFile   string
+	MetricRelabelings []*ConfigMetricRelabeling
+	Relabelings       []*ConfigRelabeling
+	TLSConfig         *ConfigTLSConfig
+	HonorLabels       bool
 }
 
 type ConfigTLSConfig struct {
@@ -48,7 +48,7 @@ func SpecToValues(config *Config) *Values {
 	endpoints := make([]*Endpoint, 0)
 	for _, endpoint := range config.Endpoints {
 		metricRels := make([]*MetricRelabeling, 0)
-		for _, relabel := range endpoint.MetricsRelabelings {
+		for _, relabel := range endpoint.MetricRelabelings {
 			rel := &MetricRelabeling{
 				Action:       relabel.Action,
 				Regex:        relabel.Regex,
@@ -70,15 +70,15 @@ func SpecToValues(config *Config) *Values {
 			rels = append(rels, rel)
 		}
 		valueEndpoint := &Endpoint{
-			Port:               endpoint.Port,
-			TargetPort:         endpoint.TargetPort,
-			Interval:           endpoint.Interval,
-			Scheme:             endpoint.Scheme,
-			Path:               endpoint.Path,
-			BearerTokenFile:    endpoint.BearerTokenFile,
-			MetricsRelabelings: metricRels,
-			Relabelings:        rels,
-			HonorLabels:        endpoint.HonorLabels,
+			Port:              endpoint.Port,
+			TargetPort:        endpoint.TargetPort,
+			Interval:          endpoint.Interval,
+			Scheme:            endpoint.Scheme,
+			Path:              endpoint.Path,
+			BearerTokenFile:   endpoint.BearerTokenFile,
+			MetricRelabelings: metricRels,
+			Relabelings:       rels,
+			HonorLabels:       endpoint.HonorLabels,
 		}
 		if endpoint.TLSConfig != nil {
 			t := &TLSConfig{

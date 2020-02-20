@@ -25,7 +25,6 @@ func (h *Helm) mutate(app interface{}, spec *v1beta1.ToolsetSpec) templator.Temp
 		}
 		mutateLogger := h.logger.WithFields(logFields)
 
-		logFields["logID"] = "HELM-wm1sjJ2Bmr0VMYV"
 		mutateLogger.WithFields(logFields).Debug("Mutate before apply")
 
 		resultfilepath := h.GetResultsFilePath(mutate.GetName(), h.overlay, h.templatorDirectoryPath)

@@ -3,15 +3,12 @@ package app
 import (
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/crd"
-	crdconfig "github.com/caos/boom/internal/crd/config"
-	"github.com/caos/boom/internal/crd/v1beta1"
 	"github.com/caos/boom/internal/gitcrd"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
 
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm"
 	"github.com/caos/orbiter/logging"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type App struct {
@@ -36,9 +33,7 @@ func New(logger logging.Logger, toolsDirectoryPath, dashboardsDirectoryPath stri
 
 func (a *App) CleanUp() error {
 
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-GiK5XPA5PzwQtjR",
-	}).Info("Cleanup")
+	a.logger.Info("Cleanup")
 
 	for _, g := range a.GitCrds {
 		g.CleanUp()
@@ -64,32 +59,27 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 		return err
 	}
 
-	toolsetCRD, err := c.GetCrdContent()
-	if err != nil {
-		return err
-	}
-
 	bundleConf := &bundleconfig.Config{
-		Logger:            a.logger,
-		CrdName:           toolsetCRD.Name,
 		BundleName:        bundles.Caos,
 		BaseDirectoryPath: a.ToolsDirectoryPath,
 		Templator:         helm.GetName(),
 	}
 
 	c.SetBundle(bundleConf)
+	if err := c.GetStatus(); err != nil {
+		return err
+	}
+
 	a.GitCrds = append(a.GitCrds, c)
 	return nil
 }
 
 func (a *App) ReconcileGitCrds() error {
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-aZAeIqcAmHzflSB",
-	}).Info("Started reconciling of GitCRDs")
+	a.logger.Info("Started reconciling of GitCRDs")
+
 	for _, crdGit := range a.GitCrds {
 		crdGit.Reconcile()
-		err := crdGit.GetStatus()
-		if err != nil {
+		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
 	}
@@ -97,55 +87,51 @@ func (a *App) ReconcileGitCrds() error {
 }
 
 func (a *App) WriteBackCurrentState() error {
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-dsVBh3zFCGcTi5j",
-	}).Info("Started writeback of currentstate of GitCRDs")
+	a.logger.Info("Started writeback of currentstate of GitCRDs")
+
 	for _, crdGit := range a.GitCrds {
 		crdGit.WriteBackCurrentState()
-
-		err := crdGit.GetStatus()
-		if err != nil {
+		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-aZAeIqcAmHzflSB",
-		"name":  namespacedName,
-	}).Info("Started reconciling of CRD")
+// func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
+// 	a.logger.WithFields(map[string]interface{}{
+// 		"name": namespacedName,
+// 	}).Info("Started reconciling of CRD")
 
-	var err error
-	managedcrd, ok := a.Crds[namespacedName]
-	if !ok {
-		crdConf := &crdconfig.Config{
-			Logger:  a.logger,
-			Version: v1beta1.GetVersion(),
-		}
+// 	var err error
+// 	managedcrd, ok := a.Crds[namespacedName]
+// 	if !ok {
+// 		crdConf := &crdconfig.Config{
+// 			Logger:  a.logger,
+// 			Version: v1beta1.GetVersion(),
+// 		}
 
-		managedcrd, err = crd.New(crdConf)
-		if err != nil {
-			return err
-		}
+// 		managedcrd, err = crd.New(crdConf)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		bundleConf := &bundleconfig.Config{
-			Logger:            a.logger,
-			CrdName:           namespacedName,
-			BundleName:        bundles.Caos,
-			BaseDirectoryPath: a.ToolsDirectoryPath,
-			Templator:         helm.GetName(),
-		}
-		managedcrd.SetBundle(bundleConf)
+// 		bundleConf := &bundleconfig.Config{
+// 			Logger:            a.logger,
+// 			CrdName:           namespacedName,
+// 			BundleName:        bundles.Caos,
+// 			BaseDirectoryPath: a.ToolsDirectoryPath,
+// 			Templator:         helm.GetName(),
+// 		}
+// 		managedcrd.SetBundle(bundleConf)
 
-		if err := managedcrd.GetStatus(); err != nil {
-			return err
-		}
+// 		if err := managedcrd.GetStatus(); err != nil {
+// 			return err
+// 		}
 
-		a.Crds[namespacedName] = managedcrd
-	}
+// 		a.Crds[namespacedName] = managedcrd
+// 	}
 
-	managedcrd.ReconcileWithFunc(getToolsetCRD)
-	return managedcrd.GetStatus()
-}
+// 	managedcrd.ReconcileWithFunc(getToolsetCRD)
+// 	return managedcrd.GetStatus()
+// }

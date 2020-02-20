@@ -138,16 +138,17 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 
 	logFields := map[string]interface{}{
 		"application": appName,
-		"logID":       "CRD-rGkpjHLZtVAWumr",
+		"action":      "reconciling",
 	}
+	logger := b.logger.WithFields(logFields)
 
 	app, found := b.Applications[appName]
 	if !found {
 		b.status = errors.New("Application not found")
-		b.logger.WithFields(logFields).Error(b.status)
+		logger.Error(b.status)
 		return b
 	}
-	b.logger.WithFields(logFields).Info("Reconciling")
+	logger.Info("Start")
 
 	deploy := app.Deploy(spec)
 
@@ -158,9 +159,9 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 
 	var resultFunc func(string, string) error
 	if deploy {
-		resultFunc = apply(b.logger, app)
+		resultFunc = apply(logger, app)
 	} else {
-		resultFunc = delete(b.logger, app)
+		resultFunc = delete(logger)
 	}
 
 	_, usedHelm := app.(application.HelmApplication)
@@ -174,5 +175,7 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	if usedYaml {
 		b.status = b.YamlTemplator.Template(app, spec, resultFunc).GetStatus()
 	}
+
+	logger.Info("Done")
 	return b
 }

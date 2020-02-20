@@ -15,13 +15,9 @@ type Current struct {
 }
 
 func Get(logger logging.Logger) *Current {
-	currentLogger := logger.WithFields(map[string]interface{}{
-		"logID": "CURRENT-fEIFck9R1KRY5e8",
-	})
-
 	globalLabels := labels.GetGlobalLabels()
 
-	resources, err := clientgo.ListResources(currentLogger, globalLabels)
+	resources, err := clientgo.ListResources(logger, globalLabels)
 	if err != nil {
 		return nil
 	}
