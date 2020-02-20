@@ -138,6 +138,17 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
+	toolsetCRD, err := c.GetCrdContent()
+	if err != nil {
+		c.status = err
+		return
+	}
+
+	if !toolsetCRD.Spec.CurrentState.WriteBack {
+		c.logger.Info("Write-back is deactivated, canceling")
+		return
+	}
+
 	curr := current.Get(c.logger)
 
 	content, err := yaml.Marshal(curr)
@@ -147,7 +158,7 @@ func (c *GitCrd) WriteBackCurrentState() {
 	}
 
 	file := git.File{
-		Path:    filepath.Join("internal", "boom", "current.yaml"),
+		Path:    filepath.Join(toolsetCRD.Spec.CurrentState.Folder, "current.yaml"),
 		Content: content,
 	}
 
