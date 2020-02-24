@@ -103,10 +103,10 @@ func fetch(logger logging.Logger, basePath string, chart *ChartInfo) error {
 	logger.WithFields(logFields).Info("Fetching chart")
 	return helmcommand.FetchChart(&helmcommand.FetchConfig{
 		TempFolderPath: basePath,
-		ChartName: chart.Name, 
-		ChartVersion: chart.Version, 
-		IndexName: chart.IndexName,
-	)}
+		ChartName:      chart.Name,
+		ChartVersion:   chart.Version,
+		IndexName:      chart.IndexName,
+	})
 }
 
 func addIndex(logger logging.Logger, basePath string, index *chart.Index) error {

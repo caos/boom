@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom
+  namespace: caos-system
+  labels:
+    control-plane: boom
+spec:
+  selector:
+    matchLabels:
+      control-plane: boom
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: boom
+    spec:
+      serviceAccountName: boom
+      containers:
+      - command:
+        - /boom
+        args:
+        - "--enable-leader-election"
+        - "-git-crd-private-key" 
+        - "/secrets/tools-secret/id_rsa"
+        - "-git-crd-url"
+        - "git@github.com:stebenz/boom-crd.git"
+        - "-git-crd-path"
+        - "crd.yaml"
+        image: eu.gcr.io/caos-ops/boom
+        imagePullPolicy: IfNotPresent
+        name: boom
+        volumeMounts:
+        - name: privaterepo-secret
+          mountPath: /secrets/tools-secret
+          readOnly: true
+      # imagePullSecrets: 
+      # - name: boomregistry
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: "privaterepo-secret"
+        secret:
+          secretName: privaterepo-secret
