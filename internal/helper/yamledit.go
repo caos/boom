@@ -73,56 +73,6 @@ func AddStringObjectToYaml(path string, str string) error {
 	return nil
 }
 
-func AddYamlToYaml(filePath, addFilePath string) error {
-
-	f, err := os.OpenFile(filePath,
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	addContent, err := ioutil.ReadFile(addFilePath)
-	if err != nil {
-		return err
-	}
-	addText := string(addContent)
-
-	if _, err := f.WriteString("\n---\n"); err != nil {
-		return err
-	}
-	if _, err := f.WriteString(addText); err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteKindFromYaml(path string, kind string) error {
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	text := string(content)
-	parts := strings.Split(text, "\n---\n")
-
-	os.Remove(path)
-	for _, part := range parts {
-		struc := &Resource{}
-		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
-			return err
-		}
-
-		if struc.Kind != kind {
-			if err := AddStringObjectToYaml(path, part); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
 func AddStringBeforePointForKindAndName(filePath, kind, name, point, addContent string) error {
 	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -134,6 +84,9 @@ func AddStringBeforePointForKindAndName(filePath, kind, name, point, addContent 
 
 	os.Remove(filePath)
 	for _, part := range parts {
+		if part == "" {
+			continue
+		}
 		struc := &Resource{}
 		if err := yaml.Unmarshal([]byte(part), struc); err != nil {
 			return err

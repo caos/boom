@@ -6,17 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/caos/boom/internal/git"
-	"github.com/caos/boom/internal/kubectl"
-	"github.com/caos/orbiter/logging"
 )
 
-func UseFolder(logger logging.Logger, git *git.Client, deploy bool, tempDirectory, folderRelativePath string) error {
-
-	command := kubectl.New("apply")
-	if !deploy {
-		command = kubectl.New("delete").AddFlag("--ignore-not-found")
-	}
-
+func CopyFolderToLocal(git *git.Client, tempDirectory, folderRelativePath string) error {
 	if err := git.Clone(); err != nil {
 		return err
 	}
@@ -40,5 +32,5 @@ func UseFolder(logger logging.Logger, git *git.Client, deploy bool, tempDirector
 		}
 	}
 
-	return Run(logger, command.AddParameter("-f", folderPath).Build())
+	return nil
 }

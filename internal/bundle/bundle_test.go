@@ -10,6 +10,7 @@ import (
 	"github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
+	"github.com/caos/orbiter/logging"
 	logcontext "github.com/caos/orbiter/logging/context"
 	"github.com/caos/orbiter/logging/kubebuilder"
 	"github.com/caos/orbiter/logging/stdlib"
@@ -25,9 +26,15 @@ const (
 	dashboardsDirectoryPath = "../../dashboards"
 )
 
-func NewBundle(templator name.Templator) *Bundle {
+func newLogger() logging.Logger {
 	logger := logcontext.Add(stdlib.New(os.Stdout))
 	ctrl.SetLogger(kubebuilder.New(logger))
+
+	return logger
+}
+
+func NewBundle(templator name.Templator) *Bundle {
+	logger := newLogger()
 
 	bundleConf := &config.Config{
 		Logger:            logger,
@@ -38,6 +45,10 @@ func NewBundle(templator name.Templator) *Bundle {
 
 	b := New(bundleConf)
 	return b
+}
+
+func init() {
+	Testmode = true
 }
 
 func TestBundle_EmptyApplicationList(t *testing.T) {
@@ -75,7 +86,7 @@ func TestBundle_AddApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
 	b.AddApplication(app.Application())
 
 	apps := b.GetApplications()
@@ -87,7 +98,7 @@ func TestBundle_AddApplication_AlreadyAdded(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
 	err := b.AddApplication(app.Application()).GetStatus()
 	assert.NoError(t, err)
 
@@ -104,7 +115,8 @@ func TestBundle_ReconcileApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
 	b.AddApplication(app.Application())
 
 	var wg sync.WaitGroup
@@ -118,7 +130,7 @@ func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -131,10 +143,11 @@ func TestBundle_Reconcile(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
 	b.AddApplication(app.Application())
 
-	err := b.Reconcile(spec).GetStatus()
+	b.Reconcile(spec)
+	err := b.GetStatus()
 	assert.NoError(t, err)
 }
 
@@ -142,7 +155,7 @@ func TestBundle_Reconcile_NoApplications(t *testing.T) {
 	b := NewBundle(yaml.GetName())
 
 	spec := &v1beta1.ToolsetSpec{}
-
-	err := b.Reconcile(spec).GetStatus()
+	b.Reconcile(spec)
+	err := b.GetStatus()
 	assert.NoError(t, err)
 }

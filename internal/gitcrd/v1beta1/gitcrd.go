@@ -10,6 +10,7 @@ import (
 	"github.com/caos/boom/internal/crd/v1beta1"
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
 	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/orbiter/logging"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -114,7 +115,12 @@ func (c *GitCrd) Reconcile() {
 	// pre-steps
 	if toolsetCRD.Spec.PreApply != nil {
 		pre := toolsetCRD.Spec.PreApply
-		if err := helper.UseFolder(logger, c.git, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
+		if err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, pre.Folder); err != nil {
+			c.status = err
+			return
+		}
+
+		if err := useFolder(logger, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -130,7 +136,12 @@ func (c *GitCrd) Reconcile() {
 	// post-steps
 	if toolsetCRD.Spec.PostApply != nil {
 		post := toolsetCRD.Spec.PostApply
-		if err := helper.UseFolder(logger, c.git, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
+		if err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, post.Folder); err != nil {
+			c.status = err
+			return
+		}
+
+		if err := useFolder(logger, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -176,4 +187,15 @@ func (c *GitCrd) WriteBackCurrentState() {
 	}
 
 	c.status = c.git.UpdateRemote("current state changed", file)
+}
+
+func useFolder(logger logging.Logger, deploy bool, tempDirectory, folderRelativePath string) error {
+	folderPath := filepath.Join(tempDirectory, folderRelativePath)
+
+	command := kubectl.NewApply(folderPath).Build()
+	if !deploy {
+		command = kubectl.NewDelete(folderPath).Build()
+	}
+
+	return helper.Run(logger, command)
 }

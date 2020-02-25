@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle"
 	application "github.com/caos/boom/internal/bundle/application/mock"
 	"github.com/caos/boom/internal/bundle/bundles"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -100,6 +101,10 @@ func setBundle(c Crd, bundle name.Bundle) {
 	c.SetBundle(bundleConfig)
 }
 
+func init() {
+	bundle.Testmode = true
+}
+
 func TestNew(t *testing.T) {
 	crd, err := newCrd()
 	assert.NoError(t, err)
@@ -122,7 +127,7 @@ func TestCrd_Reconcile_initial(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
@@ -139,7 +144,7 @@ func TestCrd_Reconcile_changed(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
@@ -150,7 +155,7 @@ func TestCrd_Reconcile_changed(t *testing.T) {
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, true).SetInitial(false).SetGetYaml("test2")
+	app.SetDeploy(changedToolset.Spec, true).SetGetYaml(changedToolset.Spec, "test2")
 	crd.Reconcile(changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
@@ -162,7 +167,7 @@ func TestCrd_Reconcile_changedDelete(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
@@ -173,7 +178,7 @@ func TestCrd_Reconcile_changedDelete(t *testing.T) {
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, false).SetInitial(false).SetGetYaml("test2")
+	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
 	crd.Reconcile(changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
@@ -185,7 +190,7 @@ func TestCrd_Reconcile_initialNotDeployed(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, false).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, false).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
@@ -196,7 +201,7 @@ func TestCrd_Reconcile_initialNotDeployed(t *testing.T) {
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, false).SetInitial(false).SetGetYaml("test2")
+	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
 	crd.Reconcile(changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)

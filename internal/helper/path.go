@@ -24,8 +24,7 @@ func RecreatePath(pathParts ...string) error {
 		return err
 	}
 
-	err = os.RemoveAll(absPath)
-	if err != nil {
+	if err = os.RemoveAll(absPath); err != nil {
 		return err
 	}
 

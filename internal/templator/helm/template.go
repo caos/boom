@@ -91,7 +91,7 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 		return err
 	}
 
-	if err := helper.StructToYaml(values, valuesAbsFilePath); err != nil {
+	if err := helper.AddStructToYaml(valuesAbsFilePath, values); err != nil {
 		templateLogger.Error(err)
 		return err
 	}

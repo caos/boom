@@ -30,9 +30,9 @@ COPY internal internal
 # ####################################################################################################
 # Run tests
 # ####################################################################################################
-# FROM dependencies AS test
+FROM dependencies AS test
 
-# RUN CGO_ENABLED=0 GOOS=linux go test -short $(go list ./... | grep -v /vendor/)
+RUN CGO_ENABLED=0 GOOS=linux go test -short $(go list ./... | grep -v /vendor/)
 # RUN go test -race -short $(go list ./... | grep -v /vendor/)
 # RUN go test -msan -short $(go list ./... | grep -v /vendor/)
 

@@ -20,14 +20,14 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	}
 	command = command[1:]
 
-	kubectlLogger := logger.WithFields(map[string]interface{}{
+	cmdLogger := logger.WithFields(map[string]interface{}{
 		"cmd": command,
 	})
 
-	kubectlLogger.Debug("Executing")
+	cmdLogger.Debug("Executing")
 
 	out, err := cmd.CombinedOutput()
-	kubectlLogger.Debug(string(out))
+	cmdLogger.Debug(string(out))
 
 	return errors.Wrapf(err, "Error while executing command: Response: %s", string(out))
 }

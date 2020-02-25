@@ -2,6 +2,7 @@ package helper
 
 import (
 	"io/ioutil"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -22,9 +23,17 @@ func YamlToStruct(path string, struc interface{}) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, struc)
-	if err != nil {
-		return errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", path)
+	text := string(data)
+	parts := strings.Split(text, "\n---\n")
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		err = yaml.Unmarshal([]byte(part), struc)
+		if err != nil {
+			return errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", path)
+		}
+		return nil
 	}
 	return nil
 }

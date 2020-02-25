@@ -16,6 +16,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	Testmode bool = false
+)
+
 type Bundle struct {
 	baseDirectoryPath string
 	Applications      map[name.Application]application.Application
@@ -158,10 +162,16 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	}
 
 	var resultFunc func(string, string) error
-	if deploy {
-		resultFunc = apply(logger, app)
+	if Testmode {
+		resultFunc = func(resultFilePath, namespace string) error {
+			return nil
+		}
 	} else {
-		resultFunc = delete(logger)
+		if deploy {
+			resultFunc = apply(logger, app)
+		} else {
+			resultFunc = delete(logger)
+		}
 	}
 
 	_, usedHelm := app.(application.HelmApplication)

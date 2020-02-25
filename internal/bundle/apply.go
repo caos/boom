@@ -31,7 +31,7 @@ func apply(logger logging.Logger, app application.Application) func(resultFilePa
 			Labels:     labels.GetApplicationLabels(app.GetName()),
 			FieldSpecs: []*kustomize.FieldSpec{&kustomize.FieldSpec{Path: "metadata/labels", Create: true}},
 		}
-		if err := helper.StructToYaml(transformer, resultFileTransformerPath); err != nil {
+		if err := helper.AddStructToYaml(resultFileTransformerPath, transformer); err != nil {
 			return err
 		}
 
@@ -40,7 +40,7 @@ func apply(logger logging.Logger, app application.Application) func(resultFilePa
 			Resources:    []string{filepath.Base(resultFilePath)},
 			Transformers: []string{filepath.Base(resultFileTransformerPath)},
 		}
-		if err := helper.StructToYaml(kustomizeFile, resultFileKustomizePath); err != nil {
+		if err := helper.AddStructToYaml(resultFileKustomizePath, kustomizeFile); err != nil {
 			return err
 		}
 

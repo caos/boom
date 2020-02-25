@@ -9,11 +9,25 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/config"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/grafanastandalone"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/logging"
 )
+
+func (g *Grafana) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+
+	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.KubeStateMetrics) {
+
+		if err := helper.DeleteFirstResourceFromYaml(resultFilePath, "v1", "ConfigMap", "grafana-persistentvolumesusage"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func (g *Grafana) HelmPreApplySteps(logger logging.Logger, spec *v1beta1.ToolsetSpec) ([]interface{}, error) {
 	config := config.New(spec)

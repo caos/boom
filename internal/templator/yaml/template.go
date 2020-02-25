@@ -1,7 +1,6 @@
 package yaml
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -34,13 +33,8 @@ func (y *YAML) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		y.status = err
 		return y
 	}
-	err = os.RemoveAll(resultAbsFileDirectory)
-	if err != nil {
-		y.status = err
-		return y
-	}
-	err = os.MkdirAll(resultAbsFileDirectory, os.ModePerm)
-	if err != nil {
+
+	if err := helper.RecreatePath(resultAbsFileDirectory); err != nil {
 		y.status = err
 		return y
 	}

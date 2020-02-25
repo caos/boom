@@ -18,6 +18,7 @@ func (k *KubectlLabel) AddParameter(key, value string) *KubectlLabel {
 	k.kubectl.AddParameter(key, value)
 	return k
 }
+
 func (k *KubectlLabel) Apply(logger logging.Logger, labels map[string]string) error {
 	for key, value := range labels {
 		k.kubectl.AddFlag(strings.Join([]string{key, value}, "="))
