@@ -4,11 +4,11 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
-func Run(logger logging.Logger, cmd exec.Cmd) error {
+func Run(monitor mntr.Monitor, cmd exec.Cmd) error {
 
 	var command string
 	for _, arg := range cmd.Args {
@@ -20,14 +20,14 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	}
 	command = command[1:]
 
-	cmdLogger := logger.WithFields(map[string]interface{}{
+	cmdMonitor := monitor.WithFields(map[string]interface{}{
 		"cmd": command,
 	})
 
-	cmdLogger.Debug("Executing")
+	cmdMonitor.Debug("Executing")
 
 	out, err := cmd.CombinedOutput()
-	cmdLogger.Debug(string(out))
+	cmdMonitor.Debug(string(out))
 
 	return errors.Wrapf(err, "Error while executing command: Response: %s", string(out))
 }

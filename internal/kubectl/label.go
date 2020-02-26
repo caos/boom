@@ -3,7 +3,7 @@ package kubectl
 import (
 	"strings"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
@@ -19,23 +19,23 @@ func (k *KubectlLabel) AddParameter(key, value string) *KubectlLabel {
 	return k
 }
 
-func (k *KubectlLabel) Apply(logger logging.Logger, labels map[string]string) error {
+func (k *KubectlLabel) Apply(monitor mntr.Monitor, labels map[string]string) error {
 	for key, value := range labels {
 		k.kubectl.AddFlag(strings.Join([]string{key, value}, "="))
 	}
 
 	cmd := k.kubectl.Build()
 
-	kubectlLogger := logger.WithFields(map[string]interface{}{
+	kubectlMonitor := monitor.WithFields(map[string]interface{}{
 		"cmd": cmd,
 	})
-	kubectlLogger.Debug("Executing")
+	kubectlMonitor.Debug("Executing")
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		err = errors.Wrap(err, "Error while executing command")
-		kubectlLogger.Debug(string(out))
-		kubectlLogger.Error(err)
+		kubectlMonitor.Debug(string(out))
+		kubectlMonitor.Error(err)
 	}
 
 	return err

@@ -11,7 +11,7 @@ import (
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 
@@ -26,12 +26,12 @@ type GitCrd struct {
 	crdDirectoryPath string
 	crdPath          string
 	status           error
-	logger           logging.Logger
+	monitor          mntr.Monitor
 }
 
 func New(conf *config.Config) (*GitCrd, error) {
 
-	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+	monitor := conf.Monitor.WithFields(map[string]interface{}{
 		"version": "v1beta1",
 	})
 
@@ -40,11 +40,11 @@ func New(conf *config.Config) (*GitCrd, error) {
 		crdDirectoryPath: conf.CrdDirectoryPath,
 		crdPath:          conf.CrdPath,
 		git:              &gitConf,
-		logger:           crdLogger,
+		monitor:          monitor,
 	}
 
 	crdConf := &crdconfig.Config{
-		Logger:  crdLogger,
+		Monitor: monitor,
 		Version: v1beta1.GetVersion(),
 	}
 
@@ -73,12 +73,12 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 		return
 	}
 
-	logger := c.logger.WithFields(map[string]interface{}{
+	monitor := c.monitor.WithFields(map[string]interface{}{
 		"CRD": toolsetCRD.GetName(),
 	})
 
 	bundleConf := &bundleconfig.Config{
-		Logger:            logger,
+		Monitor:           monitor,
 		CrdName:           toolsetCRD.GetName(),
 		BundleName:        conf.BundleName,
 		BaseDirectoryPath: conf.BaseDirectoryPath,
@@ -102,7 +102,7 @@ func (c *GitCrd) Reconcile() {
 		return
 	}
 
-	logger := c.logger.WithFields(map[string]interface{}{
+	monitor := c.monitor.WithFields(map[string]interface{}{
 		"action": "reconiling",
 	})
 
@@ -120,7 +120,7 @@ func (c *GitCrd) Reconcile() {
 			return
 		}
 
-		if err := useFolder(logger, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
+		if err := useFolder(monitor, pre.Deploy, c.crdDirectoryPath, pre.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -141,7 +141,7 @@ func (c *GitCrd) Reconcile() {
 			return
 		}
 
-		if err := useFolder(logger, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
+		if err := useFolder(monitor, post.Deploy, c.crdDirectoryPath, post.Folder); err != nil {
 			c.status = err
 			return
 		}
@@ -167,11 +167,11 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
-	logger := c.logger.WithFields(map[string]interface{}{
+	monitor := c.monitor.WithFields(map[string]interface{}{
 		"action": "current",
 	})
 
-	curr := current.Get(logger)
+	curr := current.Get(monitor)
 
 	content, err := yaml.Marshal(curr)
 	if err != nil {
@@ -189,7 +189,7 @@ func (c *GitCrd) WriteBackCurrentState() {
 	c.status = c.git.UpdateRemote("current state changed", file)
 }
 
-func useFolder(logger logging.Logger, deploy bool, tempDirectory, folderRelativePath string) error {
+func useFolder(monitor mntr.Monitor, deploy bool, tempDirectory, folderRelativePath string) error {
 	folderPath := filepath.Join(tempDirectory, folderRelativePath)
 
 	command := kubectl.NewApply(folderPath).Build()
@@ -197,5 +197,5 @@ func useFolder(logger logging.Logger, deploy bool, tempDirectory, folderRelative
 		command = kubectl.NewDelete(folderPath).Build()
 	}
 
-	return helper.Run(logger, command)
+	return helper.Run(monitor, command)
 }

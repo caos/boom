@@ -6,7 +6,7 @@ import (
 
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
@@ -25,13 +25,13 @@ func GetPrio() name.Templator {
 type Helm struct {
 	overlay                string
 	status                 error
-	logger                 logging.Logger
+	monitor                mntr.Monitor
 	templatorDirectoryPath string
 }
 
-func New(logger logging.Logger, overlay, templatorDirectoryPath string) templator.Templator {
+func New(monitor mntr.Monitor, overlay, templatorDirectoryPath string) templator.Templator {
 	return &Helm{
-		logger:                 logger,
+		monitor:                monitor,
 		templatorDirectoryPath: templatorDirectoryPath,
 		overlay:                overlay,
 	}

@@ -22,7 +22,7 @@ import (
 	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Application interface {
@@ -35,34 +35,34 @@ type HelmApplication interface {
 	GetNamespace() string
 	GetChartInfo() *chart.Chart
 	GetImageTags() map[string]string
-	SpecToHelmValues(logging.Logger, *v1beta1.ToolsetSpec) interface{}
+	SpecToHelmValues(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 }
 
 type YAMLApplication interface {
 	Application
-	GetYaml(logging.Logger, *v1beta1.ToolsetSpec) interface{}
+	GetYaml(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 }
 
-func New(logger logging.Logger, appName name.Application) Application {
+func New(monitor mntr.Monitor, appName name.Application) Application {
 	switch appName {
 	case ambassadorinfo.GetName():
-		return ambassador.New(logger)
+		return ambassador.New(monitor)
 	case argocdinfo.GetName():
-		return argocd.New(logger)
+		return argocd.New(monitor)
 	case grafanainfo.GetName():
-		return grafana.New(logger)
+		return grafana.New(monitor)
 	case kubestatemetricsinfo.GetName():
-		return kubestatemetrics.New(logger)
+		return kubestatemetrics.New(monitor)
 	case prometheusoperatorinfo.GetName():
-		return prometheusoperator.New(logger)
+		return prometheusoperator.New(monitor)
 	case loggingoperatorinfo.GetName():
-		return loggingoperator.New(logger)
+		return loggingoperator.New(monitor)
 	case prometheusnodeexporterinfo.GetName():
-		return prometheusnodeexporter.New(logger)
+		return prometheusnodeexporter.New(monitor)
 	case prometheusinfo.GetName():
-		return prometheus.New(logger)
+		return prometheus.New(monitor)
 	case lokiinfo.GetName():
-		return loki.New(logger)
+		return loki.New(monitor)
 	}
 
 	return nil

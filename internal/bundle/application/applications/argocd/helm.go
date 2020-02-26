@@ -8,10 +8,10 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/customimage"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
-func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+func (a *Argocd) HelmMutate(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
 	spec := toolsetCRDSpec.Argocd
 
 	if spec.CustomImage != nil && spec.CustomImage.Enabled && spec.CustomImage.ImagePullSecret != "" {
@@ -29,7 +29,7 @@ func (a *Argocd) HelmMutate(logger logging.Logger, toolsetCRDSpec *toolsetsv1bet
 	return nil
 }
 
-func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolsetCRDSpec.Argocd
 
 	imageTags := a.GetImageTags()
@@ -64,7 +64,7 @@ func (a *Argocd) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolset
 		}
 	}
 
-	conf := config.GetFromSpec(logger, spec)
+	conf := config.GetFromSpec(monitor, spec)
 	if conf.Repositories != "" && conf.Repositories != "[]\n" {
 		values.Server.Config.Repositories = conf.Repositories
 	}

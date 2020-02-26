@@ -5,7 +5,7 @@ import (
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/boom/internal/templator/helm/helmcommand"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type ChartKey struct {
@@ -19,10 +19,10 @@ type ChartInfo struct {
 	IndexName string
 }
 
-func All(logger logging.Logger, basePath string) error {
+func All(monitor mntr.Monitor, basePath string) error {
 	allApps := bundles.GetAll()
 
-	logger.Info("Init Helm")
+	monitor.Info("Init Helm")
 
 	// helm init to create a HELMHOME
 	if err := helmcommand.Init(basePath); err != nil {
@@ -32,10 +32,10 @@ func All(logger logging.Logger, basePath string) error {
 	//indexes in a map so that no doublicates exist
 	indexes := make(map[*ChartKey]*chart.Index, 0)
 	charts := make([]*ChartInfo, 0)
-	logger.Info("Preparing lists of indexes and charts")
+	monitor.Info("Preparing lists of indexes and charts")
 
 	for _, appName := range allApps {
-		app := application.New(nil, appName)
+		app := application.New(monitor, appName)
 		temp, ok := app.(application.HelmApplication)
 		// if application doenst implement helm interface then no charts are defined
 		if ok {
@@ -66,26 +66,26 @@ func All(logger logging.Logger, basePath string) error {
 			logFields := map[string]interface{}{
 				"application": appName.String(),
 			}
-			logger.WithFields(logFields).Info("Not helm templated")
+			monitor.WithFields(logFields).Info("Not helm templated")
 		}
 	}
 
-	logger.Info("Adding all indexes")
+	monitor.Info("Adding all indexes")
 	// add all indexes in a map so that no dublicates exist
 	for _, v := range indexes {
-		if err := addIndex(logger, basePath, v); err != nil {
+		if err := addIndex(monitor, basePath, v); err != nil {
 			return err
 		}
 	}
 
-	logger.Info("Repo update")
+	monitor.Info("Repo update")
 	if err := helmcommand.RepoUpdate(basePath); err != nil {
 		return err
 	}
 
-	logger.Info("Fetching all charts")
+	monitor.Info("Fetching all charts")
 	for _, chart := range charts {
-		if err := fetch(logger, basePath, chart); err != nil {
+		if err := fetch(monitor, basePath, chart); err != nil {
 			return err
 		}
 
@@ -93,14 +93,14 @@ func All(logger logging.Logger, basePath string) error {
 	return nil
 }
 
-func fetch(logger logging.Logger, basePath string, chart *ChartInfo) error {
+func fetch(monitor mntr.Monitor, basePath string, chart *ChartInfo) error {
 	logFields := map[string]interface{}{
 		"application": chart.Name,
 		"version":     chart.Version,
 	}
 	logFields["indexname"] = chart.IndexName
 
-	logger.WithFields(logFields).Info("Fetching chart")
+	monitor.WithFields(logFields).Info("Fetching chart")
 	return helmcommand.FetchChart(&helmcommand.FetchConfig{
 		TempFolderPath: basePath,
 		ChartName:      chart.Name,
@@ -109,12 +109,12 @@ func fetch(logger logging.Logger, basePath string, chart *ChartInfo) error {
 	})
 }
 
-func addIndex(logger logging.Logger, basePath string, index *chart.Index) error {
+func addIndex(monitor mntr.Monitor, basePath string, index *chart.Index) error {
 	logFields := map[string]interface{}{
 		"index": index.Name,
 		"url":   index.URL,
 	}
-	logger.WithFields(logFields).Info("Adding index")
+	monitor.WithFields(logFields).Info("Adding index")
 	return helmcommand.AddIndex(&helmcommand.IndexConfig{
 		TempFolderPath: basePath,
 		IndexName:      index.Name,

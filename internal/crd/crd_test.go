@@ -1,7 +1,6 @@
 package crd
 
 import (
-	"os"
 	"testing"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -12,13 +11,10 @@ import (
 	"github.com/caos/boom/internal/crd/config"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var (
@@ -77,10 +73,15 @@ var (
 )
 
 func newCrd() (Crd, error) {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+
 	conf := &config.Config{
-		Logger:  logger,
+		Monitor: monitor,
 		Version: "v1beta1",
 	}
 
@@ -88,10 +89,15 @@ func newCrd() (Crd, error) {
 }
 
 func setBundle(c Crd, bundle name.Bundle) {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+
 	bundleConfig := &bundleconfig.Config{
-		Logger:            logger,
+		Monitor:           monitor,
 		CrdName:           "caos_test",
 		BundleName:        bundle,
 		BaseDirectoryPath: "../../../tools",

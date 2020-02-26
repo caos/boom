@@ -24,9 +24,9 @@ type GitCrd interface {
 
 func New(conf *config.Config) (GitCrd, error) {
 
-	conf.Logger.Info("New GitCRD")
+	conf.Monitor.Info("New GitCRD")
 
-	git := git.New(context.Background(), conf.Logger, conf.User, conf.Email, conf.CrdUrl)
+	git := git.New(context.Background(), conf.Monitor, conf.User, conf.Email, conf.CrdUrl)
 	err := git.Init(conf.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func New(conf *config.Config) (GitCrd, error) {
 
 	crdFileStruct := &helper.Resource{}
 	if err := git.ReadYamlIntoStruct(conf.CrdPath, crdFileStruct); err != nil {
-		conf.Logger.Error(err)
+		conf.Monitor.Error(err)
 		return nil, err
 	}
 
@@ -53,12 +53,12 @@ func New(conf *config.Config) (GitCrd, error) {
 		return nil, errors.Errorf("Unknown CRD version %s", parts[1])
 	}
 
-	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+	monitor := conf.Monitor.WithFields(map[string]interface{}{
 		"type": "gitcrd",
 	})
 
 	v1beta1conf := &v1beta1config.Config{
-		Logger:           crdLogger,
+		Monitor:          monitor,
 		Git:              git,
 		CrdDirectoryPath: conf.CrdDirectoryPath,
 		CrdPath:          conf.CrdPath,

@@ -24,18 +24,18 @@ type Crd interface {
 }
 
 func New(conf *config.Config) (Crd, error) {
-	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+	crdMonitor := conf.Monitor.WithFields(map[string]interface{}{
 		"version": conf.Version,
 	})
 
-	crdLogger.Info("New CRD")
+	crdMonitor.Info("New CRD")
 
 	if conf.Version != "v1beta1" {
 		return nil, errors.Errorf("Unknown CRD version %s", conf.Version)
 	}
 
 	crdConf := &v1beta1config.Config{
-		Logger: conf.Logger,
+		Monitor: crdMonitor,
 	}
 
 	crd := v1beta1.New(crdConf)

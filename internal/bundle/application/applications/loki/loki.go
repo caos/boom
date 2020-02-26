@@ -1,21 +1,20 @@
 package loki
 
 import (
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Loki struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.Loki
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.Loki
 }
 
-func New(logger logging.Logger) *Loki {
+func New(monitor mntr.Monitor) *Loki {
 	lo := &Loki{
-		logger: logger,
+		monitor: monitor,
 	}
 	return lo
 }

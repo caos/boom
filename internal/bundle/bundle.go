@@ -12,7 +12,7 @@ import (
 	"github.com/caos/boom/internal/templator/helm"
 	helperTemp "github.com/caos/boom/internal/templator/helper"
 	"github.com/caos/boom/internal/templator/yaml"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
@@ -22,21 +22,23 @@ var (
 
 type Bundle struct {
 	baseDirectoryPath string
+	crdName           string
 	Applications      map[name.Application]application.Application
 	HelmTemplator     templator.Templator
 	YamlTemplator     templator.Templator
-	logger            logging.Logger
+	monitor           mntr.Monitor
 	status            error
 }
 
 func New(conf *config.Config) *Bundle {
 	apps := make(map[name.Application]application.Application, 0)
-	helmTemplator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, helm.GetName())
-	yamlTemplator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, yaml.GetName())
+	helmTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, helm.GetName())
+	yamlTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, yaml.GetName())
 
 	b := &Bundle{
+		crdName:           conf.CrdName,
 		baseDirectoryPath: conf.BaseDirectoryPath,
-		logger:            conf.Logger,
+		monitor:           conf.Monitor,
 		HelmTemplator:     helmTemplator,
 		YamlTemplator:     yamlTemplator,
 		Applications:      apps,
@@ -91,7 +93,7 @@ func (b *Bundle) AddApplicationByName(appName name.Application) *Bundle {
 		return b
 	}
 
-	app := application.New(b.logger, appName)
+	app := application.New(b.monitor, appName)
 	return b.AddApplication(app)
 }
 
@@ -144,20 +146,20 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		"application": appName,
 		"action":      "reconciling",
 	}
-	logger := b.logger.WithFields(logFields)
+	monitor := b.monitor.WithFields(logFields)
 
 	app, found := b.Applications[appName]
 	if !found {
 		b.status = errors.New("Application not found")
-		logger.Error(b.status)
+		monitor.Error(b.status)
 		return b
 	}
-	logger.Info("Start")
+	monitor.Info("Start")
 
 	deploy := app.Deploy(spec)
 
 	if !deploy && spec.LabelSelectDelete {
-		b.status = deleteWithLabels(b.logger, app)
+		b.status = deleteWithLabels(b.monitor, app)
 		return b
 	}
 
@@ -168,9 +170,9 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		}
 	} else {
 		if deploy {
-			resultFunc = apply(logger, app)
+			resultFunc = apply(monitor, app)
 		} else {
-			resultFunc = delete(logger)
+			resultFunc = delete(monitor)
 		}
 	}
 
@@ -186,6 +188,6 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		b.status = b.YamlTemplator.Template(app, spec, resultFunc).GetStatus()
 	}
 
-	logger.Info("Done")
+	monitor.Info("Done")
 	return b
 }

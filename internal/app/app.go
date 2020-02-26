@@ -8,21 +8,21 @@ import (
 
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type App struct {
 	ToolsDirectoryPath string
 	GitCrds            []gitcrd.GitCrd
 	Crds               map[string]crd.Crd
-	logger             logging.Logger
+	monitor            mntr.Monitor
 }
 
-func New(logger logging.Logger, toolsDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
+func New(monitor mntr.Monitor, toolsDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
 
 	app := &App{
 		ToolsDirectoryPath: toolsDirectoryPath,
-		logger:             logger,
+		monitor:            monitor,
 	}
 
 	app.Crds = make(map[string]crd.Crd, 0)
@@ -33,7 +33,7 @@ func New(logger logging.Logger, toolsDirectoryPath, dashboardsDirectoryPath stri
 
 func (a *App) CleanUp() error {
 
-	a.logger.Info("Cleanup")
+	a.monitor.Info("Cleanup")
 
 	for _, g := range a.GitCrds {
 		g.CleanUp()
@@ -75,7 +75,7 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 }
 
 func (a *App) ReconcileGitCrds() error {
-	a.logger.Info("Started reconciling of GitCRDs")
+	a.monitor.Info("Started reconciling of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
 		crdGit.Reconcile()
@@ -87,7 +87,7 @@ func (a *App) ReconcileGitCrds() error {
 }
 
 func (a *App) WriteBackCurrentState() error {
-	a.logger.Info("Started writeback of currentstate of GitCRDs")
+	a.monitor.Info("Started writeback of currentstate of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
 		crdGit.WriteBackCurrentState()
@@ -99,7 +99,7 @@ func (a *App) WriteBackCurrentState() error {
 }
 
 // func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
-// 	a.logger.WithFields(map[string]interface{}{
+// 	a.monitor.WithFields(map[string]interface{}{
 // 		"name": namespacedName,
 // 	}).Info("Started reconciling of CRD")
 
@@ -107,7 +107,7 @@ func (a *App) WriteBackCurrentState() error {
 // 	managedcrd, ok := a.Crds[namespacedName]
 // 	if !ok {
 // 		crdConf := &crdconfig.Config{
-// 			Logger:  a.logger,
+// 			Monitor:  a.monitor,
 // 			Version: v1beta1.GetVersion(),
 // 		}
 
@@ -117,7 +117,7 @@ func (a *App) WriteBackCurrentState() error {
 // 		}
 
 // 		bundleConf := &bundleconfig.Config{
-// 			Logger:            a.logger,
+// 			Monitor:            a.monitor,
 // 			CrdName:           namespacedName,
 // 			BundleName:        bundles.Caos,
 // 			BaseDirectoryPath: a.ToolsDirectoryPath,

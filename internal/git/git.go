@@ -13,7 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
@@ -25,7 +25,7 @@ import (
 )
 
 type Client struct {
-	logger    logging.Logger
+	monitor   mntr.Monitor
 	ctx       context.Context
 	committer string
 	email     string
@@ -37,15 +37,15 @@ type Client struct {
 	repoURL   string
 }
 
-func New(ctx context.Context, logger logging.Logger, committer, email, repoURL string) *Client {
+func New(ctx context.Context, monitor mntr.Monitor, committer, email, repoURL string) *Client {
 	newClient := &Client{
 		ctx:       ctx,
-		logger:    logger,
+		monitor:   monitor,
 		committer: committer,
 		repoURL:   repoURL,
 	}
 
-	if logger.IsVerbose() {
+	if monitor.IsVerbose() {
 		newClient.progress = os.Stdout
 	}
 	return newClient
@@ -82,7 +82,7 @@ func (g *Client) Clone() error {
 	if err != nil {
 		return errors.Wrapf(err, "cloning repository from %s failed", g.repoURL)
 	}
-	g.logger.Debug("Repository cloned")
+	g.monitor.Debug("Repository cloned")
 
 	g.workTree, err = g.repo.Worktree()
 	if err != nil {
@@ -93,10 +93,10 @@ func (g *Client) Clone() error {
 }
 
 func (g *Client) Read(path string) ([]byte, error) {
-	readLogger := g.logger.WithFields(map[string]interface{}{
+	monitor := g.monitor.WithFields(map[string]interface{}{
 		"path": path,
 	})
-	readLogger.Debug("Reading file")
+	monitor.Debug("Reading file")
 	file, err := g.fs.Open(path)
 	if err != nil {
 		if os.IsNotExist(errors.Cause(err)) {
@@ -109,8 +109,8 @@ func (g *Client) Read(path string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "reading %s from worktree failed", path)
 	}
-	if readLogger.IsVerbose() {
-		readLogger.Debug("File read")
+	if monitor.IsVerbose() {
+		monitor.Debug("File read")
 		fmt.Println(string(fileBytes))
 	}
 	return fileBytes, nil
@@ -126,10 +126,10 @@ func (g *Client) ReadYamlIntoStruct(path string, struc interface{}) error {
 }
 
 func (g *Client) ReadFolder(path string) (map[string][]byte, error) {
-	readLogger := g.logger.WithFields(map[string]interface{}{
+	monitor := g.monitor.WithFields(map[string]interface{}{
 		"path": path,
 	})
-	readLogger.Debug("Reading folder")
+	monitor.Debug("Reading folder")
 	dirBytes := make(map[string][]byte, 0)
 	files, err := g.fs.ReadDir(path)
 	if err != nil {
@@ -147,8 +147,8 @@ func (g *Client) ReadFolder(path string) (map[string][]byte, error) {
 		dirBytes[file.Name()] = fileBytes
 	}
 
-	if readLogger.IsVerbose() {
-		readLogger.Debug("Folder read")
+	if monitor.IsVerbose() {
+		monitor.Debug("Folder read")
 		fmt.Println(dirBytes)
 	}
 	return dirBytes, nil
@@ -183,7 +183,7 @@ func (g *Client) UpdateRemote(msg string, files ...File) error {
 	}
 
 	if !changed {
-		g.logger.Info("No changes")
+		g.monitor.Info("No changes")
 		return nil
 	}
 
@@ -212,7 +212,7 @@ func (g *Client) UpdateRemoteUntilItWorks(msg string, path string, overwrite fun
 	}
 
 	if clean {
-		g.logger.Info("No changes")
+		g.monitor.Info("No changes")
 		return overwritten, nil
 	}
 
@@ -221,7 +221,7 @@ func (g *Client) UpdateRemoteUntilItWorks(msg string, path string, overwrite fun
 	}
 
 	if err := g.Push(); err != nil && strings.Contains(err.Error(), "command error on refs/heads/master: cannot lock ref 'refs/heads/master': is at ") {
-		g.logger.Debug("Undoing latest commit")
+		g.monitor.Debug("Undoing latest commit")
 		if resetErr := g.workTree.Reset(&gogit.ResetOptions{
 			Mode: gogit.HardReset,
 		}); resetErr != nil {
@@ -236,11 +236,11 @@ func (g *Client) UpdateRemoteUntilItWorks(msg string, path string, overwrite fun
 
 func (g *Client) stage(files ...File) (bool, error) {
 	for _, f := range files {
-		updateLogger := g.logger.WithFields(map[string]interface{}{
+		monitor := g.monitor.WithFields(map[string]interface{}{
 			"path": f.Path,
 		})
 
-		updateLogger.Debug("Overwriting local index")
+		monitor.Debug("Overwriting local index")
 
 		file, err := g.fs.Create(f.Path)
 		if err != nil {
@@ -277,7 +277,7 @@ func (g *Client) commit(msg string) error {
 	}); err != nil {
 		return errors.Wrap(err, "committing changes failed")
 	}
-	g.logger.Debug("Changes commited")
+	g.monitor.Debug("Changes commited")
 	return nil
 }
 
@@ -293,6 +293,6 @@ func (g *Client) Push() error {
 		return errors.Wrap(err, "pushing repository failed")
 	}
 
-	g.logger.Info("Repository pushed")
+	g.monitor.Info("Repository pushed")
 	return nil
 }

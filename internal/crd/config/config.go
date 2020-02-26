@@ -2,10 +2,10 @@ package config
 
 import (
 	"github.com/caos/boom/internal/name"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Config struct {
-	Logger  logging.Logger
+	Monitor mntr.Monitor
 	Version name.Version
 }

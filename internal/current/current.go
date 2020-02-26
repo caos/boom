@@ -5,7 +5,7 @@ import (
 
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/labels"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Current struct {
@@ -14,10 +14,10 @@ type Current struct {
 	Resources  []*clientgo.Resource
 }
 
-func Get(logger logging.Logger) *Current {
+func Get(monitor mntr.Monitor) *Current {
 	globalLabels := labels.GetGlobalLabels()
 
-	resources, err := clientgo.ListResources(logger, globalLabels)
+	resources, err := clientgo.ListResources(monitor, globalLabels)
 	if err != nil {
 		return nil
 	}

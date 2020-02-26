@@ -1,7 +1,6 @@
 package bundle
 
 import (
-	"os"
 	"sync"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -10,13 +9,9 @@ import (
 	"github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
-	"github.com/caos/orbiter/logging"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	"github.com/stretchr/testify/assert"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	"testing"
 )
@@ -26,18 +21,21 @@ const (
 	dashboardsDirectoryPath = "../../dashboards"
 )
 
-func newLogger() logging.Logger {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+func newMonitor() mntr.Monitor {
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
 
-	return logger
+	return monitor
 }
 
 func NewBundle(templator name.Templator) *Bundle {
-	logger := newLogger()
+	monitor := newMonitor()
 
 	bundleConf := &config.Config{
-		Logger:            logger,
+		Monitor:           monitor,
 		CrdName:           "caos_test",
 		BaseDirectoryPath: baseDirectoryPath,
 		Templator:         templator,

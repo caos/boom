@@ -1,11 +1,9 @@
 package config
 
-import (
-	"github.com/caos/orbiter/logging"
-)
+import "github.com/caos/orbiter/mntr"
 
 type Config struct {
-	Logger           logging.Logger
+	Monitor          mntr.Monitor
 	CrdUrl           string
 	CrdDirectoryPath string
 	CrdPath          string

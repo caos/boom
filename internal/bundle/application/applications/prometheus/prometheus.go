@@ -1,21 +1,20 @@
 package prometheus
 
 import (
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Prometheus struct {
-	logger logging.Logger
+	monitor mntr.Monitor
 }
 
-func New(logger logging.Logger) *Prometheus {
+func New(monitor mntr.Monitor) *Prometheus {
 	return &Prometheus{
-		logger: logger,
+		monitor: monitor,
 	}
 }
 
@@ -26,7 +25,7 @@ func (p *Prometheus) GetName() name.Application {
 func (p *Prometheus) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	//not possible to deploy when prometheus operator is not deployed
 
-	po := prometheusoperator.New(p.logger)
+	po := prometheusoperator.New(p.monitor)
 	if !po.Deploy(toolsetCRDSpec) {
 		return false
 	}

@@ -19,7 +19,7 @@ func (y *YAML) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return y
 	}
 
-	yamlInterface := app.GetYaml(y.logger, spec)
+	yamlInterface := app.GetYaml(y.monitor, spec)
 	resultfilepath := y.GetResultsFilePath(app.GetName(), y.overlay, y.templatorDirectoryPath)
 	resultfiledirectory := y.getResultsFileDirectory(app.GetName(), y.overlay, y.templatorDirectoryPath)
 

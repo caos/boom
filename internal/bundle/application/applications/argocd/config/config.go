@@ -5,7 +5,7 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/config/auth"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/config/plugin"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd/config/repository"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,15 +16,15 @@ type Config struct {
 	ConfigManagementPlugins string `yaml:"configManagementPlugins,omitempty"`
 }
 
-func GetFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *Config {
+func GetFromSpec(monitor mntr.Monitor, spec *toolsetsv1beta1.Argocd) *Config {
 	conf := &Config{}
 
-	dexconfig := auth.GetDexConfigFromSpec(logger, spec)
+	dexconfig := auth.GetDexConfigFromSpec(monitor, spec)
 	data, err := yaml.Marshal(dexconfig)
 	if err == nil {
 		conf.Connectors = string(data)
 	}
-	repos := repository.GetFromSpec(logger, spec)
+	repos := repository.GetFromSpec(monitor, spec)
 	data2, err := yaml.Marshal(repos)
 	if err == nil {
 		conf.Repositories = string(data2)

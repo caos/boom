@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -138,7 +138,7 @@ func getGroupVersionsResources() ([]*ResourceInfo, error) {
 	return resourceInfoList, nil
 }
 
-func ListResources(logger logging.Logger, labels map[string]string) ([]*Resource, error) {
+func ListResources(monitor mntr.Monitor, labels map[string]string) ([]*Resource, error) {
 	resourceInfoList, err := getGroupVersionsResources()
 	if err != nil {
 		return nil, err

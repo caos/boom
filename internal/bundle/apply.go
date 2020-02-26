@@ -7,11 +7,11 @@ import (
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/labels"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
-func apply(logger logging.Logger, app application.Application) func(resultFilePath, namespace string) error {
+func apply(monitor mntr.Monitor, app application.Application) func(resultFilePath, namespace string) error {
 
 	logFields := map[string]interface{}{
 		"command": "apply",
@@ -49,7 +49,7 @@ func apply(logger logging.Logger, app application.Application) func(resultFilePa
 		if err != nil {
 			return err
 		}
-		err = helper.Run(logger.WithFields(logFields), cmd.Build())
+		err = helper.Run(monitor.WithFields(logFields), cmd.Build())
 		if err != nil {
 			return errors.Wrapf(err, "Failed to apply with file %s", resultFilePath)
 		}

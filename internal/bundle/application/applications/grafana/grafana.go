@@ -3,21 +3,20 @@ package grafana
 import (
 	"reflect"
 
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Grafana struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.Grafana
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.Grafana
 }
 
-func New(logger logging.Logger) *Grafana {
+func New(monitor mntr.Monitor) *Grafana {
 	return &Grafana{
-		logger: logger,
+		monitor: monitor,
 	}
 }
 func (g *Grafana) GetName() name.Application {

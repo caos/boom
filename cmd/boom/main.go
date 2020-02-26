@@ -26,9 +26,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -115,14 +113,18 @@ func main() {
 		}
 	}
 
-	logger := logcontext.Add(stdlib.New(os.Stdout))
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
 	if *verbose {
-		logger = logger.Verbose()
+		monitor = monitor.Verbose()
 	}
 
-	ctrl.SetLogger(kubebuilder.New(logger))
+	// ctrl.SetLogger(monitor)
 
-	app, err := app.New(logger, toolsDirectoryPath, dashboardsDirectoryPath)
+	app, err := app.New(monitor, toolsDirectoryPath, dashboardsDirectoryPath)
 	if err != nil {
 		setupLog.Error(err, "unable to start app")
 		os.Exit(1)
@@ -130,10 +132,10 @@ func main() {
 
 	var gitCrdError chan error
 	if gitCrdPath != "" {
-		gitcrdLogger := logger.WithFields(map[string]interface{}{"type": "gitcrd"})
+		gitcrdMonitor := monitor.WithFields(map[string]interface{}{"type": "gitcrd"})
 
 		gitcrdConf := &gitcrdconfig.Config{
-			Logger:           gitcrdLogger,
+			Monitor:          gitcrdMonitor,
 			CrdDirectoryPath: gitCrdDirectoryPath,
 			CrdUrl:           gitCrdURL,
 			PrivateKey:       gitCrdPrivateKeyBytes,
@@ -152,13 +154,13 @@ func main() {
 			for {
 				started := time.Now()
 				goErr := app.ReconcileGitCrds()
-				recLogger := logger.WithFields(map[string]interface{}{
+				recMonitor := monitor.WithFields(map[string]interface{}{
 					"took": time.Since(started),
 				})
 				if goErr != nil {
-					recLogger.Error(goErr)
+					recMonitor.Error(goErr)
 				}
-				recLogger.Info("Reconciling iteration done")
+				recMonitor.Info("Reconciling iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()
@@ -167,13 +169,13 @@ func main() {
 			for {
 				started := time.Now()
 				goErr := app.WriteBackCurrentState()
-				recLogger := logger.WithFields(map[string]interface{}{
+				recMonitor := monitor.WithFields(map[string]interface{}{
 					"took": time.Since(started),
 				})
 				if goErr != nil {
-					recLogger.Error(goErr)
+					recMonitor.Error(goErr)
 				}
-				recLogger.Info("Current state iteration done")
+				recMonitor.Info("Current state iteration done")
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()
@@ -186,7 +188,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
+		err = errors.Wrapf(helper.Run(monitor, cmd.Build()), "Failed to apply crd")
 		if err != nil {
 			setupLog.Error(err, "unable to apply crd")
 			os.Exit(1)
@@ -227,7 +229,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		err = errors.Wrapf(helper.Run(logger, cmd.Build()), "Failed to apply crd")
+		err = errors.Wrapf(helper.Run(monitor, cmd.Build()), "Failed to apply crd")
 		if err != nil {
 			setupLog.Error(err, "unable to apply crd")
 			os.Exit(1)

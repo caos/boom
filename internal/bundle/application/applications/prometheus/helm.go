@@ -9,11 +9,11 @@ import (
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
-func (p *Prometheus) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
-	version, err := kubectl.NewVersion().GetKubeVersion(logger)
+func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
+	version, err := kubectl.NewVersion().GetKubeVersion(monitor)
 	if err != nil {
 		return nil
 	}

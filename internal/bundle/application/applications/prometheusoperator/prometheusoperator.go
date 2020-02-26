@@ -1,21 +1,20 @@
 package prometheusoperator
 
 import (
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type PrometheusOperator struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.PrometheusOperator
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.PrometheusOperator
 }
 
-func New(logger logging.Logger) *PrometheusOperator {
+func New(monitor mntr.Monitor) *PrometheusOperator {
 	po := &PrometheusOperator{
-		logger: logger,
+		monitor: monitor,
 	}
 
 	return po

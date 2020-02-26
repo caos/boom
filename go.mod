@@ -3,13 +3,11 @@ module github.com/caos/boom
 go 1.13
 
 require (
-	github.com/caos/orbiter v0.15.2
+	github.com/caos/orbiter v0.16.0
 	github.com/go-logr/logr v0.1.0
 	github.com/golang/mock v1.3.1
-	github.com/onsi/ginkgo v1.10.1
-	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1

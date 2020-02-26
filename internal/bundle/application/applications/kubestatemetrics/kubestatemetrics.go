@@ -1,21 +1,20 @@
 package kubestatemetrics
 
 import (
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type KubeStateMetrics struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.KubeStateMetrics
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.KubeStateMetrics
 }
 
-func New(logger logging.Logger) *KubeStateMetrics {
+func New(monitor mntr.Monitor) *KubeStateMetrics {
 	lo := &KubeStateMetrics{
-		logger: logger,
+		monitor: monitor,
 	}
 
 	return lo

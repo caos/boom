@@ -26,7 +26,9 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		"overlay":     h.overlay,
 	}
 
-	h.logger.WithFields(logFields).Debug("Deleting old results")
+	monitor := h.monitor.WithFields(logFields)
+
+	monitor.Debug("Deleting old results")
 	h.status = h.deleteResults(app)
 	if h.status != nil {
 		return h
@@ -79,24 +81,24 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 		"overlay":     overlay,
 		"action":      "templating",
 	}
-	templateLogger := h.logger.WithFields(logFields)
+	monitor := h.monitor.WithFields(logFields)
 
-	templateLogger.Debug("Generate values with toolsetSpec")
+	monitor.Debug("Generate values with toolsetSpec")
 	chartInfo := app.GetChartInfo()
-	values := app.SpecToHelmValues(templateLogger, spec)
+	values := app.SpecToHelmValues(monitor, spec)
 
 	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
 	if err != nil {
-		templateLogger.Error(err)
+		monitor.Error(err)
 		return err
 	}
 
 	if err := helper.AddStructToYaml(valuesAbsFilePath, values); err != nil {
-		templateLogger.Error(err)
+		monitor.Error(err)
 		return err
 	}
 
-	templateLogger.Debug("Generate result through helm template")
+	monitor.Debug("Generate result through helm template")
 	out, err := helmcommand.Template(&helmcommand.TemplateConfig{
 		TempFolderPath:   h.templatorDirectoryPath,
 		ChartName:        chartInfo.Name,
@@ -105,7 +107,7 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 		ValuesFilePath:   valuesAbsFilePath,
 	})
 	if err != nil {
-		templateLogger.Error(err)
+		monitor.Error(err)
 		return err
 	}
 

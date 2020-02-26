@@ -5,9 +5,8 @@ import (
 	"os"
 
 	"github.com/caos/boom/internal/templator/helm/chart/fetch"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
+
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -23,14 +22,18 @@ func main() {
 	flag.StringVar(&toolsDirectoryPath, "tools-directory-path", "/tmp/tools", "The local path where the tools folder should be")
 	flag.Parse()
 
-	logger := logcontext.Add(stdlib.New(os.Stdout))
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
 	if *verbose {
-		logger = logger.Verbose()
+		monitor = monitor.Verbose()
 	}
 
-	ctrl.SetLogger(kubebuilder.New(logger))
+	// ctrl.SetLogger(monitor)
 
-	if err := fetch.All(logger, toolsDirectoryPath); err != nil {
+	if err := fetch.All(monitor, toolsDirectoryPath); err != nil {
 		setupLog.Error(err, "unable to fetch charts")
 		os.Exit(1)
 	}

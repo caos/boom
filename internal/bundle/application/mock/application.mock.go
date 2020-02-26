@@ -5,12 +5,13 @@
 package application
 
 import (
+	reflect "reflect"
+
 	v1beta1 "github.com/caos/boom/api/v1beta1"
 	name "github.com/caos/boom/internal/name"
 	chart "github.com/caos/boom/internal/templator/helm/chart"
-	logging "github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockApplication is a mock of Application interface
@@ -158,7 +159,7 @@ func (mr *MockHelmApplicationMockRecorder) GetImageTags() *gomock.Call {
 }
 
 // SpecToHelmValues mocks base method
-func (m *MockHelmApplication) SpecToHelmValues(arg0 logging.Logger, arg1 *v1beta1.ToolsetSpec) interface{} {
+func (m *MockHelmApplication) SpecToHelmValues(arg0 mntr.Monitor, arg1 *v1beta1.ToolsetSpec) interface{} {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpecToHelmValues", arg0, arg1)
 	ret0, _ := ret[0].(interface{})
@@ -223,7 +224,7 @@ func (mr *MockYAMLApplicationMockRecorder) GetName() *gomock.Call {
 }
 
 // GetYaml mocks base method
-func (m *MockYAMLApplication) GetYaml(arg0 logging.Logger, arg1 *v1beta1.ToolsetSpec) interface{} {
+func (m *MockYAMLApplication) GetYaml(arg0 mntr.Monitor, arg1 *v1beta1.ToolsetSpec) interface{} {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetYaml", arg0, arg1)
 	ret0, _ := ret[0].(interface{})

@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/labels"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
@@ -16,6 +14,7 @@ func main() {
 
 	var localMode bool
 
+	verbose := flag.Bool("verbose", false, "Print logs for debugging")
 	flag.BoolVar(&localMode, "local-mode", false, "Disable the controller manager and only use the operator to handle gitcrds")
 	flag.Parse()
 
@@ -23,9 +22,16 @@ func main() {
 		clientgo.InConfig = false
 	}
 
-	logger := logcontext.Add(stdlib.New(os.Stdout))
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+	if *verbose {
+		monitor = monitor.Verbose()
+	}
 
-	resources, err := clientgo.ListResources(logger, labels.GetGlobalLabels())
+	resources, err := clientgo.ListResources(monitor, labels.GetGlobalLabels())
 	if err != nil {
 		panic(err)
 	}
