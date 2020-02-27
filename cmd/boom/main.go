@@ -165,20 +165,20 @@ func main() {
 			}
 		}()
 
-		go func() {
-			for {
-				started := time.Now()
-				goErr := app.WriteBackCurrentState()
-				recMonitor := monitor.WithFields(map[string]interface{}{
-					"took": time.Since(started),
-				})
-				if goErr != nil {
-					recMonitor.Error(goErr)
-				}
-				recMonitor.Info("Current state iteration done")
-				time.Sleep(time.Duration(intervalSeconds) * time.Second)
-			}
-		}()
+		// go func() {
+		// 	for {
+		// 		started := time.Now()
+		// 		goErr := app.WriteBackCurrentState()
+		// 		recMonitor := monitor.WithFields(map[string]interface{}{
+		// 			"took": time.Since(started),
+		// 		})
+		// 		if goErr != nil {
+		// 			recMonitor.Error(goErr)
+		// 		}
+		// 		recMonitor.Info("Current state iteration done")
+		// 		time.Sleep(time.Duration(intervalSeconds) * time.Second)
+		// 	}
+		// }()
 	}
 
 	if !localMode {

@@ -7,6 +7,7 @@ import (
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm"
@@ -121,7 +122,7 @@ func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
 			//if application has the same orderNumber as currently iterating the reconcile the application
 			if application.GetOrderNumber(appName) == orderNumber {
 				wg.Add(1)
-				go b.ReconcileApplication(appName, spec, &wg)
+				b.ReconcileApplication(appName, spec, &wg)
 				if err := b.GetStatus(); err != nil {
 					b.status = err
 					return b
@@ -148,6 +149,13 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	}
 	monitor := b.monitor.WithFields(logFields)
 
+	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+	if err != nil {
+		b.status = err
+		monitor.Error(b.status)
+		return b
+	}
+
 	app, found := b.Applications[appName]
 	if !found {
 		b.status = errors.New("Application not found")
@@ -158,11 +166,6 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 
 	deploy := app.Deploy(spec)
 
-	if !deploy && spec.LabelSelectDelete {
-		b.status = deleteWithLabels(b.monitor, app)
-		return b
-	}
-
 	var resultFunc func(string, string) error
 	if Testmode {
 		resultFunc = func(resultFilePath, namespace string) error {
@@ -170,9 +173,9 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		}
 	} else {
 		if deploy {
-			resultFunc = apply(monitor, app)
+			resultFunc = applyWithCurrentState(monitor, resourceInfoList, app)
 		} else {
-			resultFunc = delete(monitor)
+			resultFunc = deleteWithCurrentState(monitor, resourceInfoList, app)
 		}
 	}
 

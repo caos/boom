@@ -9,7 +9,8 @@ import (
 )
 
 type Metadata struct {
-	Name string `yaml:"name"`
+	Name      string `yaml:"name"`
+	Namespace string `yaml:"namespace"`
 }
 type Resource struct {
 	Kind       string    `yaml:"kind"`

@@ -14,10 +14,10 @@ type Current struct {
 	Resources  []*clientgo.Resource
 }
 
-func Get(monitor mntr.Monitor) *Current {
+func Get(monitor mntr.Monitor, resourceInfoList []*clientgo.ResourceInfo) *Current {
 	globalLabels := labels.GetGlobalLabels()
 
-	resources, err := clientgo.ListResources(monitor, globalLabels)
+	resources, err := clientgo.ListResources(monitor, resourceInfoList, globalLabels)
 	if err != nil {
 		return nil
 	}

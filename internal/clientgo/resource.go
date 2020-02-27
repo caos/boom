@@ -1,7 +1,6 @@
 package clientgo
 
 import (
-	"path/filepath"
 	"strings"
 
 	"github.com/caos/orbiter/mntr"
@@ -11,6 +10,43 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+)
+
+var (
+	ignoredResources = []string{
+		"componentstatuses",
+		"endpoints",
+		"bindings",
+		"nodes",
+		"nodes",
+		"replicationcontrollers",
+		"podtemplates",
+		"limitranges",
+		"apiservices",
+		"controllerrevisions",
+		"leases",
+		"backendconfigs",
+		"updateinfos",
+		"runtimeclasses",
+		"storagestates",
+		"storageversionmigrations",
+		"csidrivers",
+		"csinodes",
+		"localsubjectaccessreviews",
+		"selfsubjectaccessreviews",
+		"selfsubjectrulesreviews",
+		"subjectaccessreviews",
+		"tokenreviews",
+		"scalingpolicies",
+		"priorityclasses",
+	}
+	ignoredGroupResources = []string{
+		// "metrics.k8s.io/pods",
+		"metrics.k8s.io/nodes",
+		"networking.gke.io/managedcertificates",
+		"networking.gke.io/ingresses",
+		"networking.gke.io/networkpolicies",
+	}
 )
 
 type ResourceInfo struct {
@@ -95,7 +131,7 @@ func DeleteResource(resource *Resource) error {
 	return errors.Wrapf(err, "Error while deleting %s", resource.Name)
 }
 
-func getGroupVersionsResources() ([]*ResourceInfo, error) {
+func GetGroupVersionsResources(filtersResources []string) ([]*ResourceInfo, error) {
 	conf, err := getClusterConfig()
 	if err != nil {
 		return nil, err
@@ -113,36 +149,47 @@ func getGroupVersionsResources() ([]*ResourceInfo, error) {
 
 	resourceInfoList := make([]*ResourceInfo, 0)
 	for _, apiGroup := range apiGroups.Groups {
-		for _, version := range apiGroup.Versions {
-			groupVersion := filepath.Join(apiGroup.Name, version.Version)
-			apiResources, err := client.ServerResourcesForGroupVersion(groupVersion)
-			if err != nil {
-				return nil, err
+		version := apiGroup.PreferredVersion
+		apiResources, err := client.ServerResourcesForGroupVersion(version.GroupVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, apiResource := range apiResources.APIResources {
+
+			if filtersResources != nil &&
+				len(filtersResources) > 0 &&
+				containsFilter(filtersResources, apiGroup.Name, version.Version, apiResource.Kind) {
+				continue
 			}
 
-			for _, apiResource := range apiResources.APIResources {
+			resourceInfo := &ResourceInfo{
+				Group:      apiGroup.Name,
+				Version:    version.Version,
+				Resource:   apiResource.Name,
+				Namespaced: apiResource.Namespaced,
+			}
 
-				resourceInfo := &ResourceInfo{
-					Group:      apiGroup.Name,
-					Version:    version.Version,
-					Resource:   apiResource.Name,
-					Namespaced: apiResource.Namespaced,
-				}
-				parts := strings.Split(resourceInfo.Resource, "/")
-				if len(parts) == 1 && resourceInfo.Resource != "componentstatuses" {
-					resourceInfoList = append(resourceInfoList, resourceInfo)
-				}
+			groupResource := strings.Join([]string{resourceInfo.Group, resourceInfo.Resource}, "/")
+			if !contains(ignoredResources, resourceInfo.Resource) &&
+				!contains(ignoredGroupResources, groupResource) {
+				resourceInfoList = append(resourceInfoList, resourceInfo)
 			}
 		}
 	}
 	return resourceInfoList, nil
 }
 
-func ListResources(monitor mntr.Monitor, labels map[string]string) ([]*Resource, error) {
-	resourceInfoList, err := getGroupVersionsResources()
-	if err != nil {
-		return nil, err
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
 	}
+	return false
+}
+
+func ListResources(monitor mntr.Monitor, resourceInfoList []*ResourceInfo, labels map[string]string) ([]*Resource, error) {
 
 	conf, err := getClusterConfig()
 	if err != nil {
@@ -166,6 +213,7 @@ func ListResources(monitor mntr.Monitor, labels map[string]string) ([]*Resource,
 
 	resourceList := make([]*Resource, 0)
 	for _, resourceInfo := range resourceInfoList {
+
 		gvr := schema.GroupVersionResource{Group: resourceInfo.Group, Version: resourceInfo.Version, Resource: resourceInfo.Resource}
 		list, err := client.Resource(gvr).List(metav1.ListOptions{LabelSelector: labelSelector})
 		if err != nil {
@@ -210,4 +258,17 @@ func ListResources(monitor mntr.Monitor, labels map[string]string) ([]*Resource,
 	}
 
 	return resourceList, nil
+}
+func GetFilter(group, version, kind string) string {
+	return strings.Join([]string{group, version, kind}, "/")
+}
+
+func containsFilter(filters []string, group, version, kind string) bool {
+	compFilter := GetFilter(group, version, kind)
+	for _, filter := range filters {
+		if filter == compFilter {
+			return true
+		}
+	}
+	return false
 }

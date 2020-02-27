@@ -6,6 +6,7 @@ import (
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
 	"github.com/caos/boom/internal/crd/v1beta1"
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
@@ -171,7 +172,14 @@ func (c *GitCrd) WriteBackCurrentState() {
 		"action": "current",
 	})
 
-	curr := current.Get(monitor)
+	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+	if err != nil {
+		c.status = err
+		monitor.Error(c.status)
+		return
+	}
+
+	curr := current.Get(monitor, resourceInfoList)
 
 	content, err := yaml.Marshal(curr)
 	if err != nil {

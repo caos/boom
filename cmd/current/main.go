@@ -31,7 +31,9 @@ func main() {
 		monitor = monitor.Verbose()
 	}
 
-	resources, err := clientgo.ListResources(monitor, labels.GetGlobalLabels())
+	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+
+	resources, err := clientgo.ListResources(monitor, resourceInfoList, labels.GetGlobalLabels())
 	if err != nil {
 		panic(err)
 	}
