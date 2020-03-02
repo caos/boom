@@ -37,8 +37,6 @@ func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} 
 		for _, flow := range flows {
 			ret = append(ret, flow)
 		}
-		//logging resource so that fluentd and fluentbit are deployed
-		ret = append(ret, getLogging(toolsetCRDSpec))
 	}
 
 	return ret
