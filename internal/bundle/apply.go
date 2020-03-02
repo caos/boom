@@ -6,12 +6,10 @@ import (
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/desired"
-	"github.com/caos/boom/internal/labels"
 	"github.com/caos/orbiter/mntr"
-	"github.com/pkg/errors"
 )
 
-func applyWithCurrentState(monitor mntr.Monitor, resourceInfoList []*clientgo.ResourceInfo, app application.Application) func(resultFilePath, namespace string) error {
+func applyWithCurrentState(monitor mntr.Monitor, currentResourceList []*clientgo.Resource, app application.Application) func(resultFilePath, namespace string) error {
 
 	logFields := map[string]interface{}{
 		"command": "apply",
@@ -26,28 +24,11 @@ func applyWithCurrentState(monitor mntr.Monitor, resourceInfoList []*clientgo.Re
 			return err
 		}
 
-		currentApplicationResources, err := clientgo.ListResources(applyMonitor, resourceInfoList, labels.GetApplicationLabels(app.GetName()))
-		if err != nil {
-			err := errors.Wrap(err, "Failed to get current resources")
-			applyMonitor.Error(err)
-			return err
-		}
-
-		currentForApplicationResources, err := clientgo.ListResources(applyMonitor, resourceInfoList, labels.GetForApplicationLabels(app.GetName()))
-		if err != nil {
-			err := errors.Wrap(err, "Failed to get current for-application resources")
-			applyMonitor.Error(err)
-			return err
-		}
-		for _, app := range currentForApplicationResources {
-			currentApplicationResources = append(currentApplicationResources, app)
-		}
-
 		if err := applyFunc(resultFilePath, namespace); err != nil {
 			return err
 		}
 		deleteResources := make([]*clientgo.Resource, 0)
-		for _, currentResource := range currentApplicationResources {
+		for _, currentResource := range currentResourceList {
 			found := false
 			for _, desiredResource := range desiredResources {
 				apiVersion := filepath.Join(currentResource.Group, currentResource.Version)
@@ -77,6 +58,7 @@ func applyWithCurrentState(monitor mntr.Monitor, resourceInfoList []*clientgo.Re
 				}
 			}
 		}
+		applyMonitor.Debug("Resources to delete calculated")
 
 		if deleteResources != nil && len(deleteResources) > 0 {
 			for _, deleteResource := range deleteResources {
