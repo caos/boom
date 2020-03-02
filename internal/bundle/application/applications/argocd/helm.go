@@ -87,6 +87,13 @@ func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsets
 		}
 	}
 
+	if spec.Rbac != nil {
+		values.Server.RbacConfig = &helm.RbacConfig{
+			Csv:     spec.Rbac.Csv,
+			Default: spec.Rbac.Default,
+		}
+	}
+
 	return values
 }
 

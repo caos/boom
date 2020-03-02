@@ -5,7 +5,13 @@ type Argocd struct {
 	CustomImage  *ArgocdCustomImage  `json:"customImage,omitempty" yaml:"customImage,omitempty"`
 	Network      *Network            `json:"network,omitempty" yaml:"network,omitempty"`
 	Auth         *ArgocdAuth         `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Rbac         *Rbac               `json:"rbacConfig,omitempty" yaml:"rbacConfig,omitempty"`
 	Repositories []*ArgocdRepository `json:"repositories,omitempty" yaml:"repositories,omitempty"`
+}
+
+type Rbac struct {
+	Csv     string `json:"policy.csv,omitempty" yaml:"policy.csv,omitempty"`
+	Default string `json:"policy.default,omitempty" yaml:"policy.default,omitempty"`
 }
 
 type ArgocdRepository struct {
