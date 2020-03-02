@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -42,8 +43,28 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 		return h
 	}
 
-	if err := h.runHelmTemplate(h.overlay, app, spec, resultAbsFilePath); err != nil {
+	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), h.overlay, "values.yaml")
+	if err != nil {
+		monitor.Error(err)
 		h.status = err
+		return h
+	}
+
+	if err := h.prepareHelmTemplate(h.overlay, app, spec, valuesAbsFilePath); err != nil {
+		h.status = err
+		monitor.Error(err)
+		return h
+	}
+
+	if err := h.mutateValue(app, spec, valuesAbsFilePath).GetStatus(); err != nil {
+		h.status = err
+		monitor.Error(err)
+		return h
+	}
+
+	if err := h.runHelmTemplate(h.overlay, app, valuesAbsFilePath, resultAbsFilePath); err != nil {
+		h.status = err
+		monitor.Error(err)
 		return h
 	}
 
@@ -71,7 +92,36 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 	return h
 }
 
-func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec, resultAbsFilePath string) error {
+func (h *Helm) prepareHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec, valuesAbsFilePath string) error {
+	if h.status != nil {
+		return h.status
+	}
+
+	logFields := map[string]interface{}{
+		"application": app.GetName().String(),
+		"overlay":     overlay,
+		"action":      "preparetemplating",
+	}
+	monitor := h.monitor.WithFields(logFields)
+
+	monitor.Debug("Generate values with toolsetSpec")
+	values := app.SpecToHelmValues(monitor, spec)
+
+	if helper.FileExists(valuesAbsFilePath) {
+		if err := os.Remove(valuesAbsFilePath); err != nil {
+			monitor.Error(err)
+			return err
+		}
+	}
+
+	if err := helper.AddStructToYaml(valuesAbsFilePath, values); err != nil {
+		monitor.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, valuesAbsFilePath, resultAbsFilePath string) error {
 	if h.status != nil {
 		return h.status
 	}
@@ -83,20 +133,7 @@ func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, sp
 	}
 	monitor := h.monitor.WithFields(logFields)
 
-	monitor.Debug("Generate values with toolsetSpec")
 	chartInfo := app.GetChartInfo()
-	values := app.SpecToHelmValues(monitor, spec)
-
-	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), overlay, "values.yaml")
-	if err != nil {
-		monitor.Error(err)
-		return err
-	}
-
-	if err := helper.AddStructToYaml(valuesAbsFilePath, values); err != nil {
-		monitor.Error(err)
-		return err
-	}
 
 	monitor.Debug("Generate result through helm template")
 	out, err := helmcommand.Template(&helmcommand.TemplateConfig{
