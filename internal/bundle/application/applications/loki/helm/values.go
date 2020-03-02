@@ -165,5 +165,9 @@ type Values struct {
 	ExtraVolumes                  []interface{}     `yaml:"extraVolumes"`
 	ExtraVolumeMounts             []interface{}     `yaml:"extraVolumeMounts"`
 	ExtraPorts                    []interface{}     `yaml:"extraPorts"`
-	Env                           []interface{}     `yaml:"env"`
+	Env                           []*Env            `yaml:"env,omitempty"`
+}
+type Env struct {
+	Name  string
+	Value string
 }
