@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"path/filepath"
+	"sort"
 
 	"github.com/caos/boom/api/v1beta1"
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -49,6 +50,18 @@ func (g *Grafana) HelmPreApplySteps(monitor mntr.Monitor, spec *v1beta1.ToolsetS
 	return ret, nil
 }
 
+type ProviderSorter []*helm.Provider
+
+func (a ProviderSorter) Len() int           { return len(a) }
+func (a ProviderSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ProviderSorter) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
+type AlphaSorter []string
+
+func (a AlphaSorter) Len() int           { return len(a) }
+func (a AlphaSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a AlphaSorter) Less(i, j int) bool { return a[i] < a[j] }
+
 func (g *Grafana) SpecToHelmValues(monitor mntr.Monitor, toolset *toolsetsv1beta1.ToolsetSpec) interface{} {
 	version, err := kubectl.NewVersion().GetKubeVersion(monitor)
 	if err != nil {
@@ -81,6 +94,7 @@ func (g *Grafana) SpecToHelmValues(monitor mntr.Monitor, toolset *toolsetsv1beta
 	//internal dashboards
 	if conf.DashboardProviders != nil {
 		for _, provider := range conf.DashboardProviders {
+			sort.Sort(AlphaSorter(provider.ConfigMaps))
 			for _, configmap := range provider.ConfigMaps {
 				providers = append(providers, getProvider(configmap))
 				dashboards[configmap] = configmap
@@ -89,12 +103,14 @@ func (g *Grafana) SpecToHelmValues(monitor mntr.Monitor, toolset *toolsetsv1beta
 	}
 
 	if len(providers) > 0 {
+		sort.Sort(ProviderSorter(providers))
 		values.Grafana.DashboardProviders = &helm.DashboardProviders{
 			Providers: &helm.Providersyaml{
 				APIVersion: 1,
 				Providers:  providers,
 			},
 		}
+
 		values.Grafana.DashboardsConfigMaps = dashboards
 	}
 	if len(datasources) > 0 {
