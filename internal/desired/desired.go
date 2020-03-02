@@ -11,7 +11,7 @@ import (
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v3"
 )
 
 func Apply(monitor mntr.Monitor, resultFilePath, namespace string, appName name.Application) error {
@@ -73,11 +73,11 @@ func prepareAdditionalFiles(resultFilePath, namespace string, appName name.Appli
 	resultFileKustomizePath := filepath.Join(resultFileDirPath, "kustomization.yaml")
 	resultFileTransformerPath := filepath.Join(resultFileDirPath, "transformer.yaml")
 
-	if fileExists(resultFileKustomizePath) {
+	if helper.FileExists(resultFileKustomizePath) {
 		os.Remove(resultFileKustomizePath)
 	}
 
-	if fileExists(resultFileTransformerPath) {
+	if helper.FileExists(resultFileTransformerPath) {
 		os.Remove(resultFileTransformerPath)
 	}
 
@@ -87,7 +87,7 @@ func prepareAdditionalFiles(resultFilePath, namespace string, appName name.Appli
 		Metadata: &kustomize.Metadata{
 			Name: "LabelTransformer",
 		},
-		Labels:     labels.GetApplicationLabels(appName),
+		Labels:     labels.GetAllApplicationLabels(appName),
 		FieldSpecs: []*kustomize.FieldSpec{&kustomize.FieldSpec{Path: "metadata/labels", Create: true}},
 	}
 	if err := helper.AddStructToYaml(resultFileTransformerPath, transformer); err != nil {
@@ -104,12 +104,4 @@ func prepareAdditionalFiles(resultFilePath, namespace string, appName name.Appli
 		return err
 	}
 	return nil
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

@@ -20,6 +20,7 @@ type GitCrd interface {
 	WriteBackCurrentState()
 	CleanUp()
 	GetStatus() error
+	SetBackStatus()
 }
 
 func New(conf *config.Config) (GitCrd, error) {

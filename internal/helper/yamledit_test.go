@@ -13,14 +13,16 @@ var (
 		Kind:       "test1",
 		ApiVersion: "api/v1",
 		Metadata: &Metadata{
-			Name: "test1",
+			Name:      "test1",
+			Namespace: "test",
 		},
 	}
 	secondResource = &Resource{
 		Kind:       "test2",
 		ApiVersion: "api/v1",
 		Metadata: &Metadata{
-			Name: "test2",
+			Name:      "test2",
+			Namespace: "test",
 		},
 	}
 )
@@ -92,7 +94,7 @@ func TestHelper_AddStringObjectToYaml(t *testing.T) {
 
 	restTest, err := YamlToString(path)
 	assert.NoError(t, err)
-	assert.Equal(t, "\n---\ntest: test", restTest)
+	assert.Equal(t, "test: test", restTest)
 
 	err = os.RemoveAll(root)
 	assert.NoError(t, err)
@@ -106,15 +108,13 @@ func TestHelper_AddStringBeforePointForKindAndName(t *testing.T) {
 	path := "/tmp/nonexistent/test.yaml"
 	err = AddStructToYaml(path, firstResource)
 	assert.NoError(t, err)
-	err = AddStringBeforePointForKindAndName(path, firstResource.Kind, firstResource.Metadata.Name, "name:", "    namespace: caos-system\n")
-	assert.NoError(t, err)
 
 	firstResourceTest := &resourceTest{
 		Kind:       firstResource.Kind,
 		ApiVersion: firstResource.ApiVersion,
 		Metadata: &metadataTest{
 			Name:      firstResource.Metadata.Name,
-			Namespace: "caos-system",
+			Namespace: "test",
 		},
 	}
 

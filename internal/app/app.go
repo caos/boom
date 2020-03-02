@@ -78,6 +78,7 @@ func (a *App) ReconcileGitCrds() error {
 	a.monitor.Info("Started reconciling of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
+		crdGit.SetBackStatus()
 		crdGit.Reconcile()
 		if err := crdGit.GetStatus(); err != nil {
 			return err
@@ -90,6 +91,7 @@ func (a *App) WriteBackCurrentState() error {
 	a.monitor.Info("Started writeback of currentstate of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
+		crdGit.SetBackStatus()
 		crdGit.WriteBackCurrentState()
 		if err := crdGit.GetStatus(); err != nil {
 			return err

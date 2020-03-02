@@ -62,6 +62,9 @@ func New(conf *config.Config) (*GitCrd, error) {
 func (c *GitCrd) GetStatus() error {
 	return c.status
 }
+func (c *GitCrd) SetBackStatus() {
+	c.status = nil
+}
 
 func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 	if c.status != nil {
@@ -179,9 +182,9 @@ func (c *GitCrd) WriteBackCurrentState() {
 		return
 	}
 
-	curr := current.Get(monitor, resourceInfoList)
+	currentResourcesList := current.Get(monitor, resourceInfoList)
 
-	content, err := yaml.Marshal(curr)
+	content, err := yaml.Marshal(current.ResourcesToYaml(currentResourcesList))
 	if err != nil {
 		c.status = err
 		return

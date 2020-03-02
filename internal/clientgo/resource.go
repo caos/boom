@@ -220,6 +220,7 @@ func ListResources(monitor mntr.Monitor, resourceInfoList []*ResourceInfo, label
 			continue
 		}
 		for _, item := range list.Items {
+
 			name, found, err := unstructured.NestedString(item.Object, "metadata", "name")
 			if err != nil || !found {
 				return nil, err
@@ -238,6 +239,14 @@ func ListResources(monitor mntr.Monitor, resourceInfoList []*ResourceInfo, label
 			labels, _, err := unstructured.NestedMap(item.Object, "metadata", "labels")
 			if err != nil {
 				return nil, err
+			}
+
+			_, found, err = unstructured.NestedSlice(item.Object, "metadata", "ownerReferences")
+			if err != nil {
+				return nil, err
+			}
+			if found == true {
+				continue
 			}
 
 			labelStrs := make(map[string]string)
