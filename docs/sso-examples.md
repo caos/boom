@@ -2,6 +2,33 @@
 
 This yaml-parts are only examples and there are alot of additional configurations possible, but they should desplay the most used cases.
 
+First-of, all application have to have an DNS-record which can be defined as followed, as an example with grafana:
+
+```yaml
+apiVersion: boom.caos.ch/v1beta1
+kind: Toolset
+metadata:
+  name: caos
+  namespace: caos-system
+spec:
+  grafana:
+    deploy: true
+    network:
+      domain: grafana.example.caos.ch
+      email: "hi@caos.ch"
+      acmeAuthority: "https://acme-staging-v02.api.letsencrypt.org/directory"
+```
+
+the same for argocd:
+```yaml
+  argocd:
+    deploy: true
+    network:
+      domain: argocd.example.caos.ch
+      email: "hi@caos.ch"
+      acmeAuthority: "https://acme-staging-v02.api.letsencrypt.org/directory"
+```
+
 # Grafana
 
 All configuration for SSO is under the "auth"-attribute, whereas the domain has to be set correctly so that the redirect works correctly:
@@ -15,7 +42,6 @@ metadata:
 spec:
   grafana:
     deploy: true
-    domain: example.caos.ch
     auth:
 ```
 
@@ -72,7 +98,6 @@ spec:
   Argocd:
     deploy: true
     auth:
-      rootUrl: https://argocd.caos.ch
 ```
 
 ## Google

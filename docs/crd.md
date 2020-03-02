@@ -108,9 +108,12 @@
 | `customImage.gopassSSHKey`         | Name of the existent secret which contains the ssh-key                          |                                   |
 | `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
 | `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
-| `network`                          | Network configuration, [here](network.md)                                       |                                   |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
-| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     |                                   |
+| `rbacConfig`                       | Config for RBAC in argocd                                                       | nil                               |
+| `policy.csv`                       | Attribute policy.csv which goes into configmap argocd-rbac-cm                   |                                   |
+| `policy.default`                   | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
+| `network`                          | Network configuration, [here](network.md)                                       | nil                               |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  | nil                               |
+| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
 
 ### Prometheus
 
