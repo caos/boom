@@ -32,7 +32,7 @@ The operator works by reading a configuration (crd) located in a GIT Repository.
 In our default setup our "cluster lifecycle" tool `orbiter`, shares the repository and secrets with `boom`. This because `orbiter` deploys `boom` in a newly created `k8s` cluster.
 
 ```yaml
-aapiVersion: boom.caos.ch/v1beta1
+apiVersion: boom.caos.ch/v1beta1
 kind: Toolset
 metadata:
   name: caos
