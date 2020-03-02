@@ -5,7 +5,7 @@ import "github.com/caos/boom/internal/templator/helm/chart"
 func GetChartInfo() *chart.Chart {
 	return &chart.Chart{
 		Name:    "argo-cd",
-		Version: "1.8.0",
+		Version: "1.8.3",
 		Index: &chart.Index{
 			Name: "argo",
 			URL:  "argoproj.github.io/argo-helm",
