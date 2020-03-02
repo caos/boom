@@ -20,7 +20,7 @@ import (
 func GetAllResources(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) []interface{} {
 
 	// output to loki
-	outputNames, outputs := getOutputs()
+	outputNames, outputs := getOutputs(toolsetCRDSpec.Loki.ClusterOutput)
 
 	// add flows for each application
 	flows := getAllFlows(toolsetCRDSpec, outputNames)
@@ -124,7 +124,7 @@ func getLokiFlow(outputs []string) *logging.FlowConfig {
 	}
 }
 
-func getOutputs() ([]string, []*logging.Output) {
+func getOutputs(clusterOutput bool) ([]string, []*logging.Output) {
 	outputURL := strings.Join([]string{"http://", info.GetName().String(), ".", info.GetNamespace(), ":3100"}, "")
 
 	conf := &logging.ConfigOutput{
@@ -134,7 +134,7 @@ func getOutputs() ([]string, []*logging.Output) {
 	}
 
 	outputs := make([]*logging.Output, 0)
-	outputs = append(outputs, logging.NewOutput(conf))
+	outputs = append(outputs, logging.NewOutput(clusterOutput, conf))
 	outputNames := make([]string, 0)
 	outputNames = append(outputNames, conf.Name)
 

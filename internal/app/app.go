@@ -78,6 +78,8 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 
 func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 
+	monitor.Info("Started determining current state")
+
 	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
 	if err != nil {
 		monitor.Error(err)

@@ -3,6 +3,7 @@ package v1beta1
 import (
 	"os"
 	"path/filepath"
+	"sync"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -28,6 +29,7 @@ type GitCrd struct {
 	crdPath          string
 	status           error
 	monitor          mntr.Monitor
+	gitMutex         sync.Mutex
 }
 
 func New(conf *config.Config) (*GitCrd, error) {
@@ -42,6 +44,7 @@ func New(conf *config.Config) (*GitCrd, error) {
 		crdPath:          conf.CrdPath,
 		git:              &gitConf,
 		monitor:          monitor,
+		gitMutex:         sync.Mutex{},
 	}
 
 	crdConf := &crdconfig.Config{
@@ -119,7 +122,10 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	// pre-steps
 	if toolsetCRD.Spec.PreApply != nil {
 		pre := toolsetCRD.Spec.PreApply
-		if err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, pre.Folder); err != nil {
+		c.gitMutex.Lock()
+		err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, pre.Folder)
+		c.gitMutex.Unlock()
+		if err != nil {
 			c.status = err
 			return
 		}
@@ -140,7 +146,10 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	// post-steps
 	if toolsetCRD.Spec.PostApply != nil {
 		post := toolsetCRD.Spec.PostApply
-		if err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, post.Folder); err != nil {
+		c.gitMutex.Lock()
+		err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, post.Folder)
+		c.gitMutex.Unlock()
+		if err != nil {
 			c.status = err
 			return
 		}
@@ -151,8 +160,10 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 		}
 	}
 }
-
 func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
+	c.gitMutex.Lock()
+	defer c.gitMutex.Unlock()
+
 	if err := c.git.Clone(); err != nil {
 		return nil, err
 	}
@@ -184,6 +195,8 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 		Content: content,
 	}
 
+	c.gitMutex.Lock()
+	defer c.gitMutex.Unlock()
 	c.status = c.git.UpdateRemote("current state changed", file)
 }
 

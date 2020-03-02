@@ -28,14 +28,21 @@ type Output struct {
 	Spec       *OutputSpec `yaml:"spec"`
 }
 
-func NewOutput(conf *ConfigOutput) *Output {
+func NewOutput(clusterOutput bool, conf *ConfigOutput) *Output {
+	kind := "Output"
+	meta := &Metadata{
+		Name:      conf.Name,
+		Namespace: conf.Namespace,
+	}
+	if clusterOutput {
+		kind = "ClusterOutput"
+		meta.Namespace = ""
+	}
+
 	return &Output{
 		APIVersion: "logging.banzaicloud.io/v1beta1",
-		Kind:       "Output",
-		Metadata: &Metadata{
-			Name:      conf.Name,
-			Namespace: conf.Namespace,
-		},
+		Kind:       kind,
+		Metadata:   meta,
 		Spec: &OutputSpec{
 			Loki: &Loki{
 				URL:                       conf.URL,

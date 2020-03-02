@@ -216,6 +216,13 @@ spec:
                   required:
                   - domain
                   type: object
+                rbacConfig:
+                  properties:
+                    policy.csv:
+                      type: string
+                    policy.default:
+                      type: string
+                  type: object
                 repositories:
                   items:
                     properties:
