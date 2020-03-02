@@ -8,7 +8,9 @@ import (
 	application "github.com/caos/boom/internal/bundle/application/mock"
 	"github.com/caos/boom/internal/bundle/bundles"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd/config"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
 	"github.com/caos/orbiter/mntr"
@@ -69,6 +71,24 @@ var (
 				Deploy: true,
 			},
 		},
+	}
+
+	testHelperResource = &helper.Resource{
+		Kind:       "test",
+		ApiVersion: "test/v1",
+		Metadata: &helper.Metadata{
+			Name:      "test",
+			Namespace: "test",
+		},
+	}
+	testClientgoResource = &clientgo.Resource{
+		Group:     "test",
+		Version:   "v1",
+		Resource:  "test",
+		Kind:      "test",
+		Name:      "test",
+		Namespace: "test",
+		Labels:    map[string]string{"test": "test"},
 	}
 )
 
@@ -139,7 +159,8 @@ func TestCrd_Reconcile_initial(t *testing.T) {
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -156,13 +177,14 @@ func TestCrd_Reconcile_changed(t *testing.T) {
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
 	app.SetDeploy(changedToolset.Spec, true).SetGetYaml(changedToolset.Spec, "test2")
-	crd.Reconcile(changedToolset)
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -179,13 +201,14 @@ func TestCrd_Reconcile_changedDelete(t *testing.T) {
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
 	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
-	crd.Reconcile(changedToolset)
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -202,13 +225,14 @@ func TestCrd_Reconcile_initialNotDeployed(t *testing.T) {
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
 	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
-	crd.Reconcile(changedToolset)
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }

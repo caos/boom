@@ -8,6 +8,7 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd/v1beta1/config"
 	"github.com/caos/orbiter/mntr"
 
@@ -69,7 +70,7 @@ func (c *Crd) GetBundle() *bundle.Bundle {
 	return c.bundle
 }
 
-func (c *Crd) ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) error) {
+func (c *Crd) ReconcileWithFunc(currentResourceList []*clientgo.Resource, getToolsetCRD func(instance runtime.Object) error) {
 	if c.GetStatus() != nil {
 		return
 	}
@@ -86,10 +87,10 @@ func (c *Crd) ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) erro
 		return
 	}
 
-	c.Reconcile(toolsetCRD)
+	c.Reconcile(currentResourceList, toolsetCRD)
 }
 
-func (c *Crd) Reconcile(toolsetCRD *toolsetsv1beta1.Toolset) {
+func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *toolsetsv1beta1.Toolset) {
 	if c.GetStatus() != nil {
 		return
 	}
@@ -111,5 +112,5 @@ func (c *Crd) Reconcile(toolsetCRD *toolsetsv1beta1.Toolset) {
 		return
 	}
 
-	c.status = c.bundle.Reconcile(toolsetCRD.Spec).GetStatus()
+	c.status = c.bundle.Reconcile(currentResourceList, toolsetCRD.Spec).GetStatus()
 }

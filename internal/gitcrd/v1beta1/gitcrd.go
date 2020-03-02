@@ -101,7 +101,7 @@ func (c *GitCrd) CleanUp() {
 	c.status = os.RemoveAll(c.crdDirectoryPath)
 }
 
-func (c *GitCrd) Reconcile() {
+func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	if c.status != nil {
 		return
 	}
@@ -130,7 +130,7 @@ func (c *GitCrd) Reconcile() {
 		}
 	}
 
-	c.crd.Reconcile(toolsetCRD)
+	c.crd.Reconcile(currentResourceList, toolsetCRD)
 	err = c.crd.GetStatus()
 	if err != nil {
 		c.status = err
@@ -166,25 +166,12 @@ func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 	return toolsetCRD, nil
 }
 
-func (c *GitCrd) WriteBackCurrentState() {
+func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource) {
 	if c.status != nil {
 		return
 	}
 
-	monitor := c.monitor.WithFields(map[string]interface{}{
-		"action": "current",
-	})
-
-	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
-	if err != nil {
-		c.status = err
-		monitor.Error(c.status)
-		return
-	}
-
-	currentResourcesList := current.Get(monitor, resourceInfoList)
-
-	content, err := yaml.Marshal(current.ResourcesToYaml(currentResourcesList))
+	content, err := yaml.Marshal(current.ResourcesToYaml(currentResourceList))
 	if err != nil {
 		c.status = err
 		return

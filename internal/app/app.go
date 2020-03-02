@@ -2,7 +2,9 @@ package app
 
 import (
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
+	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/gitcrd"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
 
@@ -74,12 +76,32 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 	return nil
 }
 
+func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
+
+	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+	if err != nil {
+		monitor.Error(err)
+		return nil, err
+	}
+
+	return current.Get(a.monitor, resourceInfoList), nil
+}
+
 func (a *App) ReconcileGitCrds() error {
-	a.monitor.Info("Started reconciling of GitCRDs")
+	monitor := a.monitor.WithFields(map[string]interface{}{
+		"action": "reconciling",
+	})
+	monitor.Info("Started reconciling of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
 		crdGit.SetBackStatus()
-		crdGit.Reconcile()
+
+		currentResourceList, err := a.getCurrent(monitor)
+		if err != nil {
+			return err
+		}
+
+		crdGit.Reconcile(currentResourceList)
 		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
@@ -88,11 +110,21 @@ func (a *App) ReconcileGitCrds() error {
 }
 
 func (a *App) WriteBackCurrentState() error {
-	a.monitor.Info("Started writeback of currentstate of GitCRDs")
+
+	monitor := a.monitor.WithFields(map[string]interface{}{
+		"action": "current",
+	})
+	monitor.Info("Started writeback of currentstate of GitCRDs")
 
 	for _, crdGit := range a.GitCrds {
 		crdGit.SetBackStatus()
-		crdGit.WriteBackCurrentState()
+
+		currentResourceList, err := a.getCurrent(monitor)
+		if err != nil {
+			return err
+		}
+
+		crdGit.WriteBackCurrentState(currentResourceList)
 		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}

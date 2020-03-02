@@ -6,6 +6,7 @@ import (
 
 	toolsetv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/gitcrd/config"
 	"github.com/caos/boom/internal/gitcrd/v1beta1"
@@ -16,8 +17,8 @@ import (
 
 type GitCrd interface {
 	SetBundle(*bundleconfig.Config)
-	Reconcile()
-	WriteBackCurrentState()
+	Reconcile([]*clientgo.Resource)
+	WriteBackCurrentState([]*clientgo.Resource)
 	CleanUp()
 	GetStatus() error
 	SetBackStatus()

@@ -7,11 +7,15 @@ import (
 	application "github.com/caos/boom/internal/bundle/application/mock"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
 	"github.com/caos/orbiter/mntr"
 	"github.com/stretchr/testify/assert"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
+	yamlv3 "gopkg.in/yaml.v3"
 
 	"testing"
 )
@@ -19,6 +23,26 @@ import (
 const (
 	baseDirectoryPath       = "../../tools"
 	dashboardsDirectoryPath = "../../dashboards"
+)
+
+var (
+	testHelperResource = &helper.Resource{
+		Kind:       "test",
+		ApiVersion: "test/v1",
+		Metadata: &helper.Metadata{
+			Name:      "test",
+			Namespace: "test",
+		},
+	}
+	testClientgoResource = &clientgo.Resource{
+		Group:     "test",
+		Version:   "v1",
+		Resource:  "test",
+		Kind:      "test",
+		Name:      "test",
+		Namespace: "test",
+		Labels:    map[string]string{"test": "test"},
+	}
 )
 
 func newMonitor() mntr.Monitor {
@@ -84,7 +108,10 @@ func TestBundle_AddApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
 	b.AddApplication(app.Application())
 
 	apps := b.GetApplications()
@@ -96,7 +123,10 @@ func TestBundle_AddApplication_AlreadyAdded(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
 	err := b.AddApplication(app.Application()).GetStatus()
 	assert.NoError(t, err)
 
@@ -113,13 +143,17 @@ func TestBundle_ReconcileApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
 
 	b.AddApplication(app.Application())
 
+	resources := []*clientgo.Resource{testClientgoResource}
+
 	var wg sync.WaitGroup
 	wg.Add(1)
-	err := b.ReconcileApplication(app.Application().GetName(), spec, &wg).GetStatus()
+	err := b.ReconcileApplication(resources, app.Application().GetName(), spec, &wg).GetStatus()
 	assert.NoError(t, err)
 }
 
@@ -128,11 +162,15 @@ func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
+	resources := []*clientgo.Resource{}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	err := b.ReconcileApplication(app.Application().GetName(), nil, &wg).GetStatus()
+	err := b.ReconcileApplication(resources, app.Application().GetName(), nil, &wg).GetStatus()
 	assert.Error(t, err)
 }
 
@@ -141,10 +179,14 @@ func TestBundle_Reconcile(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.SetDeploy(spec, true).SetGetYaml(spec, "test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
 	b.AddApplication(app.Application())
 
-	b.Reconcile(spec)
+	resources := []*clientgo.Resource{}
+
+	b.Reconcile(resources, spec)
 	err := b.GetStatus()
 	assert.NoError(t, err)
 }
@@ -153,7 +195,8 @@ func TestBundle_Reconcile_NoApplications(t *testing.T) {
 	b := NewBundle(yaml.GetName())
 
 	spec := &v1beta1.ToolsetSpec{}
-	b.Reconcile(spec)
+	resources := []*clientgo.Resource{}
+	b.Reconcile(resources, spec)
 	err := b.GetStatus()
 	assert.NoError(t, err)
 }

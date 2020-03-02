@@ -8,6 +8,7 @@ import (
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm"
@@ -112,7 +113,11 @@ func (b *Bundle) AddApplication(app application.Application) *Bundle {
 	return b
 }
 
-func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
+func (b *Bundle) Reconcile(currentResourceList []*clientgo.Resource, spec *v1beta1.ToolsetSpec) *Bundle {
+	if b.status != nil {
+		return b
+	}
+
 	applicationCount := 0
 	// go through list of application until every application is reconciled
 	// and this orderNumber by orderNumber (default is 1)
@@ -122,7 +127,7 @@ func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
 			//if application has the same orderNumber as currently iterating the reconcile the application
 			if application.GetOrderNumber(appName) == orderNumber {
 				wg.Add(1)
-				b.ReconcileApplication(appName, spec, &wg)
+				go b.ReconcileApplication(currentResourceList, appName, spec, &wg)
 				if err := b.GetStatus(); err != nil {
 					b.status = err
 					return b
@@ -136,7 +141,7 @@ func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
 	return b
 }
 
-func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup) *Bundle {
+func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup) *Bundle {
 	defer wg.Done()
 
 	if b.status != nil {
@@ -149,13 +154,6 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	}
 	monitor := b.monitor.WithFields(logFields)
 
-	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
-	if err != nil {
-		b.status = err
-		monitor.Error(b.status)
-		return b
-	}
-
 	app, found := b.Applications[appName]
 	if !found {
 		b.status = errors.New("Application not found")
@@ -165,6 +163,7 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 	monitor.Info("Start")
 
 	deploy := app.Deploy(spec)
+	currentApplicationResourceList := current.FilterForApplication(appName, currentResourceList)
 
 	var resultFunc func(string, string) error
 	if Testmode {
@@ -173,9 +172,9 @@ func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.To
 		}
 	} else {
 		if deploy {
-			resultFunc = applyWithCurrentState(monitor, resourceInfoList, app)
+			resultFunc = applyWithCurrentState(monitor, currentApplicationResourceList, app)
 		} else {
-			resultFunc = deleteWithCurrentState(monitor, resourceInfoList, app)
+			resultFunc = deleteWithCurrentState(monitor, currentApplicationResourceList, app)
 		}
 	}
 

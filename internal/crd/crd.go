@@ -6,6 +6,7 @@ import (
 
 	"github.com/caos/boom/internal/bundle"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd/config"
 	v1beta1config "github.com/caos/boom/internal/crd/v1beta1/config"
 
@@ -17,8 +18,8 @@ import (
 type Crd interface {
 	SetBundle(*bundleconfig.Config)
 	GetBundle() *bundle.Bundle
-	ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) error)
-	Reconcile(toolsetCRD *toolsetsv1beta1.Toolset)
+	ReconcileWithFunc([]*clientgo.Resource, func(instance runtime.Object) error)
+	Reconcile([]*clientgo.Resource, *toolsetsv1beta1.Toolset)
 	CleanUp()
 	GetStatus() error
 }
