@@ -12,62 +12,59 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	pnemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/metrics"
 	pometrics "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/metrics"
+	"github.com/caos/boom/internal/labels"
 )
 
-func ScrapeMetricsCrdsConfig(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Config {
-
-	monitorlabels := make(map[string]string, 0)
-	monitorlabels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
-
+func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Config {
 	servicemonitors := make([]*servicemonitor.Config, 0)
 
 	if toolsetCRDSpec.Ambassador != nil && toolsetCRDSpec.Ambassador.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Ambassador) {
-		servicemonitors = append(servicemonitors, ambassadormetrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, ambassadormetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.PrometheusOperator != nil && toolsetCRDSpec.PrometheusOperator.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusOperator) {
-		servicemonitors = append(servicemonitors, pometrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, pometrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusNodeExporter) {
-		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.KubeStateMetrics) {
-		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Argocd) {
-		servicemonitors = append(servicemonitors, argocdmetrics.GetServicemonitors(monitorlabels)...)
+		servicemonitors = append(servicemonitors, argocdmetrics.GetServicemonitors(instanceName)...)
 	}
 
 	if toolsetCRDSpec.LoggingOperator != nil && toolsetCRDSpec.LoggingOperator.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.LoggingOperator) {
-		servicemonitors = append(servicemonitors, lometrics.GetServicemonitors(monitorlabels)...)
+		servicemonitors = append(servicemonitors, lometrics.GetServicemonitors(instanceName)...)
 	}
 
 	if toolsetCRDSpec.Loki != nil && toolsetCRDSpec.Loki.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Loki) {
-		servicemonitors = append(servicemonitors, lokimetrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, lokimetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.APIServer {
-		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(instanceName))
 	}
 
 	if len(servicemonitors) > 0 {
 
-		servicemonitors = append(servicemonitors, metrics.GetServicemonitor(monitorlabels))
+		servicemonitors = append(servicemonitors, metrics.GetServicemonitor(instanceName))
 
 		prom := &Config{
 			Prefix:                  "",
 			Namespace:               "caos-system",
-			MonitorLabels:           monitorlabels,
+			MonitorLabels:           labels.GetMonitorSelectorLabels(instanceName),
 			ServiceMonitors:         servicemonitors,
 			AdditionalScrapeConfigs: getScrapeConfigs(),
 		}

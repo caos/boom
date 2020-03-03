@@ -5,15 +5,15 @@ import (
 	"github.com/caos/boom/internal/templator"
 	"github.com/caos/boom/internal/templator/helm"
 	"github.com/caos/boom/internal/templator/yaml"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
-func NewTemplator(logger logging.Logger, overlay string, baseDirectoryPath string, templatorName name.Templator) templator.Templator {
+func NewTemplator(monitor mntr.Monitor, overlay string, baseDirectoryPath string, templatorName name.Templator) templator.Templator {
 	switch templatorName {
 	case helm.GetName():
-		return helm.New(logger, overlay, baseDirectoryPath)
+		return helm.New(monitor, overlay, baseDirectoryPath)
 	case yaml.GetName():
-		return yaml.New(logger, overlay, baseDirectoryPath)
+		return yaml.New(monitor, overlay, baseDirectoryPath)
 	}
 
 	return nil

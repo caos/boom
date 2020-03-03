@@ -3,24 +3,24 @@ package grafana
 import (
 	"reflect"
 
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Grafana struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.Grafana
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.Grafana
 }
 
-func New(logger logging.Logger) *Grafana {
+func New(monitor mntr.Monitor) *Grafana {
 	return &Grafana{
-		logger: logger,
+		monitor: monitor,
 	}
 }
 func (g *Grafana) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (g *Grafana) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -30,10 +30,6 @@ func (g *Grafana) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 		return toolsetCRDSpec.Grafana.Deploy
 	}
 	return false
-}
-
-func (g *Grafana) Initial() bool {
-	return g.spec == nil
 }
 
 func (g *Grafana) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
@@ -48,5 +44,5 @@ func (g *Grafana) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
 }
 
 func (g *Grafana) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/clientgo"
 )
 
 func GetGoogleAuthConfig(spec *toolsetsv1beta1.GrafanaGoogleAuth) (map[string]string, error) {
-	secret, err := helper.GetSecret(spec.SecretName, "caos-system")
+	secret, err := clientgo.GetSecret(spec.SecretName, "caos-system")
 	if err != nil {
 		return nil, err
 	}

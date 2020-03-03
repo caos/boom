@@ -3,7 +3,7 @@ package grafanastandalone
 import (
 	"path/filepath"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/kustomize"
@@ -15,14 +15,14 @@ var (
 
 type Grafana struct {
 	ApplicationDirectoryPath string
-	logger                   logging.Logger
+	monitor                  mntr.Monitor
 	spec                     *toolsetsv1beta1.Grafana
 }
 
-func New(logger logging.Logger, toolsDirectoryPath string) *Grafana {
+func New(monitor mntr.Monitor, toolsDirectoryPath string) *Grafana {
 	lo := &Grafana{
 		ApplicationDirectoryPath: filepath.Join(toolsDirectoryPath, applicationName),
-		logger:                   logger,
+		monitor:                  monitor,
 	}
 
 	return lo

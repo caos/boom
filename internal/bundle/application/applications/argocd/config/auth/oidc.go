@@ -2,7 +2,7 @@ package auth
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -25,7 +25,7 @@ func GetOIDC(spec *toolsetsv1beta1.Argocd) (string, error) {
 		return "", nil
 	}
 
-	secret, err := helper.GetSecret(spec.Auth.OIDC.SecretName, "caos-system")
+	secret, err := clientgo.GetSecret(spec.Auth.OIDC.SecretName, "caos-system")
 	if err != nil {
 		return "", err
 	}

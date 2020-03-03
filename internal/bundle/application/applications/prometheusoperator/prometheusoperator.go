@@ -1,47 +1,33 @@
 package prometheusoperator
 
 import (
-	"reflect"
-
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type PrometheusOperator struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.PrometheusOperator
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.PrometheusOperator
 }
 
-func New(logger logging.Logger) *PrometheusOperator {
+func New(monitor mntr.Monitor) *PrometheusOperator {
 	po := &PrometheusOperator{
-		logger: logger,
+		monitor: monitor,
 	}
 
 	return po
 }
 
 func (po *PrometheusOperator) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (po *PrometheusOperator) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.PrometheusOperator.Deploy
 }
 
-func (po *PrometheusOperator) Initial() bool {
-	return po.spec == nil
-}
-
-func (po *PrometheusOperator) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return !reflect.DeepEqual(toolsetCRDSpec.PrometheusOperator, po.spec)
-}
-
-func (po *PrometheusOperator) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	po.spec = toolsetCRDSpec.PrometheusOperator
-}
-
 func (po *PrometheusOperator) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

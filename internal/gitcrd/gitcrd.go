@@ -1,67 +1,66 @@
 package gitcrd
 
 import (
-	"path/filepath"
+	"context"
+	"strings"
 
-	"github.com/caos/boom/internal/git"
-	"github.com/caos/boom/internal/helper"
-	"github.com/pkg/errors"
-
-	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	toolsetv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/gitcrd/config"
 	"github.com/caos/boom/internal/gitcrd/v1beta1"
 	v1beta1config "github.com/caos/boom/internal/gitcrd/v1beta1/config"
+	"github.com/caos/boom/internal/helper"
+	"github.com/pkg/errors"
 )
 
 type GitCrd interface {
 	SetBundle(*bundleconfig.Config)
-	Reconcile()
+	Reconcile([]*clientgo.Resource)
+	WriteBackCurrentState([]*clientgo.Resource)
 	CleanUp()
 	GetStatus() error
-	GetCrdContent() (*toolsetsv1beta1.Toolset, error)
+	SetBackStatus()
 }
 
 func New(conf *config.Config) (GitCrd, error) {
 
-	logFields := map[string]interface{}{
-		"logID": "CRD-OieUWt0rdMoRrIh",
-	}
+	conf.Monitor.Info("New GitCRD")
 
-	conf.Logger.WithFields(logFields).Info("New GitCRD")
-
-	git, err := git.New(conf.Logger, conf.CrdDirectoryPath, conf.CrdUrl, conf.PrivateKey)
+	git := git.New(context.Background(), conf.Monitor, conf.User, conf.Email, conf.CrdUrl)
+	err := git.Init(conf.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	crdFilePath := filepath.Join(conf.CrdDirectoryPath, conf.CrdPath)
-	group, err := helper.GetApiGroupFromYaml(crdFilePath)
+	err = git.Clone()
 	if err != nil {
-		conf.Logger.WithFields(logFields).Error(err)
 		return nil, err
 	}
 
-	if group != "boom.caos.ch" {
-		return nil, errors.Errorf("Unknown CRD apiGroup %s", group)
-	}
-
-	version, err := helper.GetVersionFromYaml(crdFilePath)
-	if err != nil {
-		conf.Logger.WithFields(logFields).Error(err)
+	crdFileStruct := &helper.Resource{}
+	if err := git.ReadYamlIntoStruct(conf.CrdPath, crdFileStruct); err != nil {
+		conf.Monitor.Error(err)
 		return nil, err
 	}
 
-	if version != "v1beta1" {
-		return nil, errors.Errorf("Unknown CRD version %s", version)
+	groupVersion := toolsetv1beta1.GroupVersion
+	parts := strings.Split(crdFileStruct.ApiVersion, "/")
+	if parts[0] != "boom.caos.ch" {
+		return nil, errors.Errorf("Unknown CRD apiGroup %s", parts[0])
 	}
 
-	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+	if parts[1] != groupVersion.Version {
+		return nil, errors.Errorf("Unknown CRD version %s", parts[1])
+	}
+
+	monitor := conf.Monitor.WithFields(map[string]interface{}{
 		"type": "gitcrd",
 	})
 
 	v1beta1conf := &v1beta1config.Config{
-		Logger:           crdLogger,
+		Monitor:          monitor,
 		Git:              git,
 		CrdDirectoryPath: conf.CrdDirectoryPath,
 		CrdPath:          conf.CrdPath,

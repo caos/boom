@@ -3,60 +3,66 @@ package application
 import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
+	ambassadorinfo "github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
 	"github.com/caos/boom/internal/bundle/application/applications/argocd"
+	argocdinfo "github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/bundle/application/applications/grafana"
+	grafanainfo "github.com/caos/boom/internal/bundle/application/applications/grafana/info"
 	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
+	kubestatemetricsinfo "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
+	loggingoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loki"
+	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
+	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
+	prometheusnodeexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
+	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Application interface {
-	Initial() bool
-	Changed(*v1beta1.ToolsetSpec) bool
 	Deploy(*v1beta1.ToolsetSpec) bool
-	SetAppliedSpec(*v1beta1.ToolsetSpec)
 	GetName() name.Application
-	GetNamespace() string
 }
 
 type HelmApplication interface {
 	Application
+	GetNamespace() string
 	GetChartInfo() *chart.Chart
 	GetImageTags() map[string]string
-	SpecToHelmValues(logger logging.Logger, spec *v1beta1.ToolsetSpec) interface{}
+	SpecToHelmValues(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 }
 
 type YAMLApplication interface {
 	Application
-	GetYaml() interface{}
+	GetYaml(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 }
 
-func New(logger logging.Logger, appName name.Application) Application {
+func New(monitor mntr.Monitor, appName name.Application) Application {
 	switch appName {
-	case ambassador.GetName():
-		return ambassador.New(logger)
-	case argocd.GetName():
-		return argocd.New(logger)
-	case grafana.GetName():
-		return grafana.New(logger)
-	case kubestatemetrics.GetName():
-		return kubestatemetrics.New(logger)
-	case prometheusoperator.GetName():
-		return prometheusoperator.New(logger)
-	case loggingoperator.GetName():
-		return loggingoperator.New(logger)
-	case prometheusnodeexporter.GetName():
-		return prometheusnodeexporter.New(logger)
-	case prometheus.GetName():
-		return prometheus.New(logger)
-	case loki.GetName():
-		return loki.New(logger)
+	case ambassadorinfo.GetName():
+		return ambassador.New(monitor)
+	case argocdinfo.GetName():
+		return argocd.New(monitor)
+	case grafanainfo.GetName():
+		return grafana.New(monitor)
+	case kubestatemetricsinfo.GetName():
+		return kubestatemetrics.New(monitor)
+	case prometheusoperatorinfo.GetName():
+		return prometheusoperator.New(monitor)
+	case loggingoperatorinfo.GetName():
+		return loggingoperator.New(monitor)
+	case prometheusnodeexporterinfo.GetName():
+		return prometheusnodeexporter.New(monitor)
+	case prometheusinfo.GetName():
+		return prometheus.New(monitor)
+	case lokiinfo.GetName():
+		return loki.New(monitor)
 	}
 
 	return nil
@@ -64,11 +70,11 @@ func New(logger logging.Logger, appName name.Application) Application {
 
 func GetOrderNumber(appName name.Application) int {
 	switch appName {
-	case prometheus.GetName():
-		return prometheus.GetOrderNumber()
-	case loki.GetName():
-		return loki.GetOrderNumber()
+	case prometheusinfo.GetName():
+		return prometheusinfo.GetOrderNumber()
+	case lokiinfo.GetName():
+		return lokiinfo.GetOrderNumber()
 	}
 
-	return 0
+	return 1
 }

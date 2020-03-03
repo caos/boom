@@ -1,10 +1,75 @@
 package metrics
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitors(monitorlabels map[string]string) []*servicemonitor.Config {
+func GetServicemonitors(instanceName string) []*servicemonitor.Config {
 
 	servicemonitors := make([]*servicemonitor.Config, 0)
+
+	servicemonitors = append(servicemonitors, getSMApplicationController(instanceName))
+	servicemonitors = append(servicemonitors, getSMRepoServer(instanceName))
+	servicemonitors = append(servicemonitors, getSMServer(instanceName))
+
+	return servicemonitors
+}
+
+func getSMServer(instanceName string) *servicemonitor.Config {
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
+
+	// argocd-server
+	endpoint := &servicemonitor.ConfigEndpoint{
+		Port: "metrics",
+		Path: "/metrics",
+	}
+
+	ls["app.kubernetes.io/instance"] = "argocd"
+	ls["app.kubernetes.io/part-of"] = "argocd"
+	ls["app.kubernetes.io/component"] = "server"
+
+	return &servicemonitor.Config{
+		Name:                  "argocd-server-servicemonitor",
+		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+		MonitorMatchingLabels: monitorlabels,
+		ServiceMatchingLabels: ls,
+		JobName:               "argocd-server",
+	}
+}
+
+func getSMRepoServer(instanceName string) *servicemonitor.Config {
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
+
+	// argocd-repo-server
+	endpoint := &servicemonitor.ConfigEndpoint{
+		Port: "metrics",
+		Path: "/metrics",
+	}
+
+	ls["app.kubernetes.io/instance"] = "argocd"
+	ls["app.kubernetes.io/part-of"] = "argocd"
+	ls["app.kubernetes.io/component"] = "repo-server"
+
+	return &servicemonitor.Config{
+		Name:                  "argocd-repo-server-servicemonitor",
+		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
+		MonitorMatchingLabels: monitorlabels,
+		ServiceMatchingLabels: ls,
+		JobName:               "argocd-repo-server",
+	}
+
+}
+
+func getSMApplicationController(instanceName string) *servicemonitor.Config {
+	appName := info.GetName()
+	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
+	ls := labels.GetApplicationLabels(appName)
 
 	//argocd-application-controller
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -12,55 +77,15 @@ func GetServicemonitors(monitorlabels map[string]string) []*servicemonitor.Confi
 		Path: "/metrics",
 	}
 
-	labels := map[string]string{
-		"app.kubernetes.io/part-of":   "argocd",
-		"app.kubernetes.io/component": "application-controller",
-	}
+	ls["app.kubernetes.io/instance"] = "argocd"
+	ls["app.kubernetes.io/part-of"] = "argocd"
+	ls["app.kubernetes.io/component"] = "application-controller"
 
-	smconfig := &servicemonitor.Config{
-		Name:                  "application-controller-servicemonitor",
+	return &servicemonitor.Config{
+		Name:                  "argocd-application-controller-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
+		ServiceMatchingLabels: ls,
 		JobName:               "application-controller",
 	}
-	servicemonitors = append(servicemonitors, smconfig)
-	// argocd-repo-server
-	endpoint = &servicemonitor.ConfigEndpoint{
-		Port: "metrics",
-		Path: "/metrics",
-	}
-
-	labels = map[string]string{
-		"app.kubernetes.io/part-of":   "argocd",
-		"app.kubernetes.io/component": "repo-server",
-	}
-
-	smconfig = &servicemonitor.Config{
-		Name:                  "argocd-repo-server-servicemonitor",
-		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
-		JobName:               "argocd-repo-server",
-	}
-	servicemonitors = append(servicemonitors, smconfig)
-	// argocd-server
-	endpoint = &servicemonitor.ConfigEndpoint{
-		Port: "metrics",
-		Path: "/metrics",
-	}
-
-	labels = map[string]string{
-		"app.kubernetes.io/part-of":   "argocd",
-		"app.kubernetes.io/component": "server",
-	}
-
-	smconfig = &servicemonitor.Config{
-		Name:                  "argocd-server-servicemonitor",
-		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
-		MonitorMatchingLabels: monitorlabels,
-		ServiceMatchingLabels: labels,
-		JobName:               "argocd-server",
-	}
-	return servicemonitors
 }

@@ -1,0 +1,9 @@
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+  - image: eu.gcr.io/caos-ops/boom
+    docker: {}
+deploy:
+  kustomize: 
+    path: ./build/k8s/overlay

@@ -4,14 +4,15 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	argocdnet "github.com/caos/boom/internal/bundle/application/applications/argocd/network"
 	grafananet "github.com/caos/boom/internal/bundle/application/applications/grafana/network"
+	"github.com/caos/boom/internal/helper"
+	"github.com/caos/orbiter/mntr"
 
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/helm"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
 )
 
-func (a *Ambassador) HelmPreApplySteps(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+func (a *Ambassador) HelmPreApplySteps(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
 
 	ret := make([]interface{}, 0)
 	if toolsetCRDSpec.Argocd.Network != nil {
@@ -31,7 +32,16 @@ func (a *Ambassador) HelmPreApplySteps(logger logging.Logger, toolsetCRDSpec *to
 	return ret, nil
 }
 
-func (a *Ambassador) SpecToHelmValues(logger logging.Logger, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
+func (a *Ambassador) HelmMutate(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+
+	if err := helper.DeleteFirstResourceFromYaml(resultFilePath, "v1", "Pod", "ambassador-test-ready"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *Ambassador) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
 	spec := toolsetCRDSpec.Ambassador
 	imageTags := helm.GetImageTags()
 

@@ -3,13 +3,14 @@ package v1beta1
 import (
 	"errors"
 
-	"github.com/caos/orbiter/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd/v1beta1/config"
+	"github.com/caos/orbiter/mntr"
 
 	"github.com/caos/boom/internal/name"
 )
@@ -19,9 +20,9 @@ const (
 )
 
 type Crd struct {
-	bundle *bundle.Bundle
-	logger logging.Logger
-	status error
+	bundle  *bundle.Bundle
+	monitor mntr.Monitor
+	status  error
 }
 
 func (c *Crd) GetStatus() error {
@@ -29,6 +30,10 @@ func (c *Crd) GetStatus() error {
 }
 
 func (c *Crd) CleanUp() {
+	if c.GetStatus() != nil {
+		return
+	}
+
 	c.status = c.bundle.CleanUp().GetStatus()
 }
 
@@ -37,17 +42,20 @@ func GetVersion() name.Version {
 }
 
 func New(conf *config.Config) *Crd {
-	crdLogger := conf.Logger.WithFields(map[string]interface{}{
+	crdMonitor := conf.Monitor.WithFields(map[string]interface{}{
 		"version": "v1beta1",
 	})
 
 	return &Crd{
-		logger: crdLogger,
-		status: nil,
+		monitor: crdMonitor,
+		status:  nil,
 	}
 }
 
 func (c *Crd) SetBundle(conf *bundleconfig.Config) {
+	if c.GetStatus() != nil {
+		return
+	}
 	bundle := bundle.New(conf)
 
 	c.status = bundle.AddApplicationsByBundleName(conf.BundleName)
@@ -56,26 +64,20 @@ func (c *Crd) SetBundle(conf *bundleconfig.Config) {
 	}
 
 	c.bundle = bundle
-	c.status = nil
-	return
 }
 
 func (c *Crd) GetBundle() *bundle.Bundle {
 	return c.bundle
 }
 
-func (c *Crd) ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) error) {
+func (c *Crd) ReconcileWithFunc(currentResourceList []*clientgo.Resource, getToolsetCRD func(instance runtime.Object) error) {
 	if c.GetStatus() != nil {
 		return
 	}
 
-	logFields := map[string]interface{}{
-		"logID": "CRD-6e7csH4wkujsRYE",
-	}
-
 	if getToolsetCRD == nil {
 		c.status = errors.New("ToolsetCRDFunc is nil")
-		c.logger.WithFields(logFields).Error(c.status)
+		c.monitor.Error(c.status)
 		return
 	}
 
@@ -85,47 +87,30 @@ func (c *Crd) ReconcileWithFunc(getToolsetCRD func(instance runtime.Object) erro
 		return
 	}
 
-	c.Reconcile(toolsetCRD)
+	c.Reconcile(currentResourceList, toolsetCRD)
 }
 
-func (c *Crd) Reconcile(toolsetCRD *toolsetsv1beta1.Toolset) {
+func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *toolsetsv1beta1.Toolset) {
 	if c.GetStatus() != nil {
 		return
 	}
-
 	logFields := map[string]interface{}{
-		"logID": "CRD-6e7csH4wkujsRYE",
+		"CRD":    toolsetCRD.Name,
+		"action": "reconciling",
 	}
+	monitor := c.monitor.WithFields(logFields)
 
 	if toolsetCRD == nil {
 		c.status = errors.New("ToolsetCRD is nil")
-		c.logger.WithFields(logFields).Error(c.status)
+		monitor.Error(c.status)
 		return
-	}
-	logFields["CRD"] = toolsetCRD.Name
-
-	c.logger.WithFields(logFields).Info("Reconcile applications")
-
-	c.reconcileApplications(toolsetCRD.Name, toolsetCRD.Spec)
-}
-
-func (c *Crd) reconcileApplications(overlay string, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) *Crd {
-	if c.GetStatus() != nil {
-		return c
-	}
-
-	logFields := map[string]interface{}{
-		"logID": "CRD-sOwmSVvpAQfO1PS",
-		"CRD":   overlay,
 	}
 
 	if c.bundle == nil {
 		c.status = errors.New("No bundle for crd")
-		c.logger.WithFields(logFields).Error(c.status)
-		return c
+		monitor.Error(c.status)
+		return
 	}
 
-	c.status = c.bundle.Reconcile(toolsetCRDSpec).GetStatus()
-
-	return c
+	c.status = c.bundle.Reconcile(currentResourceList, toolsetCRD.Spec).GetStatus()
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/helm/chart"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Templator interface {
@@ -16,16 +16,16 @@ type Templator interface {
 
 type BaseApplication interface {
 	GetName() name.Application
-	GetNamespace() string
 }
 
 type YamlApplication interface {
 	BaseApplication
-	GetYaml() interface{}
+	GetYaml(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 }
 
 type HelmApplication interface {
 	BaseApplication
-	SpecToHelmValues(logging.Logger, *v1beta1.ToolsetSpec) interface{}
+	GetNamespace() string
+	SpecToHelmValues(mntr.Monitor, *v1beta1.ToolsetSpec) interface{}
 	GetChartInfo() *chart.Chart
 }

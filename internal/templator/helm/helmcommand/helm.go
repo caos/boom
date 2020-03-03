@@ -2,7 +2,6 @@ package helmcommand
 
 import (
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/caos/boom/internal/helper"
@@ -16,59 +15,6 @@ var (
 
 func Init(basePath string) error {
 	return doHelmCommand(basePath, "init --client-only >& /dev/null")
-}
-
-func FetchChart(basePath, name, version, index string) error {
-
-	chartHomeAbs, err := helper.GetAbsPath(basePath, chartsFolder)
-	if err != nil {
-		return err
-	}
-
-	versionParam := strings.Join([]string{"--version=", version}, "")
-	untardirParam := strings.Join([]string{"--untardir=", chartHomeAbs}, "")
-	chartStr := strings.Join([]string{index, name}, "/")
-	command := strings.Join([]string{"fetch --untar", versionParam, untardirParam, chartStr, ">& /dev/null"}, " ")
-
-	return doHelmCommand(basePath, command)
-}
-
-func AddIndex(basePath, indexName, indexURL string) error {
-
-	url := strings.Join([]string{"https://", indexURL}, "")
-	command := strings.Join([]string{"repo add", indexName, url, ">& /dev/null"}, " ")
-
-	return doHelmCommand(basePath, command)
-}
-
-func RepoUpdate(basePath string) error {
-	return doHelmCommand(basePath, "repo update >& /dev/null")
-}
-
-func Template(basePath, chartName, releaseName, releaseNamespace, valuesFilePath string) ([]byte, error) {
-	var releaseNameParam, releaseNamespaceParam, valuesParam string
-	if releaseName != "" {
-		releaseNameParam = strings.Join([]string{"--name", releaseName}, " ")
-	}
-	if releaseNamespace != "" {
-		releaseNamespaceParam = strings.Join([]string{"--namespace", releaseNamespace}, " ")
-	}
-	if valuesFilePath != "" {
-		valuesParam = strings.Join([]string{"--values", valuesFilePath}, " ")
-	}
-
-	chartHomeAbs, err := helper.GetAbsPath(basePath, chartsFolder)
-	if err != nil {
-		return nil, err
-	}
-	chartStr := filepath.Join(chartHomeAbs, chartName)
-
-	command := addIfNotEmpty("template", releaseNameParam)
-	command = addIfNotEmpty(command, releaseNamespaceParam)
-	command = addIfNotEmpty(command, valuesParam)
-	command = addIfNotEmpty(command, chartStr)
-
-	return doHelmCommandOutput(basePath, command)
 }
 
 func addIfNotEmpty(one, two string) string {

@@ -2,6 +2,9 @@ package helm
 
 func DefaultValues(imageTags map[string]string) *Values {
 	return &Values{
+		Env: []*Env{
+			&Env{Name: "WORKAROUND", Value: "ignorethis"},
+		},
 		FullNameOverride: "loki",
 		Tracing:          &Tracing{},
 		Config: &Config{

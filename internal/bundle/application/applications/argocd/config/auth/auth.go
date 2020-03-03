@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
@@ -19,9 +19,8 @@ type connector struct {
 	Config interface{}
 }
 
-func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *Connectors {
+func GetDexConfigFromSpec(monitor mntr.Monitor, spec *toolsetsv1beta1.Argocd) *Connectors {
 	logFields := map[string]interface{}{
-		"logID":       "AUTH-yYqnPDhTdTjQWiJ",
 		"application": "argocd",
 	}
 
@@ -32,7 +31,7 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 	}
 
 	if spec.Network == nil || spec.Network.Domain == "" {
-		logger.WithFields(logFields).Info("No auth connectors configured as no rootUrl is defined")
+		monitor.WithFields(logFields).Info("No auth connectors configured as no rootUrl is defined")
 		return nil
 	}
 	redirect := strings.Join([]string{"https://", spec.Network.Domain, "/api/dex/callback"}, "")
@@ -47,7 +46,7 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 				Config: github,
 			})
 		} else {
-			logger.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for github connector"))
+			monitor.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for github connector"))
 		}
 	}
 
@@ -61,7 +60,7 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 				Config: gitlab,
 			})
 		} else {
-			logger.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for gitlab connector"))
+			monitor.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for gitlab connector"))
 		}
 	}
 
@@ -75,13 +74,13 @@ func GetDexConfigFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) *
 				Config: google,
 			})
 		} else {
-			logger.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for google connector"))
+			monitor.WithFields(logFields).Error(errors.Wrap(err, "Error while creating configuration for google connector"))
 		}
 	}
 
 	if len(connectors) > 0 {
 		logFields["connectors"] = len(connectors)
-		logger.WithFields(logFields).Debug("Created dex configuration")
+		monitor.WithFields(logFields).Debug("Created dex configuration")
 		return &Connectors{Connectors: connectors}
 	}
 	return nil

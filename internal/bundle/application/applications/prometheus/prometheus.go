@@ -1,55 +1,38 @@
 package prometheus
 
 import (
-	"reflect"
-
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Prometheus struct {
-	logger logging.Logger
-	config *config.Config
+	monitor mntr.Monitor
 }
 
-func New(logger logging.Logger) *Prometheus {
+func New(monitor mntr.Monitor) *Prometheus {
 	return &Prometheus{
-		logger: logger,
+		monitor: monitor,
 	}
 }
 
 func (p *Prometheus) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (p *Prometheus) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	//not possible to deploy when prometheus operator is not deployed
-	if !toolsetCRDSpec.PrometheusOperator.Deploy {
+
+	po := prometheusoperator.New(p.monitor)
+	if !po.Deploy(toolsetCRDSpec) {
 		return false
 	}
 
 	return toolsetCRDSpec.Prometheus.Deploy
 }
 
-func (p *Prometheus) Initial() bool {
-	return p.config == nil
-}
-
-func (p *Prometheus) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	config := config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
-	return !reflect.DeepEqual(config, p.config)
-}
-
-func (p *Prometheus) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	if toolsetCRDSpec == nil {
-		return
-	}
-	p.config = config.ScrapeMetricsCrdsConfig(toolsetCRDSpec)
-}
-
 func (p *Prometheus) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

@@ -2,14 +2,13 @@ package config
 
 import (
 	"github.com/caos/boom/internal/name"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Config struct {
-	Logger                  logging.Logger
-	CrdName                 string
-	BundleName              name.Bundle
-	BaseDirectoryPath       string
-	DashboardsDirectoryPath string
-	Templator               name.Templator
+	Monitor           mntr.Monitor
+	CrdName           string
+	BundleName        name.Bundle
+	BaseDirectoryPath string
+	Templator         name.Templator
 }

@@ -5,11 +5,13 @@
 package application
 
 import (
+	reflect "reflect"
+
 	v1beta1 "github.com/caos/boom/api/v1beta1"
 	name "github.com/caos/boom/internal/name"
 	chart "github.com/caos/boom/internal/templator/helm/chart"
+	"github.com/caos/orbiter/mntr"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockApplication is a mock of Application interface
@@ -35,34 +37,6 @@ func (m *MockApplication) EXPECT() *MockApplicationMockRecorder {
 	return m.recorder
 }
 
-// Initial mocks base method
-func (m *MockApplication) Initial() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Initial")
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Initial indicates an expected call of Initial
-func (mr *MockApplicationMockRecorder) Initial() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initial", reflect.TypeOf((*MockApplication)(nil).Initial))
-}
-
-// Changed mocks base method
-func (m *MockApplication) Changed(arg0 *v1beta1.ToolsetSpec) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Changed", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Changed indicates an expected call of Changed
-func (mr *MockApplicationMockRecorder) Changed(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Changed", reflect.TypeOf((*MockApplication)(nil).Changed), arg0)
-}
-
 // Deploy mocks base method
 func (m *MockApplication) Deploy(arg0 *v1beta1.ToolsetSpec) bool {
 	m.ctrl.T.Helper()
@@ -77,18 +51,6 @@ func (mr *MockApplicationMockRecorder) Deploy(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deploy", reflect.TypeOf((*MockApplication)(nil).Deploy), arg0)
 }
 
-// SetAppliedSpec mocks base method
-func (m *MockApplication) SetAppliedSpec(arg0 *v1beta1.ToolsetSpec) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAppliedSpec", arg0)
-}
-
-// SetAppliedSpec indicates an expected call of SetAppliedSpec
-func (mr *MockApplicationMockRecorder) SetAppliedSpec(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAppliedSpec", reflect.TypeOf((*MockApplication)(nil).SetAppliedSpec), arg0)
-}
-
 // GetName mocks base method
 func (m *MockApplication) GetName() name.Application {
 	m.ctrl.T.Helper()
@@ -101,20 +63,6 @@ func (m *MockApplication) GetName() name.Application {
 func (mr *MockApplicationMockRecorder) GetName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockApplication)(nil).GetName))
-}
-
-// GetNamespace mocks base method
-func (m *MockApplication) GetNamespace() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespace")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetNamespace indicates an expected call of GetNamespace
-func (mr *MockApplicationMockRecorder) GetNamespace() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockApplication)(nil).GetNamespace))
 }
 
 // MockHelmApplication is a mock of HelmApplication interface
@@ -140,34 +88,6 @@ func (m *MockHelmApplication) EXPECT() *MockHelmApplicationMockRecorder {
 	return m.recorder
 }
 
-// Initial mocks base method
-func (m *MockHelmApplication) Initial() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Initial")
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Initial indicates an expected call of Initial
-func (mr *MockHelmApplicationMockRecorder) Initial() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initial", reflect.TypeOf((*MockHelmApplication)(nil).Initial))
-}
-
-// Changed mocks base method
-func (m *MockHelmApplication) Changed(arg0 *v1beta1.ToolsetSpec) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Changed", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Changed indicates an expected call of Changed
-func (mr *MockHelmApplicationMockRecorder) Changed(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Changed", reflect.TypeOf((*MockHelmApplication)(nil).Changed), arg0)
-}
-
 // Deploy mocks base method
 func (m *MockHelmApplication) Deploy(arg0 *v1beta1.ToolsetSpec) bool {
 	m.ctrl.T.Helper()
@@ -180,18 +100,6 @@ func (m *MockHelmApplication) Deploy(arg0 *v1beta1.ToolsetSpec) bool {
 func (mr *MockHelmApplicationMockRecorder) Deploy(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deploy", reflect.TypeOf((*MockHelmApplication)(nil).Deploy), arg0)
-}
-
-// SetAppliedSpec mocks base method
-func (m *MockHelmApplication) SetAppliedSpec(arg0 *v1beta1.ToolsetSpec) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAppliedSpec", arg0)
-}
-
-// SetAppliedSpec indicates an expected call of SetAppliedSpec
-func (mr *MockHelmApplicationMockRecorder) SetAppliedSpec(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAppliedSpec", reflect.TypeOf((*MockHelmApplication)(nil).SetAppliedSpec), arg0)
 }
 
 // GetName mocks base method
@@ -251,17 +159,17 @@ func (mr *MockHelmApplicationMockRecorder) GetImageTags() *gomock.Call {
 }
 
 // SpecToHelmValues mocks base method
-func (m *MockHelmApplication) SpecToHelmValues(spec *v1beta1.ToolsetSpec) interface{} {
+func (m *MockHelmApplication) SpecToHelmValues(arg0 mntr.Monitor, arg1 *v1beta1.ToolsetSpec) interface{} {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SpecToHelmValues", spec)
+	ret := m.ctrl.Call(m, "SpecToHelmValues", arg0, arg1)
 	ret0, _ := ret[0].(interface{})
 	return ret0
 }
 
 // SpecToHelmValues indicates an expected call of SpecToHelmValues
-func (mr *MockHelmApplicationMockRecorder) SpecToHelmValues(spec interface{}) *gomock.Call {
+func (mr *MockHelmApplicationMockRecorder) SpecToHelmValues(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpecToHelmValues", reflect.TypeOf((*MockHelmApplication)(nil).SpecToHelmValues), spec)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpecToHelmValues", reflect.TypeOf((*MockHelmApplication)(nil).SpecToHelmValues), arg0, arg1)
 }
 
 // MockYAMLApplication is a mock of YAMLApplication interface
@@ -287,34 +195,6 @@ func (m *MockYAMLApplication) EXPECT() *MockYAMLApplicationMockRecorder {
 	return m.recorder
 }
 
-// Initial mocks base method
-func (m *MockYAMLApplication) Initial() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Initial")
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Initial indicates an expected call of Initial
-func (mr *MockYAMLApplicationMockRecorder) Initial() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initial", reflect.TypeOf((*MockYAMLApplication)(nil).Initial))
-}
-
-// Changed mocks base method
-func (m *MockYAMLApplication) Changed(arg0 *v1beta1.ToolsetSpec) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Changed", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Changed indicates an expected call of Changed
-func (mr *MockYAMLApplicationMockRecorder) Changed(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Changed", reflect.TypeOf((*MockYAMLApplication)(nil).Changed), arg0)
-}
-
 // Deploy mocks base method
 func (m *MockYAMLApplication) Deploy(arg0 *v1beta1.ToolsetSpec) bool {
 	m.ctrl.T.Helper()
@@ -327,18 +207,6 @@ func (m *MockYAMLApplication) Deploy(arg0 *v1beta1.ToolsetSpec) bool {
 func (mr *MockYAMLApplicationMockRecorder) Deploy(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deploy", reflect.TypeOf((*MockYAMLApplication)(nil).Deploy), arg0)
-}
-
-// SetAppliedSpec mocks base method
-func (m *MockYAMLApplication) SetAppliedSpec(arg0 *v1beta1.ToolsetSpec) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAppliedSpec", arg0)
-}
-
-// SetAppliedSpec indicates an expected call of SetAppliedSpec
-func (mr *MockYAMLApplicationMockRecorder) SetAppliedSpec(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAppliedSpec", reflect.TypeOf((*MockYAMLApplication)(nil).SetAppliedSpec), arg0)
 }
 
 // GetName mocks base method
@@ -355,30 +223,16 @@ func (mr *MockYAMLApplicationMockRecorder) GetName() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockYAMLApplication)(nil).GetName))
 }
 
-// GetNamespace mocks base method
-func (m *MockYAMLApplication) GetNamespace() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespace")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetNamespace indicates an expected call of GetNamespace
-func (mr *MockYAMLApplicationMockRecorder) GetNamespace() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockYAMLApplication)(nil).GetNamespace))
-}
-
 // GetYaml mocks base method
-func (m *MockYAMLApplication) GetYaml() interface{} {
+func (m *MockYAMLApplication) GetYaml(arg0 mntr.Monitor, arg1 *v1beta1.ToolsetSpec) interface{} {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetYaml")
+	ret := m.ctrl.Call(m, "GetYaml", arg0, arg1)
 	ret0, _ := ret[0].(interface{})
 	return ret0
 }
 
 // GetYaml indicates an expected call of GetYaml
-func (mr *MockYAMLApplicationMockRecorder) GetYaml() *gomock.Call {
+func (mr *MockYAMLApplicationMockRecorder) GetYaml(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetYaml", reflect.TypeOf((*MockYAMLApplication)(nil).GetYaml))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetYaml", reflect.TypeOf((*MockYAMLApplication)(nil).GetYaml), arg0, arg1)
 }

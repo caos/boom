@@ -1,39 +1,50 @@
 package bundle
 
 import (
+	"sync"
+
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
-	"github.com/caos/boom/internal/helper"
-	"github.com/caos/boom/internal/kubectl"
+	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
+	"github.com/caos/boom/internal/templator/helm"
 	helperTemp "github.com/caos/boom/internal/templator/helper"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/boom/internal/templator/yaml"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
+var (
+	Testmode bool = false
+)
+
 type Bundle struct {
-	baseDirectoryPath       string
-	dashboardsDirectoryPath string
-	Applications            map[name.Application]application.Application
-	Templator               templator.Templator
-	logger                  logging.Logger
-	status                  error
+	baseDirectoryPath string
+	crdName           string
+	Applications      map[name.Application]application.Application
+	HelmTemplator     templator.Templator
+	YamlTemplator     templator.Templator
+	monitor           mntr.Monitor
+	status            error
 }
 
 func New(conf *config.Config) *Bundle {
 	apps := make(map[name.Application]application.Application, 0)
-	templator := helperTemp.NewTemplator(conf.Logger, conf.CrdName, conf.BaseDirectoryPath, conf.Templator)
+	helmTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, helm.GetName())
+	yamlTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, yaml.GetName())
 
 	b := &Bundle{
-		baseDirectoryPath:       conf.BaseDirectoryPath,
-		dashboardsDirectoryPath: conf.DashboardsDirectoryPath,
-		logger:                  conf.Logger,
-		Templator:               templator,
-		Applications:            apps,
-		status:                  nil,
+		crdName:           conf.CrdName,
+		baseDirectoryPath: conf.BaseDirectoryPath,
+		monitor:           conf.Monitor,
+		HelmTemplator:     helmTemplator,
+		YamlTemplator:     yamlTemplator,
+		Applications:      apps,
+		status:            nil,
 	}
 	return b
 }
@@ -47,7 +58,11 @@ func (b *Bundle) CleanUp() *Bundle {
 		return b
 	}
 
-	b.status = b.Templator.CleanUp().GetStatus()
+	b.status = b.HelmTemplator.CleanUp().GetStatus()
+	if b.GetStatus() != nil {
+		return b
+	}
+	b.status = b.YamlTemplator.CleanUp().GetStatus()
 	return b
 }
 
@@ -80,7 +95,7 @@ func (b *Bundle) AddApplicationByName(appName name.Application) *Bundle {
 		return b
 	}
 
-	app := application.New(b.logger, appName)
+	app := application.New(b.monitor, appName)
 	return b.AddApplication(app)
 }
 
@@ -98,66 +113,83 @@ func (b *Bundle) AddApplication(app application.Application) *Bundle {
 	return b
 }
 
-func (b *Bundle) Reconcile(spec *v1beta1.ToolsetSpec) *Bundle {
+func (b *Bundle) Reconcile(currentResourceList []*clientgo.Resource, spec *v1beta1.ToolsetSpec) *Bundle {
+	if b.status != nil {
+		return b
+	}
+
 	applicationCount := 0
 	// go through list of application until every application is reconciled
-	// and this orderNumber by orderNumber (default is 0)
+	// and this orderNumber by orderNumber (default is 1)
 	for orderNumber := 0; applicationCount < len(b.Applications); orderNumber++ {
+		var wg sync.WaitGroup
 		for appName := range b.Applications {
 			//if application has the same orderNumber as currently iterating the reconcile the application
 			if application.GetOrderNumber(appName) == orderNumber {
-				if err := b.ReconcileApplication(appName, spec).GetStatus(); err != nil {
+				wg.Add(1)
+				go b.ReconcileApplication(currentResourceList, appName, spec, &wg)
+				if err := b.GetStatus(); err != nil {
 					b.status = err
 					return b
 				}
 				applicationCount++
 			}
 		}
+		wg.Wait()
 	}
 
 	return b
 }
 
-func (b *Bundle) ReconcileApplication(appName name.Application, spec *v1beta1.ToolsetSpec) *Bundle {
+func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup) *Bundle {
+	defer wg.Done()
+
 	if b.status != nil {
 		return b
 	}
 
 	logFields := map[string]interface{}{
 		"application": appName,
-		"logID":       "CRD-rGkpjHLZtVAWumr",
+		"action":      "reconciling",
 	}
+	monitor := b.monitor.WithFields(logFields)
 
 	app, found := b.Applications[appName]
 	if !found {
 		b.status = errors.New("Application not found")
-		b.logger.WithFields(logFields).Error(b.status)
+		monitor.Error(b.status)
 		return b
 	}
-	b.logger.WithFields(logFields).Info("Reconciling")
+	monitor.Info("Start")
 
 	deploy := app.Deploy(spec)
-	var command string
-	if deploy {
-		command = "apply"
-	} else if !deploy && app.Changed(spec) && !app.Initial() {
-		command = "delete"
+	currentApplicationResourceList := current.FilterForApplication(appName, currentResourceList)
+
+	var resultFunc func(string, string) error
+	if Testmode {
+		resultFunc = func(resultFilePath, namespace string) error {
+			return nil
+		}
+	} else {
+		if deploy {
+			resultFunc = applyWithCurrentState(monitor, currentApplicationResourceList, app)
+		} else {
+			resultFunc = deleteWithCurrentState(monitor, currentApplicationResourceList, app)
+		}
 	}
 
-	resultFunc := func(resultFilePath, namespace string) error {
-		kubectlCmd := kubectl.New(command).AddParameter("-f", resultFilePath).AddParameter("-n", namespace)
-		return errors.Wrapf(helper.Run(b.logger, kubectlCmd.Build()), "Failed to apply with file %s", resultFilePath)
+	_, usedHelm := app.(application.HelmApplication)
+	if usedHelm {
+		b.status = b.HelmTemplator.Template(app, spec, resultFunc).GetStatus()
+		if b.status != nil {
+			return b
+		}
+	}
+	_, usedYaml := app.(application.YAMLApplication)
+	if usedYaml {
+		b.status = b.YamlTemplator.Template(app, spec, resultFunc).GetStatus()
 	}
 
-	if command == "" {
-		resultFunc = func(resultFilePath, namespace string) error { return nil }
-	}
-
-	b.status = b.Templator.Template(app, spec, resultFunc).GetStatus()
-	if b.status != nil {
-		return b
-	}
-
-	app.SetAppliedSpec(spec)
+	monitor.Info("Done")
 	return b
 }

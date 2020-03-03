@@ -1,15 +1,20 @@
 package apiserver
 
-import "github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/labels"
+)
 
-func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
-	metricsRelabelings := make([]*servicemonitor.ConfigMetricRelabeling, 0)
+func GetServicemonitor(instanceName string) *servicemonitor.Config {
+	monitorlabels := labels.GetMonitorLabels(instanceName, "prometheus")
+
+	metricRelabelings := make([]*servicemonitor.ConfigMetricRelabeling, 0)
 	relabeling := &servicemonitor.ConfigMetricRelabeling{
 		Action:       "keep",
 		Regex:        "default;kubernetes;https",
 		SourceLabels: []string{"__meta_kubernetes_namespace", "__meta_kubernetes_service_name", "__meta_kubernetes_endpoint_port_name"},
 	}
-	metricsRelabelings = append(metricsRelabelings, relabeling)
+	metricRelabelings = append(metricRelabelings, relabeling)
 
 	endpoints := make([]*servicemonitor.ConfigEndpoint, 0)
 	endpoint := &servicemonitor.ConfigEndpoint{
@@ -20,7 +25,7 @@ func GetServicemonitor(monitorlabels map[string]string) *servicemonitor.Config {
 		TLSConfig: &servicemonitor.ConfigTLSConfig{
 			CaFile: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
 		},
-		MetricsRelabelings: metricsRelabelings,
+		MetricRelabelings: metricRelabelings,
 	}
 	endpoints = append(endpoints, endpoint)
 

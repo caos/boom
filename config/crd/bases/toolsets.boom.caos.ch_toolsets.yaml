@@ -187,7 +187,7 @@ spec:
                   properties:
                     enabled:
                       type: boolean
-                    gopassPGPKey:
+                    gopassGPGKey:
                       type: string
                     gopassSSHKey:
                       type: string
@@ -215,6 +215,13 @@ spec:
                       type: string
                   required:
                   - domain
+                  type: object
+                rbacConfig:
+                  properties:
+                    policy.csv:
+                      type: string
+                    policy.default:
+                      type: string
                   type: object
                 repositories:
                   items:
@@ -410,6 +417,8 @@ spec:
               type: object
             loki:
               properties:
+                clusterOutput:
+                  type: boolean
                 deploy:
                   type: boolean
                 logs:
@@ -455,8 +464,20 @@ spec:
                       type: string
                   type: object
               type: object
-            namespace:
-              type: string
+            postApply:
+              properties:
+                deploy:
+                  type: boolean
+                folder:
+                  type: string
+              type: object
+            preApply:
+              properties:
+                deploy:
+                  type: boolean
+                folder:
+                  type: string
+              type: object
             prometheus:
               properties:
                 deploy:

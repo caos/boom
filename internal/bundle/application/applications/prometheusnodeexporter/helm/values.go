@@ -63,4 +63,5 @@ type Values struct {
 	ExtraArgs             []string          `yaml:"extraArgs"`
 	ExtraHostVolumeMounts interface{}       `yaml:"extraHostVolumeMounts"`
 	Configmaps            interface{}       `yaml:"configmaps"`
+	PodLabels             map[string]string `yaml:"podLabels"`
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
@@ -18,15 +18,15 @@ func GetName() name.Templator {
 }
 
 type YAML struct {
-	logger                 logging.Logger
+	monitor                mntr.Monitor
 	status                 error
 	overlay                string
 	templatorDirectoryPath string
 }
 
-func New(logger logging.Logger, overlay, templatorDirectoryPath string) *YAML {
+func New(monitor mntr.Monitor, overlay, templatorDirectoryPath string) *YAML {
 	return &YAML{
-		logger:                 logger,
+		monitor:                monitor,
 		overlay:                overlay,
 		templatorDirectoryPath: templatorDirectoryPath,
 	}

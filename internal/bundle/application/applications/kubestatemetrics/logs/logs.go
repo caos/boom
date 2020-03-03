@@ -1,14 +1,18 @@
 package logs
 
-import "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
+import (
+	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
+	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
+	"github.com/caos/boom/internal/labels"
+)
 
 func GetFlow(outputs []string) *logging.FlowConfig {
-	lables := map[string]string{"app.kubernetes.io/instance": "kube-state-metrics", "app.kubernetes.io/name": "kube-state-metrics"}
+	ls := labels.GetApplicationLabels(info.GetName())
 
 	return &logging.FlowConfig{
 		Name:         "flow-kube-state-metrics",
 		Namespace:    "caos-system",
-		SelectLabels: lables,
+		SelectLabels: ls,
 		Outputs:      outputs,
 		ParserType:   "none",
 	}

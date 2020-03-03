@@ -30,6 +30,6 @@ The following cli-tools are used from the boom:
 
 * helm
 * kubectl
-* kustomize
+* kustomize(just for applying the toolset-crd)
 
 As they are used, they also have to be installed into the image during the docker build.

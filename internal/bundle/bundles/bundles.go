@@ -1,15 +1,15 @@
 package bundles
 
 import (
-	"github.com/caos/boom/internal/bundle/application/applications/ambassador"
-	"github.com/caos/boom/internal/bundle/application/applications/argocd"
-	"github.com/caos/boom/internal/bundle/application/applications/grafana"
-	"github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics"
-	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator"
-	"github.com/caos/boom/internal/bundle/application/applications/loki"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheus"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheusoperator"
+	ambassadorinfo "github.com/caos/boom/internal/bundle/application/applications/ambassador/info"
+	argocdinfo "github.com/caos/boom/internal/bundle/application/applications/argocd/info"
+	grafanainfo "github.com/caos/boom/internal/bundle/application/applications/grafana/info"
+	kubestatemetricsinfo "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/info"
+	loggingoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/info"
+	lokiinfo "github.com/caos/boom/internal/bundle/application/applications/loki/info"
+	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
+	prometheusnodeexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
+	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -38,15 +38,15 @@ func Get(bundle name.Bundle) []name.Application {
 func GetCaos() []name.Application {
 
 	apps := make([]name.Application, 0)
-	apps = append(apps, ambassador.GetName())
-	apps = append(apps, argocd.GetName())
-	apps = append(apps, prometheusoperator.GetName())
-	apps = append(apps, kubestatemetrics.GetName())
-	apps = append(apps, prometheusnodeexporter.GetName())
-	apps = append(apps, grafana.GetName())
-	apps = append(apps, prometheus.GetName())
-	apps = append(apps, loggingoperator.GetName())
-	apps = append(apps, loki.GetName())
+	apps = append(apps, ambassadorinfo.GetName())
+	apps = append(apps, argocdinfo.GetName())
+	apps = append(apps, prometheusoperatorinfo.GetName())
+	apps = append(apps, kubestatemetricsinfo.GetName())
+	apps = append(apps, prometheusnodeexporterinfo.GetName())
+	apps = append(apps, grafanainfo.GetName())
+	apps = append(apps, prometheusinfo.GetName())
+	apps = append(apps, loggingoperatorinfo.GetName())
+	apps = append(apps, lokiinfo.GetName())
 
 	return apps
 }

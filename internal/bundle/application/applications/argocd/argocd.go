@@ -1,47 +1,33 @@
 package argocd
 
 import (
-	"reflect"
-
-	"github.com/caos/orbiter/logging"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/name"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Argocd struct {
-	logger logging.Logger
-	spec   *toolsetsv1beta1.Argocd
+	monitor mntr.Monitor
+	spec    *toolsetsv1beta1.Argocd
 }
 
-func New(logger logging.Logger) *Argocd {
+func New(monitor mntr.Monitor) *Argocd {
 	c := &Argocd{
-		logger: logger,
+		monitor: monitor,
 	}
 
 	return c
 }
 
 func (a *Argocd) GetName() name.Application {
-	return applicationName
+	return info.GetName()
 }
 
 func (a *Argocd) Deploy(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
 	return toolsetCRDSpec.Argocd.Deploy
 }
 
-func (a *Argocd) Initial() bool {
-	return a.spec == nil
-}
-
-func (a *Argocd) Changed(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) bool {
-	return !reflect.DeepEqual(toolsetCRDSpec.Argocd, a.spec)
-}
-
-func (a *Argocd) SetAppliedSpec(toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) {
-	a.spec = toolsetCRDSpec.Argocd
-}
-
 func (a *Argocd) GetNamespace() string {
-	return "caos-system"
+	return info.GetNamespace()
 }

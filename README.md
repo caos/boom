@@ -38,6 +38,12 @@ metadata:
   name: caos
   namespace: caos-system
 spec:
+  preApply:
+    deploy: true
+    folder: preapply
+  postApply:
+    deploy: true
+    folder: postapply
   prometheus-operator:
     deploy: true
   logging-operator:
@@ -47,15 +53,31 @@ spec:
   grafana:
     deploy: true
   ambassador:
-    deploy: false
+    deploy: true
+    service:
+      type: LoadBalancer
   kube-state-metrics:
     deploy: true
   argocd:
     deploy: false
+    customImage:
+      enabled: false
+      imagePullSecret: github-image
+      gopassGPGKey: "gpg"
+      gopassSSHKey: "ssh"
+      gopassStores:
+      - directory: "directory"
+        storeName: "store"
   prometheus:
     deploy: true
+    storage:
+      size: 5Gi
+      storageClass: standard
   loki:
-    deploy: false
+    deploy: true
+    storage:
+      size: 5Gi
+      storageClass: standard
 ```
 
 ## How to use it

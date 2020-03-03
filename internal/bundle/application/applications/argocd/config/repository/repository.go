@@ -2,7 +2,7 @@ package repository
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 )
 
 type Repository struct {
@@ -17,7 +17,7 @@ type secret struct {
 	Key  string
 }
 
-func GetFromSpec(logger logging.Logger, spec *toolsetsv1beta1.Argocd) []*Repository {
+func GetFromSpec(monitor mntr.Monitor, spec *toolsetsv1beta1.Argocd) []*Repository {
 	repositories := make([]*Repository, 0)
 
 	if spec.Repositories == nil || len(spec.Repositories) == 0 {

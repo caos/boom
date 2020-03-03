@@ -199,9 +199,13 @@ type Server struct {
 	Ingress                *Ingress          `yaml:"ingress"`
 	Route                  *Route            `yaml:"route"`
 	Config                 *Config           `yaml:"config"`
-	RbacConfig             struct{}          `yaml:"rbacConfig"`
+	RbacConfig             *RbacConfig       `yaml:"rbacConfig,omitempty"`
 	AdditionalApplications []interface{}     `yaml:"additionalApplications"`
 	AdditionalProjects     []interface{}     `yaml:"additionalProjects"`
+}
+type RbacConfig struct {
+	Csv     string `yaml:"policy.csv,omitempty"`
+	Default string `yaml:"policy.default,omitempty"`
 }
 
 type RepoServer struct {

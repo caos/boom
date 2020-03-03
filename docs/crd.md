@@ -4,6 +4,8 @@
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `preApply`                         | Spec for the yaml-files applied before applications                             |                                   |
+| `postApply`                        | Spec for the yaml-files applied after applications                              |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
 | `logging-operator`                 | Spec for the Banzaicloud Logging-Operator                                       |                                   |
 | `prometheus-node-exporter`         | Spec for the Prometheus-Node-Exporter                                           |                                   |
@@ -13,6 +15,20 @@
 | `argocd`                           | Spec for the Argo-CD                                                            |                                   |
 | `prometheus`                       | Spec for the Prometheus instance                                                |                                   |
 | `loki`                             | Spec for the Loki instance                                                      |                                   |
+
+### Pre-Apply
+
+| Parameter                          | Description                                                                     | Default                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `folder`                           | Relative path of folder in cloned git repository which should be applied        |                                   |
+
+### Post-Apply
+
+| Parameter                          | Description                                                                     | Default                           |
+| ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `deploy`                           | Flag if tool should be deployed                                                 | false                             |
+| `folder`                           | Relative path of folder in cloned git repository which should be applied        |                                   |
 
 ### Prometheus-Operator
 
@@ -91,9 +107,12 @@
 | `customImage.gopassSSHKey`         | Name of the existent secret which contains the ssh-key                          |                                   |
 | `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
 | `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
-| `network`                          | Network configuration, [here](network.md)                                       |                                   |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
-| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     |                                   |
+| `rbacConfig`                       | Config for RBAC in argocd                                                       | nil                               |
+| `policy.csv`                       | Attribute policy.csv which goes into configmap argocd-rbac-cm                   |                                   |
+| `policy.default`                   | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
+| `network`                          | Network configuration, [here](network.md)                                       | nil                               |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  | nil                               |
+| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
 
 ### Prometheus
 

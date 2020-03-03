@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/helper"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/pkg/errors"
 )
 
@@ -22,7 +22,7 @@ type google struct {
 }
 
 func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector, redirect string) (interface{}, error) {
-	secret, err := helper.GetSecret(spec.Config.SecretName, "caos-system")
+	secret, err := clientgo.GetSecret(spec.Config.SecretName, "caos-system")
 	if err != nil {
 		return "", err
 	}

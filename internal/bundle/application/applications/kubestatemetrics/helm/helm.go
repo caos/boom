@@ -5,12 +5,12 @@ import "github.com/caos/boom/internal/templator/helm/chart"
 func GetChartInfo() *chart.Chart {
 	return &chart.Chart{
 		Name:    "kube-state-metrics",
-		Version: "2.6.3",
+		Version: "2.7.1",
 	}
 }
 
 func GetImageTags() map[string]string {
 	return map[string]string{
-		"quay.io/coreos/kube-state-metrics": "v1.9.3",
+		"quay.io/coreos/kube-state-metrics": "v1.9.5",
 	}
 }

@@ -4,11 +4,11 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 )
 
-func Run(logger logging.Logger, cmd exec.Cmd) error {
+func Run(monitor mntr.Monitor, cmd exec.Cmd) error {
 
 	var command string
 	for _, arg := range cmd.Args {
@@ -20,15 +20,38 @@ func Run(logger logging.Logger, cmd exec.Cmd) error {
 	}
 	command = command[1:]
 
-	kubectlLogger := logger.WithFields(map[string]interface{}{
-		"cmd":   command,
-		"logId": "CMD-sN18gqW3pTG8rUR",
+	cmdMonitor := monitor.WithFields(map[string]interface{}{
+		"cmd": command,
 	})
 
-	kubectlLogger.Debug("Executing")
+	cmdMonitor.Debug("Executing")
 
 	out, err := cmd.CombinedOutput()
-	kubectlLogger.Debug(string(out))
+	cmdMonitor.Debug(string(out))
 
 	return errors.Wrapf(err, "Error while executing command: Response: %s", string(out))
+}
+
+func RunWithOutput(monitor mntr.Monitor, cmd exec.Cmd) ([]byte, error) {
+
+	var command string
+	for _, arg := range cmd.Args {
+		if strings.Contains(arg, " ") {
+			command += " \\\"" + arg + "\\\""
+			continue
+		}
+		command += " " + arg
+	}
+	command = command[1:]
+
+	cmdMonitor := monitor.WithFields(map[string]interface{}{
+		"cmd": command,
+	})
+
+	cmdMonitor.Debug("Executing")
+
+	out, err := cmd.CombinedOutput()
+	cmdMonitor.Debug(string(out))
+
+	return out, errors.Wrapf(err, "Error while executing command: Response: %s", string(out))
 }

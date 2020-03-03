@@ -61,6 +61,10 @@ type Admin struct {
 	PasswordKey    string `yaml:"passwordKey"`
 }
 
+type Service struct {
+	Labels map[string]string `yaml:"labels,omitempty"`
+}
+
 type Persistence struct {
 	Type             string   `yaml:"type"`
 	Enabled          bool     `yaml:"enabled"`
@@ -100,6 +104,9 @@ type GrafanaValues struct {
 	Plugins                  []string                         `yaml:"plugins,omitempty"`
 	Image                    *grafanastandalone.Image         `yaml:"image,omitempty"`
 	Env                      map[string]string                `yaml:"env,omitempty"`
+	Service                  *Service                         `yaml:"service,omitempty"`
+	Labels                   map[string]string                `yaml:"labels,omitempty"`
+	PodLabels                map[string]string                `yaml:"podLabels,omitempty"`
 }
 
 type Rules struct {

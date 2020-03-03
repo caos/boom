@@ -23,9 +23,17 @@ func YamlToStruct(path string, struc interface{}) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, struc)
-	if err != nil {
-		return errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", path)
+	text := string(data)
+	parts := strings.Split(text, "\n---\n")
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		err = yaml.Unmarshal([]byte(part), struc)
+		if err != nil {
+			return errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", path)
+		}
+		return nil
 	}
 	return nil
 }
@@ -37,34 +45,4 @@ func YamlToString(path string) (string, error) {
 	}
 
 	return string(data), nil
-}
-
-func GetVersionFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-
-	if resource.ApiVersion == "" {
-		return "", errors.New("No attribute apiVersion in yaml")
-	}
-
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[1], nil
-}
-
-func GetApiGroupFromYaml(filePath string) (string, error) {
-	resource := &Resource{}
-	if err := YamlToStruct(filePath, resource); err != nil {
-		return "", err
-	}
-
-	if resource.ApiVersion == "" {
-		return "", errors.New("No attribute apiVersion in yaml")
-	}
-
-	parts := strings.Split(resource.ApiVersion, "/")
-
-	return parts[0], nil
 }

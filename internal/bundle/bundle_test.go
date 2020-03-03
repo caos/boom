@@ -1,20 +1,21 @@
 package bundle
 
 import (
-	"os"
+	"sync"
 
 	"github.com/caos/boom/api/v1beta1"
 	application "github.com/caos/boom/internal/bundle/application/mock"
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	"github.com/stretchr/testify/assert"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	ctrl "sigs.k8s.io/controller-runtime"
+
+	yamlv3 "gopkg.in/yaml.v3"
 
 	"testing"
 )
@@ -24,20 +25,52 @@ const (
 	dashboardsDirectoryPath = "../../dashboards"
 )
 
+var (
+	testHelperResource = &helper.Resource{
+		Kind:       "test",
+		ApiVersion: "test/v1",
+		Metadata: &helper.Metadata{
+			Name:      "test",
+			Namespace: "test",
+		},
+	}
+	testClientgoResource = &clientgo.Resource{
+		Group:     "test",
+		Version:   "v1",
+		Resource:  "test",
+		Kind:      "test",
+		Name:      "test",
+		Namespace: "test",
+		Labels:    map[string]string{"test": "test"},
+	}
+)
+
+func newMonitor() mntr.Monitor {
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+
+	return monitor
+}
+
 func NewBundle(templator name.Templator) *Bundle {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+	monitor := newMonitor()
 
 	bundleConf := &config.Config{
-		Logger:                  logger,
-		CrdName:                 "caos_test",
-		BaseDirectoryPath:       baseDirectoryPath,
-		DashboardsDirectoryPath: dashboardsDirectoryPath,
-		Templator:               templator,
+		Monitor:           monitor,
+		CrdName:           "caos_test",
+		BaseDirectoryPath: baseDirectoryPath,
+		Templator:         templator,
 	}
 
 	b := New(bundleConf)
 	return b
+}
+
+func init() {
+	Testmode = true
 }
 
 func TestBundle_EmptyApplicationList(t *testing.T) {
@@ -75,7 +108,10 @@ func TestBundle_AddApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
 	b.AddApplication(app.Application())
 
 	apps := b.GetApplications()
@@ -87,7 +123,10 @@ func TestBundle_AddApplication_AlreadyAdded(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
 	err := b.AddApplication(app.Application()).GetStatus()
 	assert.NoError(t, err)
 
@@ -104,10 +143,17 @@ func TestBundle_ReconcileApplication(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
 	b.AddApplication(app.Application())
 
-	err := b.ReconcileApplication(app.Application().GetName(), spec).GetStatus()
+	resources := []*clientgo.Resource{testClientgoResource}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	err := b.ReconcileApplication(resources, app.Application().GetName(), spec, &wg).GetStatus()
 	assert.NoError(t, err)
 }
 
@@ -116,9 +162,15 @@ func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
 
-	err := b.ReconcileApplication(app.Application().GetName(), nil).GetStatus()
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
+
+	resources := []*clientgo.Resource{}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	err := b.ReconcileApplication(resources, app.Application().GetName(), nil, &wg).GetStatus()
 	assert.Error(t, err)
 }
 
@@ -127,10 +179,15 @@ func TestBundle_Reconcile(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(spec).SetChanged(spec, true).SetDeploy(spec, true).SetInitial(true).SetGetYaml("test")
+
+	out, _ := yamlv3.Marshal(testHelperResource)
+	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
 	b.AddApplication(app.Application())
 
-	err := b.Reconcile(spec).GetStatus()
+	resources := []*clientgo.Resource{}
+
+	b.Reconcile(resources, spec)
+	err := b.GetStatus()
 	assert.NoError(t, err)
 }
 
@@ -138,7 +195,8 @@ func TestBundle_Reconcile_NoApplications(t *testing.T) {
 	b := NewBundle(yaml.GetName())
 
 	spec := &v1beta1.ToolsetSpec{}
-
-	err := b.Reconcile(spec).GetStatus()
+	resources := []*clientgo.Resource{}
+	b.Reconcile(resources, spec)
+	err := b.GetStatus()
 	assert.NoError(t, err)
 }

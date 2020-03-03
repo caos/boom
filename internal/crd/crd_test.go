@@ -1,23 +1,22 @@
 package crd
 
 import (
-	"os"
 	"testing"
 
 	"github.com/caos/boom/api/v1beta1"
+	"github.com/caos/boom/internal/bundle"
 	application "github.com/caos/boom/internal/bundle/application/mock"
 	"github.com/caos/boom/internal/bundle/bundles"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd/config"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/boom/internal/templator/yaml"
-	logcontext "github.com/caos/orbiter/logging/context"
-	"github.com/caos/orbiter/logging/kubebuilder"
-	"github.com/caos/orbiter/logging/stdlib"
+	"github.com/caos/orbiter/mntr"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var (
@@ -73,13 +72,36 @@ var (
 			},
 		},
 	}
+
+	testHelperResource = &helper.Resource{
+		Kind:       "test",
+		ApiVersion: "test/v1",
+		Metadata: &helper.Metadata{
+			Name:      "test",
+			Namespace: "test",
+		},
+	}
+	testClientgoResource = &clientgo.Resource{
+		Group:     "test",
+		Version:   "v1",
+		Resource:  "test",
+		Kind:      "test",
+		Name:      "test",
+		Namespace: "test",
+		Labels:    map[string]string{"test": "test"},
+	}
 )
 
 func newCrd() (Crd, error) {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+
 	conf := &config.Config{
-		Logger:  logger,
+		Monitor: monitor,
 		Version: "v1beta1",
 	}
 
@@ -87,18 +109,26 @@ func newCrd() (Crd, error) {
 }
 
 func setBundle(c Crd, bundle name.Bundle) {
-	logger := logcontext.Add(stdlib.New(os.Stdout))
-	ctrl.SetLogger(kubebuilder.New(logger))
+
+	monitor := mntr.Monitor{
+		OnInfo:   mntr.LogMessage,
+		OnChange: mntr.LogMessage,
+		OnError:  mntr.LogError,
+	}
+
 	bundleConfig := &bundleconfig.Config{
-		Logger:                  logger,
-		CrdName:                 "caos_test",
-		BundleName:              bundle,
-		BaseDirectoryPath:       "../../../tools",
-		DashboardsDirectoryPath: "../../../dashboards",
-		Templator:               yaml.GetName(),
+		Monitor:           monitor,
+		CrdName:           "caos_test",
+		BundleName:        bundle,
+		BaseDirectoryPath: "../../../tools",
+		Templator:         yaml.GetName(),
 	}
 
 	c.SetBundle(bundleConfig)
+}
+
+func init() {
+	bundle.Testmode = true
 }
 
 func TestNew(t *testing.T) {
@@ -123,13 +153,14 @@ func TestCrd_Reconcile_initial(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -140,19 +171,20 @@ func TestCrd_Reconcile_changed(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, true).SetInitial(false).SetGetYaml("test2")
-	crd.Reconcile(changedToolset)
+	app.SetDeploy(changedToolset.Spec, true).SetGetYaml(changedToolset.Spec, "test2")
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -163,19 +195,20 @@ func TestCrd_Reconcile_changedDelete(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, true).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, true).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, false).SetInitial(false).SetGetYaml("test2")
-	crd.Reconcile(changedToolset)
+	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }
@@ -186,19 +219,20 @@ func TestCrd_Reconcile_initialNotDeployed(t *testing.T) {
 	bundle := crd.GetBundle()
 
 	app := application.NewTestYAMLApplication(t)
-	app.AllowSetAppliedSpec(fullToolset.Spec).SetChanged(fullToolset.Spec, true).SetDeploy(fullToolset.Spec, false).SetInitial(true).SetGetYaml("test")
+	app.SetDeploy(fullToolset.Spec, false).SetGetYaml(fullToolset.Spec, "test")
 	bundle.AddApplication(app.Application())
 	assert.NoError(t, err)
 	assert.NotNil(t, crd)
 
 	// when crd is nil
-	crd.Reconcile(fullToolset)
+	resources := []*clientgo.Resource{testClientgoResource}
+	crd.Reconcile(resources, fullToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 
 	//changed crd
-	app.AllowSetAppliedSpec(changedToolset.Spec).SetChanged(changedToolset.Spec, true).SetDeploy(changedToolset.Spec, false).SetInitial(false).SetGetYaml("test2")
-	crd.Reconcile(changedToolset)
+	app.SetDeploy(changedToolset.Spec, false).SetGetYaml(changedToolset.Spec, "test2")
+	crd.Reconcile(resources, changedToolset)
 	err = crd.GetStatus()
 	assert.NoError(t, err)
 }

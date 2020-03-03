@@ -3,7 +3,7 @@ package kubectl
 import (
 	"strings"
 
-	"github.com/caos/orbiter/logging"
+	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -33,19 +33,18 @@ func NewVersion() *KubectlVersion {
 	return &KubectlVersion{kubectl: New("version").AddParameter("-o", "yaml")}
 }
 
-func (k *KubectlVersion) GetKubeVersion(logger logging.Logger) (string, error) {
+func (k *KubectlVersion) GetKubeVersion(monitor mntr.Monitor) (string, error) {
 	cmd := k.kubectl.Build()
 
-	kubectlLogger := logger.WithFields(map[string]interface{}{
-		"cmd":   cmd,
-		"logId": "CMD-sN18gqW3pTG8rUR",
+	kubectlMonitor := monitor.WithFields(map[string]interface{}{
+		"cmd": cmd,
 	})
-	kubectlLogger.Debug("Executing")
+	kubectlMonitor.Debug("Executing")
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		err = errors.Wrap(err, "Error while executing command")
-		kubectlLogger.Error(err)
+		kubectlMonitor.Error(err)
 		return "", err
 	}
 
@@ -53,7 +52,7 @@ func (k *KubectlVersion) GetKubeVersion(logger logging.Logger) (string, error) {
 	err = yaml.Unmarshal(out, versions)
 	if err != nil {
 		err = errors.Wrap(err, "Error while unmarshaling output")
-		kubectlLogger.Error(err)
+		kubectlMonitor.Error(err)
 		return "", err
 	}
 

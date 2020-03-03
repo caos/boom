@@ -2,34 +2,29 @@ package app
 
 import (
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
-	crdconfig "github.com/caos/boom/internal/crd/config"
-	"github.com/caos/boom/internal/crd/v1beta1"
+	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/gitcrd"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
 
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm"
-	"github.com/caos/orbiter/logging"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/caos/orbiter/mntr"
 )
 
 type App struct {
-	ToolsDirectoryPath      string
-	CrdDirectoryPath        string
-	DashboardsDirectoryPath string
-	GitCrds                 []gitcrd.GitCrd
-	Crds                    map[string]crd.Crd
-	logger                  logging.Logger
+	ToolsDirectoryPath string
+	GitCrds            []gitcrd.GitCrd
+	Crds               map[string]crd.Crd
+	monitor            mntr.Monitor
 }
 
-func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
+func New(monitor mntr.Monitor, toolsDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
 
 	app := &App{
-		ToolsDirectoryPath:      toolsDirectoryPath,
-		CrdDirectoryPath:        crdDirectoryPath,
-		DashboardsDirectoryPath: dashboardsDirectoryPath,
-		logger:                  logger,
+		ToolsDirectoryPath: toolsDirectoryPath,
+		monitor:            monitor,
 	}
 
 	app.Crds = make(map[string]crd.Crd, 0)
@@ -40,9 +35,7 @@ func New(logger logging.Logger, toolsDirectoryPath, crdDirectoryPath, dashboards
 
 func (a *App) CleanUp() error {
 
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-GiK5XPA5PzwQtjR",
-	}).Info("Cleanup")
+	a.monitor.Info("Cleanup")
 
 	for _, g := range a.GitCrds {
 		g.CleanUp()
@@ -62,91 +55,119 @@ func (a *App) CleanUp() error {
 	return nil
 }
 
-func (a *App) AddGitCrd(url string, privateKey []byte, crdPath string) error {
-
-	gitcrdConf := &gitcrdconfig.Config{
-		Logger:           a.logger,
-		CrdDirectoryPath: a.CrdDirectoryPath,
-		CrdUrl:           url,
-		PrivateKey:       privateKey,
-		CrdPath:          crdPath,
-	}
-
-	c, err := gitcrd.New(gitcrdConf)
-	if err != nil {
-		return err
-	}
-
-	toolsetCRD, err := c.GetCrdContent()
+func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
+	c, err := gitcrd.New(gitCrdConf)
 	if err != nil {
 		return err
 	}
 
 	bundleConf := &bundleconfig.Config{
-		Logger:                  a.logger,
-		CrdName:                 toolsetCRD.Name,
-		BundleName:              bundles.Caos,
-		BaseDirectoryPath:       a.ToolsDirectoryPath,
-		DashboardsDirectoryPath: a.DashboardsDirectoryPath,
-		Templator:               helm.GetName(),
+		BundleName:        bundles.Caos,
+		BaseDirectoryPath: a.ToolsDirectoryPath,
+		Templator:         helm.GetName(),
 	}
 
 	c.SetBundle(bundleConf)
+	if err := c.GetStatus(); err != nil {
+		return err
+	}
+
 	a.GitCrds = append(a.GitCrds, c)
 	return nil
 }
 
-func (a *App) ReconcileGitCrds() error {
-	for _, crdGit := range a.GitCrds {
-		a.logger.WithFields(map[string]interface{}{
-			"logID": "APP-aZAeIqcAmHzflSB",
-		}).Info("Started reconciling of GitCRDs")
+func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 
-		crdGit.Reconcile()
-		err := crdGit.GetStatus()
+	monitor.Info("Started determining current state")
+
+	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+	if err != nil {
+		monitor.Error(err)
+		return nil, err
+	}
+
+	return current.Get(a.monitor, resourceInfoList), nil
+}
+
+func (a *App) ReconcileGitCrds() error {
+	monitor := a.monitor.WithFields(map[string]interface{}{
+		"action": "reconciling",
+	})
+	monitor.Info("Started reconciling of GitCRDs")
+
+	for _, crdGit := range a.GitCrds {
+		crdGit.SetBackStatus()
+
+		currentResourceList, err := a.getCurrent(monitor)
 		if err != nil {
+			return err
+		}
+
+		crdGit.Reconcile(currentResourceList)
+		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
-	a.logger.WithFields(map[string]interface{}{
-		"logID": "APP-aZAeIqcAmHzflSB",
-		"name":  namespacedName,
-	}).Info("Started reconciling of CRD")
+func (a *App) WriteBackCurrentState() error {
 
-	var err error
-	managedcrd, ok := a.Crds[namespacedName]
-	if !ok {
-		crdConf := &crdconfig.Config{
-			Logger:  a.logger,
-			Version: v1beta1.GetVersion(),
-		}
+	monitor := a.monitor.WithFields(map[string]interface{}{
+		"action": "current",
+	})
+	monitor.Info("Started writeback of currentstate of GitCRDs")
 
-		managedcrd, err = crd.New(crdConf)
+	for _, crdGit := range a.GitCrds {
+		crdGit.SetBackStatus()
+
+		currentResourceList, err := a.getCurrent(monitor)
 		if err != nil {
 			return err
 		}
 
-		bundleConf := &bundleconfig.Config{
-			Logger:                  a.logger,
-			CrdName:                 namespacedName,
-			BundleName:              bundles.Caos,
-			BaseDirectoryPath:       a.ToolsDirectoryPath,
-			DashboardsDirectoryPath: a.DashboardsDirectoryPath,
-			Templator:               helm.GetName(),
-		}
-		managedcrd.SetBundle(bundleConf)
-
-		if err := managedcrd.GetStatus(); err != nil {
+		crdGit.WriteBackCurrentState(currentResourceList)
+		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
-
-		a.Crds[namespacedName] = managedcrd
 	}
-
-	managedcrd.ReconcileWithFunc(getToolsetCRD)
-	return managedcrd.GetStatus()
+	return nil
 }
+
+// func (a *App) ReconcileCrd(version, namespacedName string, getToolsetCRD func(instance runtime.Object) error) error {
+// 	a.monitor.WithFields(map[string]interface{}{
+// 		"name": namespacedName,
+// 	}).Info("Started reconciling of CRD")
+
+// 	var err error
+// 	managedcrd, ok := a.Crds[namespacedName]
+// 	if !ok {
+// 		crdConf := &crdconfig.Config{
+// 			Monitor:  a.monitor,
+// 			Version: v1beta1.GetVersion(),
+// 		}
+
+// 		managedcrd, err = crd.New(crdConf)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		bundleConf := &bundleconfig.Config{
+// 			Monitor:            a.monitor,
+// 			CrdName:           namespacedName,
+// 			BundleName:        bundles.Caos,
+// 			BaseDirectoryPath: a.ToolsDirectoryPath,
+// 			Templator:         helm.GetName(),
+// 		}
+// 		managedcrd.SetBundle(bundleConf)
+
+// 		if err := managedcrd.GetStatus(); err != nil {
+// 			return err
+// 		}
+
+// 		a.Crds[namespacedName] = managedcrd
+// 	}
+
+// 	managedcrd.ReconcileWithFunc(getToolsetCRD)
+// 	return managedcrd.GetStatus()
+// }
