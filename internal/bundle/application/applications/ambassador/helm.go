@@ -4,6 +4,7 @@ import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	argocdnet "github.com/caos/boom/internal/bundle/application/applications/argocd/network"
 	grafananet "github.com/caos/boom/internal/bundle/application/applications/grafana/network"
+	"github.com/caos/boom/internal/helper"
 	"github.com/caos/orbiter/mntr"
 
 	"github.com/caos/boom/internal/bundle/application/applications/ambassador/crds"
@@ -29,6 +30,15 @@ func (a *Ambassador) HelmPreApplySteps(monitor mntr.Monitor, toolsetCRDSpec *too
 	}
 
 	return ret, nil
+}
+
+func (a *Ambassador) HelmMutate(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
+
+	if err := helper.DeleteFirstResourceFromYaml(resultFilePath, "v1", "Pod", "ambassador-test-ready"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *Ambassador) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) interface{} {
