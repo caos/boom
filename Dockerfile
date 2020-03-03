@@ -1,7 +1,7 @@
 ####################################################################################################
 # Download dependencies and build
 ####################################################################################################
-FROM golang:1.13.1-alpine3.10 AS dependencies
+FROM golang:1.14.0-alpine3.11 AS dependencies
 
 WORKDIR $GOPATH/src/github.com/caos/boom
 
@@ -48,7 +48,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /gen cmd/gen-executable/*.go
 # ####################################################################################################
 # Run binary
 # ####################################################################################################
-FROM alpine:3.10
+FROM alpine:3.11
 
 RUN apk update && apk add bash ca-certificates
 COPY --from=dependencies /artifacts /usr/local/bin/
