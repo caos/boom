@@ -24,8 +24,6 @@ import (
 
 // ToolsetSpec defines the desired state of Toolset
 type ToolsetSpec struct {
-	Namespace              string                  `json:"namespace,omitempty"`
-	LabelSelectDelete      bool                    `json:"labelSelectDelete,omitempty" yaml:"labelSelectDelete,omitempty"`
 	PreApply               *PreApply               `json:"preApply,omitempty" yaml:"preApply,omitempty"`
 	PostApply              *PostApply              `json:"postApply,omitempty" yaml:"postApply,omitempty"`
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`

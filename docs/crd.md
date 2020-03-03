@@ -4,7 +4,6 @@
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
-| `labelSelectDelete`                | Flag if current state should be read an used for deleting                       |                                   |
 | `preApply`                         | Spec for the yaml-files applied before applications                             |                                   |
 | `postApply`                        | Spec for the yaml-files applied after applications                              |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
