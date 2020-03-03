@@ -38,7 +38,6 @@ metadata:
   name: caos
   namespace: caos-system
 spec:
-  labelSelectDelete: false
   preApply:
     deploy: true
     folder: preapply
