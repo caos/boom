@@ -24,7 +24,6 @@ func GetPrio() name.Templator {
 
 type Helm struct {
 	overlay                string
-	status                 error
 	monitor                mntr.Monitor
 	templatorDirectoryPath string
 }
@@ -37,13 +36,8 @@ func New(monitor mntr.Monitor, overlay, templatorDirectoryPath string) templator
 	}
 }
 
-func (h *Helm) CleanUp() templator.Templator {
-	if h.status != nil {
-		return h
-	}
-
-	h.status = os.RemoveAll(h.templatorDirectoryPath)
-	return h
+func (h *Helm) CleanUp() error {
+	return os.RemoveAll(h.templatorDirectoryPath)
 }
 
 func (h *Helm) getResultsFileDirectory(appName name.Application, overlay, basePath string) string {
@@ -52,10 +46,6 @@ func (h *Helm) getResultsFileDirectory(appName name.Application, overlay, basePa
 
 func (h *Helm) GetResultsFilePath(appName name.Application, overlay, basePath string) string {
 	return filepath.Join(h.getResultsFileDirectory(appName, overlay, basePath), "results.yaml")
-}
-
-func (h *Helm) GetStatus() error {
-	return h.status
 }
 
 func checkTemplatorInterface(templatorInterface interface{}) (templator.HelmApplication, error) {

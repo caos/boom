@@ -22,6 +22,7 @@ type Crd interface {
 	Reconcile([]*clientgo.Resource, *toolsetsv1beta1.Toolset)
 	CleanUp()
 	GetStatus() error
+	SetBackStatus()
 }
 
 func New(conf *config.Config) (Crd, error) {

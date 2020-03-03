@@ -11,15 +11,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, resultFunc func(resultFilePath, namespace string) error) templator.Templator {
-	if h.status != nil {
-		return h
-	}
-
+func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, resultFunc func(resultFilePath, namespace string) error) error {
 	app, err := checkTemplatorInterface(appInterface)
 	if err != nil {
-		h.status = err
-		return h
+		return err
 	}
 
 	logFields := map[string]interface{}{
@@ -30,72 +25,61 @@ func (h *Helm) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 	monitor := h.monitor.WithFields(logFields)
 
 	monitor.Debug("Deleting old results")
-	h.status = h.deleteResults(app)
-	if h.status != nil {
-		return h
+	err = h.deleteResults(app)
+	if err != nil {
+		return err
 	}
 
 	var resultAbsFilePath string
 	resultfilepath := h.GetResultsFilePath(app.GetName(), h.overlay, h.templatorDirectoryPath)
 
-	resultAbsFilePath, h.status = filepath.Abs(resultfilepath)
-	if h.status != nil {
-		return h
+	resultAbsFilePath, err = filepath.Abs(resultfilepath)
+	if err != nil {
+		return err
 	}
 
 	valuesAbsFilePath, err := helper.GetAbsPath(h.templatorDirectoryPath, app.GetName().String(), h.overlay, "values.yaml")
 	if err != nil {
 		monitor.Error(err)
-		h.status = err
-		return h
+		return err
 	}
 
 	if err := h.prepareHelmTemplate(h.overlay, app, spec, valuesAbsFilePath); err != nil {
-		h.status = err
 		monitor.Error(err)
-		return h
+		return err
 	}
 
-	if err := h.mutateValue(app, spec, valuesAbsFilePath).GetStatus(); err != nil {
-		h.status = err
+	if err := h.mutateValue(app, spec, valuesAbsFilePath); err != nil {
 		monitor.Error(err)
-		return h
+		return err
 	}
 
 	if err := h.runHelmTemplate(h.overlay, app, valuesAbsFilePath, resultAbsFilePath); err != nil {
-		h.status = err
 		monitor.Error(err)
-		return h
+		return err
 	}
 
 	deleteKind := "Namespace"
-	h.status = helper.DeleteKindFromYaml(resultAbsFilePath, deleteKind)
-	if h.status != nil {
-		h.status = errors.Wrapf(h.status, "Error while trying to delete kind %s from results", deleteKind)
-		return h
+	err = helper.DeleteKindFromYaml(resultAbsFilePath, deleteKind)
+	if err != nil {
+		return errors.Wrapf(err, "Error while trying to delete kind %s from results", deleteKind)
 	}
 
 	// mutate templated results
-	if err := h.mutate(app, spec).GetStatus(); err != nil {
-		h.status = err
-		return h
+	if err := h.mutate(app, spec); err != nil {
+		return err
 	}
 
 	// pre apply steps
-	if err := h.preApplySteps(app, spec).GetStatus(); err != nil {
-		h.status = err
-		return h
+	if err := h.preApplySteps(app, spec); err != nil {
+		return err
 	}
 
 	// func to apply
-	h.status = resultFunc(resultAbsFilePath, app.GetNamespace())
-	return h
+	return resultFunc(resultAbsFilePath, app.GetNamespace())
 }
 
 func (h *Helm) prepareHelmTemplate(overlay string, app templator.HelmApplication, spec *v1beta1.ToolsetSpec, valuesAbsFilePath string) error {
-	if h.status != nil {
-		return h.status
-	}
 
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
@@ -122,10 +106,6 @@ func (h *Helm) prepareHelmTemplate(overlay string, app templator.HelmApplication
 }
 
 func (h *Helm) runHelmTemplate(overlay string, app templator.HelmApplication, valuesAbsFilePath, resultAbsFilePath string) error {
-	if h.status != nil {
-		return h.status
-	}
-
 	logFields := map[string]interface{}{
 		"application": app.GetName().String(),
 		"overlay":     overlay,

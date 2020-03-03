@@ -127,13 +127,13 @@ func TestBundle_AddApplication_AlreadyAdded(t *testing.T) {
 	out, _ := yamlv3.Marshal(testHelperResource)
 	app.SetDeploy(spec, true).SetGetYaml(spec, string(out))
 
-	err := b.AddApplication(app.Application()).GetStatus()
+	err := b.AddApplication(app.Application())
 	assert.NoError(t, err)
 
 	apps := b.GetApplications()
 	assert.Equal(t, 1, len(apps))
 
-	err2 := b.AddApplication(app.Application()).GetStatus()
+	err2 := b.AddApplication(app.Application())
 	assert.Error(t, err2)
 
 }
@@ -153,8 +153,9 @@ func TestBundle_ReconcileApplication(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	err := b.ReconcileApplication(resources, app.Application().GetName(), spec, &wg).GetStatus()
-	assert.NoError(t, err)
+	errChan := make(chan error)
+	go b.ReconcileApplication(resources, app.Application().GetName(), spec, &wg, errChan)
+	assert.NoError(t, <-errChan)
 }
 
 func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
@@ -170,8 +171,9 @@ func TestBundle_ReconcileApplication_nonexistent(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	err := b.ReconcileApplication(resources, app.Application().GetName(), nil, &wg).GetStatus()
-	assert.Error(t, err)
+	errChan := make(chan error)
+	go b.ReconcileApplication(resources, app.Application().GetName(), nil, &wg, errChan)
+	assert.Error(t, <-errChan)
 }
 
 func TestBundle_Reconcile(t *testing.T) {
@@ -186,8 +188,7 @@ func TestBundle_Reconcile(t *testing.T) {
 
 	resources := []*clientgo.Resource{}
 
-	b.Reconcile(resources, spec)
-	err := b.GetStatus()
+	err := b.Reconcile(resources, spec)
 	assert.NoError(t, err)
 }
 
@@ -196,7 +197,6 @@ func TestBundle_Reconcile_NoApplications(t *testing.T) {
 
 	spec := &v1beta1.ToolsetSpec{}
 	resources := []*clientgo.Resource{}
-	b.Reconcile(resources, spec)
-	err := b.GetStatus()
+	err := b.Reconcile(resources, spec)
 	assert.NoError(t, err)
 }

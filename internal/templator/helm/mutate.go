@@ -11,10 +11,7 @@ type TemplatorMutate interface {
 	HelmMutate(mntr.Monitor, *v1beta1.ToolsetSpec, string) error
 }
 
-func (h *Helm) mutate(app interface{}, spec *v1beta1.ToolsetSpec) templator.Templator {
-	if h.status != nil {
-		return h
-	}
+func (h *Helm) mutate(app interface{}, spec *v1beta1.ToolsetSpec) error {
 
 	mutate, ok := app.(TemplatorMutate)
 	if ok {
@@ -30,9 +27,9 @@ func (h *Helm) mutate(app interface{}, spec *v1beta1.ToolsetSpec) templator.Temp
 		resultfilepath := h.GetResultsFilePath(mutate.GetName(), h.overlay, h.templatorDirectoryPath)
 
 		if err := mutate.HelmMutate(mutateMonitor, spec, resultfilepath); err != nil {
-			h.status = err
-			return h
+			return err
 		}
 	}
-	return h
+
+	return nil
 }

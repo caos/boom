@@ -8,10 +8,9 @@ import (
 )
 
 type Templator interface {
-	Template(interface{}, *v1beta1.ToolsetSpec, func(string, string) error) Templator
+	Template(interface{}, *v1beta1.ToolsetSpec, func(string, string) error) error
 	GetResultsFilePath(name.Application, string, string) string
-	CleanUp() Templator
-	GetStatus() error
+	CleanUp() error
 }
 
 type BaseApplication interface {

@@ -29,7 +29,6 @@ type Bundle struct {
 	HelmTemplator     templator.Templator
 	YamlTemplator     templator.Templator
 	monitor           mntr.Monitor
-	status            error
 }
 
 func New(conf *config.Config) *Bundle {
@@ -44,26 +43,18 @@ func New(conf *config.Config) *Bundle {
 		HelmTemplator:     helmTemplator,
 		YamlTemplator:     yamlTemplator,
 		Applications:      apps,
-		status:            nil,
 	}
 	return b
 }
 
-func (b *Bundle) GetStatus() error {
-	return b.status
-}
+func (b *Bundle) CleanUp() error {
 
-func (b *Bundle) CleanUp() *Bundle {
-	if b.GetStatus() != nil {
-		return b
+	err := b.HelmTemplator.CleanUp()
+	if err != nil {
+		return err
 	}
 
-	b.status = b.HelmTemplator.CleanUp().GetStatus()
-	if b.GetStatus() != nil {
-		return b
-	}
-	b.status = b.YamlTemplator.CleanUp().GetStatus()
-	return b
+	return b.YamlTemplator.CleanUp()
 }
 
 func (b *Bundle) GetApplications() map[name.Application]application.Application {
@@ -71,9 +62,6 @@ func (b *Bundle) GetApplications() map[name.Application]application.Application 
 }
 
 func (b *Bundle) AddApplicationsByBundleName(name name.Bundle) error {
-	if err := b.GetStatus(); err != nil {
-		return err
-	}
 
 	names := bundles.Get(name)
 	if names == nil {
@@ -82,71 +70,60 @@ func (b *Bundle) AddApplicationsByBundleName(name name.Bundle) error {
 
 	bnew := b
 	for _, name := range names {
-		bnew = bnew.AddApplicationByName(name)
-		if err := bnew.GetStatus(); err != nil {
+		if err := bnew.AddApplicationByName(name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (b *Bundle) AddApplicationByName(appName name.Application) *Bundle {
-	if b.GetStatus() != nil {
-		return b
-	}
+func (b *Bundle) AddApplicationByName(appName name.Application) error {
 
 	app := application.New(b.monitor, appName)
 	return b.AddApplication(app)
 }
 
-func (b *Bundle) AddApplication(app application.Application) *Bundle {
-	if b.GetStatus() != nil {
-		return b
-	}
+func (b *Bundle) AddApplication(app application.Application) error {
 
 	if _, found := b.Applications[app.GetName()]; found {
-		b.status = errors.New("Application already in bundle")
-		return b
+		return errors.New("Application already in bundle")
 	}
 
 	b.Applications[app.GetName()] = app
-	return b
+	return nil
 }
 
-func (b *Bundle) Reconcile(currentResourceList []*clientgo.Resource, spec *v1beta1.ToolsetSpec) *Bundle {
-	if b.status != nil {
-		return b
-	}
+func (b *Bundle) Reconcile(currentResourceList []*clientgo.Resource, spec *v1beta1.ToolsetSpec) error {
 
 	applicationCount := 0
 	// go through list of application until every application is reconciled
 	// and this orderNumber by orderNumber (default is 1)
 	for orderNumber := 0; applicationCount < len(b.Applications); orderNumber++ {
 		var wg sync.WaitGroup
+		errList := make(map[name.Application]chan error, len(b.Applications))
 		for appName := range b.Applications {
 			//if application has the same orderNumber as currently iterating the reconcile the application
 			if application.GetOrderNumber(appName) == orderNumber {
 				wg.Add(1)
-				go b.ReconcileApplication(currentResourceList, appName, spec, &wg)
-				if err := b.GetStatus(); err != nil {
-					b.status = err
-					return b
-				}
+				errChan := make(chan error)
+				go b.ReconcileApplication(currentResourceList, appName, spec, &wg, errChan)
 				applicationCount++
+				errList[appName] = errChan
+			}
+		}
+		for appName, errChan := range errList {
+			if err := <-errChan; err != nil {
+				return errors.Wrapf(err, "Error while reconciling application %s", appName.String())
 			}
 		}
 		wg.Wait()
 	}
 
-	return b
+	return nil
 }
 
-func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup) *Bundle {
+func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, appName name.Application, spec *v1beta1.ToolsetSpec, wg *sync.WaitGroup, errChan chan error) {
 	defer wg.Done()
-
-	if b.status != nil {
-		return b
-	}
 
 	logFields := map[string]interface{}{
 		"application": appName,
@@ -156,9 +133,10 @@ func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, 
 
 	app, found := b.Applications[appName]
 	if !found {
-		b.status = errors.New("Application not found")
-		monitor.Error(b.status)
-		return b
+		err := errors.New("Application not found")
+		monitor.Error(err)
+		errChan <- err
+		return
 	}
 	monitor.Info("Start")
 
@@ -180,16 +158,21 @@ func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, 
 
 	_, usedHelm := app.(application.HelmApplication)
 	if usedHelm {
-		b.status = b.HelmTemplator.Template(app, spec, resultFunc).GetStatus()
-		if b.status != nil {
-			return b
+		err := b.HelmTemplator.Template(app, spec, resultFunc)
+		if err != nil {
+			errChan <- err
+			return
 		}
 	}
 	_, usedYaml := app.(application.YAMLApplication)
 	if usedYaml {
-		b.status = b.YamlTemplator.Template(app, spec, resultFunc).GetStatus()
+		err := b.YamlTemplator.Template(app, spec, resultFunc)
+		if err != nil {
+			errChan <- err
+			return
+		}
 	}
 
 	monitor.Info("Done")
-	return b
+	errChan <- nil
 }

@@ -19,7 +19,6 @@ func GetName() name.Templator {
 
 type YAML struct {
 	monitor                mntr.Monitor
-	status                 error
 	overlay                string
 	templatorDirectoryPath string
 }
@@ -32,10 +31,6 @@ func New(monitor mntr.Monitor, overlay, templatorDirectoryPath string) *YAML {
 	}
 }
 
-func (y *YAML) GetStatus() error {
-	return y.status
-}
-
 func (y *YAML) getResultsFileDirectory(appName name.Application, overlay, basePath string) string {
 	return filepath.Join(basePath, appName.String(), overlay, "results")
 }
@@ -44,8 +39,8 @@ func (y *YAML) GetResultsFilePath(appName name.Application, overlay, basePath st
 	return filepath.Join(y.getResultsFileDirectory(appName, overlay, basePath), "results.yaml")
 }
 
-func (y *YAML) CleanUp() templator.Templator {
-	return y
+func (y *YAML) CleanUp() error {
+	return nil
 }
 
 func checkTemplatorInterface(templatorInterface interface{}) (templator.YamlApplication, error) {

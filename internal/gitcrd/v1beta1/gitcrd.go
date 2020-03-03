@@ -65,7 +65,9 @@ func New(conf *config.Config) (*GitCrd, error) {
 func (c *GitCrd) GetStatus() error {
 	return c.status
 }
+
 func (c *GitCrd) SetBackStatus() {
+	c.crd.SetBackStatus()
 	c.status = nil
 }
 
@@ -160,6 +162,7 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 		}
 	}
 }
+
 func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()

@@ -29,12 +29,16 @@ func (c *Crd) GetStatus() error {
 	return c.status
 }
 
+func (c *Crd) SetBackStatus() {
+	c.status = nil
+}
+
 func (c *Crd) CleanUp() {
 	if c.GetStatus() != nil {
 		return
 	}
 
-	c.status = c.bundle.CleanUp().GetStatus()
+	c.status = c.bundle.CleanUp()
 }
 
 func GetVersion() name.Version {
@@ -94,6 +98,7 @@ func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *to
 	if c.GetStatus() != nil {
 		return
 	}
+
 	logFields := map[string]interface{}{
 		"CRD":    toolsetCRD.Name,
 		"action": "reconciling",
@@ -112,5 +117,5 @@ func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *to
 		return
 	}
 
-	c.status = c.bundle.Reconcile(currentResourceList, toolsetCRD.Spec).GetStatus()
+	c.status = c.bundle.Reconcile(currentResourceList, toolsetCRD.Spec)
 }
