@@ -399,8 +399,6 @@ spec:
                 replicaCount:
                   type: integer
               type: object
-            labelSelectDelete:
-              type: boolean
             logging-operator:
               properties:
                 deploy:
@@ -466,8 +464,6 @@ spec:
                       type: string
                   type: object
               type: object
-            namespace:
-              type: string
             postApply:
               properties:
                 deploy:
