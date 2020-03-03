@@ -31,6 +31,8 @@ the same for argocd:
 
 # Grafana
 
+In the IDP used for auth there has to be a registered client with clientID and clientSecret, whereas there also has to be a registered redirectURI. This redirectURI should be *domain-for-grafana*/login/*id*, for example with google: "https://grafana.example.caos.ch/login/google".
+
 All configuration for SSO is under the "auth"-attribute, whereas the domain has to be set correctly so that the redirect works correctly:
 
 ```yaml  
@@ -86,7 +88,9 @@ The use google as IDP there is the possbility to limit the allowed organizations
 
 # Argocd
 
-All configuration for SSO is under the "auth"-attribute, whereas the rootUrl is used for the redirect urls:
+In the IDP used for auth there has to be a registered client with clientID and clientSecret, whereas there also has to be a registered redirectURI. This redirectURI should be *domain-for-argocd*/login/*id*, for example with google: "https://argocd.example.caos.ch/api/dex/callback".
+
+All configuration for SSO is under the "auth"-attribute:
 
 ```yaml  
 apiVersion: boom.caos.ch/v1beta1
