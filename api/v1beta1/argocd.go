@@ -22,15 +22,16 @@ type ArgocdRepository struct {
 }
 
 type ArgocdSecret struct {
-	Name string `json:"name" yaml:"name"`
-	Key  string `json:"key" yaml:"key"`
+	Name         string `json:"name" yaml:"name"`
+	Key          string `json:"key" yaml:"key"`
+	InternalName string `json:"internalName" yaml:"internalName"`
 }
 
 type ArgocdCustomImage struct {
 	Enabled         bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	ImagePullSecret string               `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassGPGKey    string               `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
-	GopassSSHKey    string               `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
+	GopassSSHKey    *ArgocdSecret        `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
+	GopassGPGKey    *ArgocdSecret        `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
 	GopassStores    []*ArgocdGopassStore `json:"gopassStores,omitempty" yaml:"gopassStores,omitempty"`
 }
 
