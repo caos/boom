@@ -103,8 +103,14 @@
 | `customImage`                      | Custom argocd-image                                                             | nil                               |
 | `customImage.enabled`              | Flag if custom argocd-image should get used with gopass                         | false                             |
 | `customImage.imagePullSecret`      | Name of used imagePullSecret to pull customImage                                |                                   |
-| `customImage.gopassGPGKey`         | Name of the existent secret which contains the gpg-key                          |                                   |
-| `customImage.gopassSSHKey`         | Name of the existent secret which contains the ssh-key                          |                                   |
+| `customImage.gopassGPGKey`         | Config to mount gpg key into repo-server pod                                    |                                   |
+| `customImage.gopassGPGKey.name`    | Name of the existent secret which contains the gpg key                          |                                   |
+| `customImage.gopassGPGKey.key`     | Key in the existent secret which contains the gpg key                           |                                   |
+| `customImage.gopassGPGKey.internalName`    | Internal name used to mount the gpg key                                 |                                   |
+| `customImage.gopassSSHKey`         | Config to mount ssh key into repo-server pod                                    |                                   |
+| `customImage.gopassSSHKey.name`    | Name of the existent secret which contains the ssh key                          |                                   |
+| `customImage.gopassSSHKey.key`     | Key in the existent secret which contains the ssh key                           |                                   |
+| `customImage.gopassSSHKey.internalName`    | Internal name used to mount the ssh key                                 |                                   |
 | `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
 | `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
 | `rbacConfig`                       | Config for RBAC in argocd                                                       | nil                               |
