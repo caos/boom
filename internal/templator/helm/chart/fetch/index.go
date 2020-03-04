@@ -73,10 +73,11 @@ func CompareVersions(monitor mntr.Monitor, basePath string, charts []*ChartInfo)
 				(entryPartsInt[0] == chartPartsInt[0] && entryPartsInt[1] == chartPartsInt[1] && entryPartsInt[2] > chartPartsInt[2]) {
 
 				logFields := map[string]interface{}{
-					"oldversion": chart.Version,
-					"newversion": entry.Version,
-					"index":      chart.IndexName,
-					"chart":      chart.Name,
+					"oldVersion":    chart.Version,
+					"newVersion":    entry.Version,
+					"index":         chart.IndexName,
+					"chart":         chart.Name,
+					"newAppVersion": entry.AppVersion,
 				}
 				monitor.WithFields(logFields).Info("Tshere is a newer version")
 			}
