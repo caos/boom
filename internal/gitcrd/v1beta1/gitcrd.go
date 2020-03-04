@@ -191,7 +191,16 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 		return
 	}
 
-	currentFolder := filepath.Join("internal", "boom")
+	toolsetCRD, err := c.getCrdContent()
+	if err != nil {
+		c.status = err
+		return
+	}
+
+	currentFolder := toolsetCRD.Spec.CurrentStateFolder
+	if currentFolder == "" {
+		currentFolder = filepath.Join("internal", "boom")
+	}
 
 	file := git.File{
 		Path:    filepath.Join(currentFolder, "current.yaml"),

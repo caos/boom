@@ -4,6 +4,7 @@
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `currentStatePath`                 | Relative folder path where the currentstate is written to                       |                                   |
 | `preApply`                         | Spec for the yaml-files applied before applications                             |                                   |
 | `postApply`                        | Spec for the yaml-files applied after applications                              |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
