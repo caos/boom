@@ -60,42 +60,42 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_cx_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_cx_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "egress CPS",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "egress RPS",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "pending req to",
                     "refId": "C"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_lb_healthy_panic{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_lb_healthy_panic{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "lb healthy panic RPS",
                     "refId": "D"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_active{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_active{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "egress R active",
                     "refId": "E"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_active{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_active{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "egress R pending active",
@@ -183,35 +183,35 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(delta(envoy_cluster_membership_change{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(delta(envoy_cluster_membership_change{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "membership changes [1m]",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(envoy_cluster_membership_total{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_membership_total{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "total membership",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(envoy_cluster_outlier_detection_ejections_active{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_outlier_detection_ejections_active{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "outlier ejections active",
                     "refId": "C"
                 },
                 {
-                    "expr": "sum(envoy_cluster_membership_healthy{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_membership_healthy{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "healthy members (active HC and outlier)",
                     "refId": "D"
                 },
                 {
-                    "expr": "sum(envoy_cluster_health_check_healthy{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_health_check_healthy{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "healthy members (active HC only)",
@@ -299,21 +299,21 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(envoy_cluster_upstream_cx_active{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_upstream_cx_active{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "connections",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(envoy_cluster_upstream_rq_active{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_upstream_rq_active{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "requests",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(envoy_cluster_upstream_rq_pending_active{cluster=\"$originating_service\"})",
+                    "expr": "sum(envoy_cluster_upstream_rq_pending_active{envoy_cluster_name=\"$originating_service\"})",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "pending",
@@ -400,7 +400,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"4xx\",cluster=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"4\",envoy_cluster_name=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 2,
@@ -408,21 +408,21 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"3xx\",cluster=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"3\",envoy_cluster_name=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "3xx %",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"2xx\",cluster=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"2\",envoy_cluster_name=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "2xx %",
                     "refId": "C"
                 },
                 {
-                    "expr": "(sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"5xx\",cluster=\"$originating_service\"}[1m]))) / (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "(sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"5\",envoy_cluster_name=\"$originating_service\"}[1m]))) / (sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "5xx %",
@@ -516,7 +516,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "(sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"5xx\",cluster=\"$originating_service\"}[1m])) or sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))/ (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "(sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"5\",envoy_cluster_name=\"$originating_service\"}[1m])) or sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))/ (sum(rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 2,
@@ -524,7 +524,7 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"5xx\",cluster=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"pending_total\",cluster=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_xxx{response_code_class=\"cancelled\",cluster=\"$originating_service\"}[1m])))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=\"5\",envoy_cluster_name=\"$originating_service\"}[1m])) / (sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_pending_total{envoy_cluster_name=\"$originating_service\"}[1m]))-sum(rate(envoy_cluster_upstream_rq_cancelled{envoy_cluster_name=\"$originating_service\"}[1m])))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "Failure Rate % (only 5xx)",
@@ -612,63 +612,63 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_cx_connect_timeout{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_cx_connect_timeout{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "connect timeout",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_failure_eject{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_failure_eject{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "pending failure ejection",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_overflow{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_pending_overflow{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "pending overflow",
                     "refId": "C"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_timeout{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_timeout{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "request timeout",
                     "refId": "D"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_per_try_timeout{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_per_try_timeout{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "per try request timeout",
                     "refId": "E"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_rx_reset{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_rx_reset{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "request reset",
                     "refId": "F"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_cx_destroy_local_with_active_rq{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_cx_destroy_local_with_active_rq{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "destroy initialized from originating service",
                     "refId": "G"
                 },
                 {
-                    "expr": "sum(rate(envoy_http_downstream_cx_destroy_remote_active_rq{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_http_downstream_cx_destroy_remote_active_rq{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "destroy initialized from remote service",
                     "refId": "H"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_maintenance_mode{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_maintenance_mode{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "request failed maintenance mode",
@@ -755,7 +755,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_paused_reading_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_paused_reading_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "interval": "",
                     "intervalFactor": 2,
@@ -763,21 +763,21 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_resumed_reading_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_resumed_reading_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "resumed reading from destination service",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_backed_up_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_backed_up_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "paused reading from originating service",
                     "refId": "C"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_drained_total{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_flow_control_drained_total{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "resumed reading from originating service",
@@ -864,7 +864,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "interval": "",
                     "intervalFactor": 2,
@@ -872,14 +872,14 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry_success{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry_success{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "request retry success",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry_overflow{cluster=\"$originating_service\"}[1m]))",
+                    "expr": "sum(rate(envoy_cluster_upstream_rq_retry_overflow{envoy_cluster_name=\"$originating_service\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "request retry overflow",
@@ -939,11 +939,13 @@
         "list": [
             {
                 "current": {
-                    "text": "prometheus",
-                    "value": "prometheus"
+                    "text": "caos-prometheus",
+                    "value": "caos-prometheus"
                 },
-                "hide": 2,
-                "label": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": null,
+                "multi": false,
                 "name": "datasource",
                 "options": [],
                 "query": "prometheus",
@@ -966,7 +968,7 @@
                 "multi": false,
                 "name": "originating_service",
                 "options": [],
-                "query": "label_values(cluster)",
+                "query": "label_values(envoy_cluster_name)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,

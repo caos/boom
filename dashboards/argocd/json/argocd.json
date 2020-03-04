@@ -2568,15 +2568,18 @@
     "list": [
       {
         "current": {
-          "text": "No data sources found",
-          "value": ""
+            "text": "caos-prometheus",
+            "value": "caos-prometheus"
         },
-        "hide": 2,
-        "label": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
         "name": "datasource",
         "options": [],
         "query": "prometheus",
         "refresh": 1,
+        "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
       },
