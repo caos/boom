@@ -83,12 +83,16 @@ func All(monitor mntr.Monitor, basePath string) error {
 		return err
 	}
 
+	monitor.Info("Checking newer chart versions")
+	if err := CompareVersions(monitor, basePath, charts); err != nil {
+		return err
+	}
+
 	monitor.Info("Fetching all charts")
 	for _, chart := range charts {
 		if err := fetch(monitor, basePath, chart); err != nil {
 			return err
 		}
-
 	}
 	return nil
 }
