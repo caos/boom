@@ -15,10 +15,15 @@ type Rbac struct {
 }
 
 type ArgocdRepository struct {
-	URL               string        `json:"url,omitempty" yaml:"url,omitempty"`
-	UsernameSecret    *ArgocdSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
-	PasswordSecret    *ArgocdSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
-	CertificateSecret *ArgocdSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
+	URL               string            `json:"url,omitempty" yaml:"url,omitempty"`
+	UsernameSecret    *ArgocdRepoSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
+	PasswordSecret    *ArgocdRepoSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
+	CertificateSecret *ArgocdRepoSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
+}
+
+type ArgocdRepoSecret struct {
+	Name string `json:"name" yaml:"name"`
+	Key  string `json:"key" yaml:"key"`
 }
 
 type ArgocdSecret struct {
