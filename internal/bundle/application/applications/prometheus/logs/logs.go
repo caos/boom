@@ -2,12 +2,13 @@ package logs
 
 import (
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
-	"github.com/caos/boom/internal/labels"
 )
 
 func GetFlow(outputs []string) *logging.FlowConfig {
-	ls := labels.GetApplicationLabels(info.GetName())
+	ls := map[string]string{
+		"app":        "prometheus",
+		"prometheus": "caos-prometheus",
+	}
 
 	return &logging.FlowConfig{
 		Name:         "flow-prometheus",

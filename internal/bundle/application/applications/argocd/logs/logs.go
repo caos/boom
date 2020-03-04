@@ -1,13 +1,14 @@
 package logs
 
 import (
-	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
 	"github.com/caos/boom/internal/bundle/application/applications/loggingoperator/logging"
-	"github.com/caos/boom/internal/labels"
 )
 
 func GetFlow(outputs []string) *logging.FlowConfig {
-	ls := labels.GetApplicationLabels(info.GetName())
+	ls := map[string]string{
+		"app.kubernetes.io/instance": "argocd",
+		"app.kubernetes.io/part-of":  "argocd",
+	}
 
 	return &logging.FlowConfig{
 		Name:         "flow-argocd",

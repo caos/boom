@@ -15,7 +15,7 @@ func GetChartInfo() *chart.Chart {
 
 func GetImageTags() map[string]string {
 	return map[string]string{
-		"quay.io/datawire/aes": "1.2.0",
+		"quay.io/datawire/aes": "1.2.1",
 		"prom/statsd-exporter": "v0.8.1",
 	}
 }
