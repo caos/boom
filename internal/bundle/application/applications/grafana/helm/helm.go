@@ -5,13 +5,13 @@ import "github.com/caos/boom/internal/templator/helm/chart"
 func GetChartInfo() *chart.Chart {
 	return &chart.Chart{
 		Name:    "prometheus-operator",
-		Version: "8.10.0",
+		Version: "8.10.1",
 	}
 }
 
 func GetImageTags() map[string]string {
 	return map[string]string{
-		"grafana/grafana":                           "6.6.1",
+		"grafana/grafana":                           "6.6.2",
 		"quay.io/prometheus/alertmanager":           "v0.20.0",
 		"squareup/ghostunnel":                       "v1.5.2",
 		"jettech/kube-webhook-certgen":              "v1.0.0",
