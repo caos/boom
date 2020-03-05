@@ -13,7 +13,7 @@
         ]
     },
     "description": "Envoy global",
-    "editable": true,
+    "editable": false,
     "gnetId": 7253,
     "graphTooltip": 0,
     "iteration": 1564403281682,

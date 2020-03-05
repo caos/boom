@@ -13,7 +13,7 @@
     ]
   },
   "description": "This is a simple dashboard for: https://github.com/banzaicloud/logging-operator utilising Fluent-bit and Fluentd",
-  "editable": true,
+  "editable": false,
   "gnetId": 7752,
   "graphTooltip": 0,
   "id": 20,
