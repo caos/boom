@@ -5,7 +5,7 @@ import "github.com/caos/boom/internal/templator/helm/chart"
 func GetChartInfo() *chart.Chart {
 	return &chart.Chart{
 		Name:    "kube-state-metrics",
-		Version: "2.7.1",
+		Version: "2.8.0",
 	}
 }
 
