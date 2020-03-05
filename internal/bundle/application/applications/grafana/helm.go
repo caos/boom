@@ -188,14 +188,14 @@ func getKustomizeOutput(folders []string) ([]string, error) {
 	return ret, nil
 }
 
-func getProvider(appName string) *helm.Provider {
+func getProvider(configmapName string) *helm.Provider {
 	return &helm.Provider{
-		Name:            appName,
+		Name:            configmapName,
 		Type:            "file",
 		DisableDeletion: false,
-		Editable:        true,
+		Editable:        false,
 		Options: map[string]string{
-			"path": filepath.Join("/var/lib/grafana/dashboards", appName),
+			"path": filepath.Join("/var/lib/grafana/dashboards", configmapName),
 		},
 	}
 }
