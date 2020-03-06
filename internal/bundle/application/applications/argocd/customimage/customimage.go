@@ -52,48 +52,55 @@ func FromSpec(spec *toolsetsv1beta1.Argocd, imageTags map[string]string) *Custom
 
 	vols := make([]*SecretVolume, 0)
 	volMounts := make([]*VolumeMount, 0)
-	if spec.CustomImage.GopassGPGKey != nil {
-		vol := &SecretVolume{
-			Name: spec.CustomImage.GopassGPGKey.InternalName,
-			Secret: &Secret{
-				SecretName: spec.CustomImage.GopassGPGKey.Name,
-				Items: []*Item{&Item{
-					Key:  spec.CustomImage.GopassGPGKey.Key,
-					Path: spec.CustomImage.GopassGPGKey.InternalName,
-				},
-				},
-			},
-			DefaultMode: 0544,
-		}
-		vols = append(vols, vol)
-		volMount := &VolumeMount{
-			Name:      spec.CustomImage.GopassGPGKey.InternalName,
-			MountPath: gpgFolderName,
-			ReadOnly:  false,
-		}
-		volMounts = append(volMounts, volMount)
-	}
+	for _, store := range spec.CustomImage.GopassStores {
 
-	if spec.CustomImage.GopassSSHKey != nil {
-		vol := &SecretVolume{
-			Name: spec.CustomImage.GopassSSHKey.InternalName,
-			Secret: &Secret{
-				SecretName: spec.CustomImage.GopassSSHKey.Name,
-				Items: []*Item{&Item{
-					Key:  spec.CustomImage.GopassSSHKey.Key,
-					Path: spec.CustomImage.GopassSSHKey.InternalName,
+		if store.GPGKey != nil {
+			vol := &SecretVolume{
+				Name: store.GPGKey.InternalName,
+				Secret: &Secret{
+					SecretName: store.GPGKey.Name,
+					Items: []*Item{&Item{
+						Key:  store.GPGKey.Key,
+						Path: store.GPGKey.InternalName,
+					},
+					},
 				},
+				DefaultMode: 0544,
+			}
+			vols = append(vols, vol)
+			mountPath := filepath.Join(gpgFolderName, store.GPGKey.InternalName)
+			volMount := &VolumeMount{
+				Name:      store.GPGKey.InternalName,
+				MountPath: mountPath,
+				SubPath:   store.GPGKey.InternalName,
+				ReadOnly:  false,
+			}
+			volMounts = append(volMounts, volMount)
+		}
+
+		if store.SSHKey != nil {
+			vol := &SecretVolume{
+				Name: store.SSHKey.InternalName,
+				Secret: &Secret{
+					SecretName: store.SSHKey.Name,
+					Items: []*Item{&Item{
+						Key:  store.SSHKey.Key,
+						Path: store.SSHKey.InternalName,
+					},
+					},
 				},
-			},
-			DefaultMode: 0544,
+				DefaultMode: 0544,
+			}
+			vols = append(vols, vol)
+			mountPath := filepath.Join(sshFolderName, store.GPGKey.InternalName)
+			volMount := &VolumeMount{
+				Name:      store.SSHKey.InternalName,
+				MountPath: mountPath,
+				SubPath:   store.SSHKey.InternalName,
+				ReadOnly:  false,
+			}
+			volMounts = append(volMounts, volMount)
 		}
-		vols = append(vols, vol)
-		volMount := &VolumeMount{
-			Name:      spec.CustomImage.GopassSSHKey.InternalName,
-			MountPath: sshFolderName,
-			ReadOnly:  false,
-		}
-		volMounts = append(volMounts, volMount)
 	}
 
 	return &CustomImage{
@@ -133,10 +140,7 @@ func AddPostStartFromSpec(spec *toolsetsv1beta1.Argocd, resultFilePath string) e
 	}
 	jsonStoresStr := strings.ReplaceAll(string(jsonStores), "\"", "\\\"")
 
-	gpgFileName := filepath.Join(gpgFolderName, spec.CustomImage.GopassGPGKey.InternalName)
-	sshFileName := filepath.Join(sshFolderName, spec.CustomImage.GopassSSHKey.InternalName)
-
-	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh '", jsonStoresStr, "' '", gpgFileName, "' '", sshFileName, "'"}, "")
+	addCommand := strings.Join([]string{"/home/argocd/initialize_gopass.sh '", jsonStoresStr, "' ", gpgFolderName, " ", sshFolderName}, "")
 	addLifecycle := strings.Join([]string{
 		tab, tab, tab, tab, "lifecycle:", nl,
 		tab, tab, tab, tab, tab, "postStart:", nl,

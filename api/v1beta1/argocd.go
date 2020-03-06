@@ -35,14 +35,14 @@ type ArgocdSecret struct {
 type ArgocdCustomImage struct {
 	Enabled         bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	ImagePullSecret string               `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassSSHKey    *ArgocdSecret        `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
-	GopassGPGKey    *ArgocdSecret        `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
 	GopassStores    []*ArgocdGopassStore `json:"gopassStores,omitempty" yaml:"gopassStores,omitempty"`
 }
 
 type ArgocdGopassStore struct {
-	Directory string `json:"directory,omitempty" yaml:"directory,omitempty"`
-	StoreName string `json:"storeName,omitempty" yaml:"storeName,omitempty"`
+	SSHKey    *ArgocdSecret `json:"sshKey,omitempty" yaml:"sshKey,omitempty"`
+	GPGKey    *ArgocdSecret `json:"gpgKey,omitempty" yaml:"gpgKey,omitempty"`
+	Directory string        `json:"directory,omitempty" yaml:"directory,omitempty"`
+	StoreName string        `json:"storeName,omitempty" yaml:"storeName,omitempty"`
 }
 
 type ArgocdAuth struct {
