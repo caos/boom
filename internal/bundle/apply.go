@@ -9,7 +9,7 @@ import (
 	"github.com/caos/orbiter/mntr"
 )
 
-func applyWithCurrentState(monitor mntr.Monitor, currentResourceList []*clientgo.Resource, app application.Application) func(resultFilePath, namespace string) error {
+func applyWithCurrentState(monitor mntr.Monitor, currentResourceList []*clientgo.Resource, app application.Application, force bool) func(resultFilePath, namespace string) error {
 
 	logFields := map[string]interface{}{
 		"command": "apply",
@@ -17,7 +17,7 @@ func applyWithCurrentState(monitor mntr.Monitor, currentResourceList []*clientgo
 	applyMonitor := monitor.WithFields(logFields)
 
 	resultFunc := func(resultFilePath, namespace string) error {
-		applyFunc := apply(monitor, app)
+		applyFunc := apply(monitor, app, force)
 
 		desiredResources, err := desired.Get(monitor, resultFilePath, namespace, app.GetName())
 		if err != nil {
@@ -74,7 +74,7 @@ func applyWithCurrentState(monitor mntr.Monitor, currentResourceList []*clientgo
 	return resultFunc
 }
 
-func apply(monitor mntr.Monitor, app application.Application) func(resultFilePath, namespace string) error {
+func apply(monitor mntr.Monitor, app application.Application, force bool) func(resultFilePath, namespace string) error {
 
 	logFields := map[string]interface{}{
 		"command": "apply",
@@ -82,7 +82,7 @@ func apply(monitor mntr.Monitor, app application.Application) func(resultFilePat
 	applyMonitor := monitor.WithFields(logFields)
 
 	resultFunc := func(resultFilePath, namespace string) error {
-		return desired.Apply(applyMonitor, resultFilePath, namespace, app.GetName())
+		return desired.Apply(applyMonitor, resultFilePath, namespace, app.GetName(), force)
 	}
 
 	return resultFunc

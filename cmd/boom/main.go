@@ -182,7 +182,7 @@ func main() {
 	}
 
 	if !localMode {
-		cmd, err := kustomize.New("/crd", true)
+		cmd, err := kustomize.New("/crd", true, false)
 		if err != nil {
 			setupLog.Error(err, "unable to locate crd")
 			os.Exit(1)
@@ -223,7 +223,7 @@ func main() {
 
 		setupLog.Info("starting manager")
 	} else {
-		cmd, err := kustomize.New("../../config/crd", true)
+		cmd, err := kustomize.New("../../config/crd", true, false)
 		if err != nil {
 			setupLog.Error(err, "unable to locate crd")
 			os.Exit(1)
