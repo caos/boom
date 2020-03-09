@@ -187,15 +187,37 @@ spec:
                   properties:
                     enabled:
                       type: boolean
-                    gopassGPGKey:
-                      type: string
-                    gopassSSHKey:
-                      type: string
                     gopassStores:
                       items:
                         properties:
                           directory:
                             type: string
+                          gpgKey:
+                            properties:
+                              internalName:
+                                type: string
+                              key:
+                                type: string
+                              name:
+                                type: string
+                            required:
+                            - internalName
+                            - key
+                            - name
+                            type: object
+                          sshKey:
+                            properties:
+                              internalName:
+                                type: string
+                              key:
+                                type: string
+                              name:
+                                type: string
+                            required:
+                            - internalName
+                            - key
+                            - name
+                            type: object
                           storeName:
                             type: string
                         type: object
@@ -261,6 +283,8 @@ spec:
                     type: object
                   type: array
               type: object
+            currentStatePath:
+              type: string
             grafana:
               properties:
                 admin:

@@ -13,7 +13,7 @@
         ]
     },
     "description": "Envoy global",
-    "editable": true,
+    "editable": false,
     "gnetId": 7253,
     "graphTooltip": 0,
     "iteration": 1564403281682,
@@ -220,7 +220,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "((sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m])) - sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"5\"}[1m]))) or sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m]))) / sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m]))",
+                    "expr": "((sum(rate(envoy_http_downstream_rq_completed[1m])) - sum(rate(envoy_http_downstream_rq_xx{envoy_response_code_class=\"5\"}[1m]))) or sum(rate(envoy_http_downstream_rq_completed[1m]))) / sum(rate(envoy_http_downstream_rq_completed[1m]))",
                     "format": "time_series",
                     "hide": false,
                     "intervalFactor": 2,
@@ -228,7 +228,7 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "((sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"5\"}[1m]))) or (sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m]))-sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m])))) / sum(rate(envoy_http_downstream_rq_xxx{response_code_class=\"completed\"}[1m]))",
+                    "expr": "((sum(rate(envoy_http_downstream_rq_xx{envoy_response_code_class=\"5\"}[1m]))) or (sum(rate(envoy_http_downstream_rq_completed[1m]))-sum(rate(envoy_http_downstream_rq_completed[1m])))) / sum(rate(envoy_http_downstream_rq_completed[1m]))",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "Failure Rate",
@@ -892,21 +892,21 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(envoy_http_rq_total{cluster=\"async-client\"}[1m]))",
+                    "expr": "sum(rate(envoy_http_rq_total{envoy_http_conn_manager_prefix=\"async-client\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "Async Client RPS",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(envoy_http_downstream_cx_total{cluster=\"ingress_http\"}[1m]))",
+                    "expr": "sum(rate(envoy_http_downstream_cx_total{envoy_http_conn_manager_prefix=\"ingress_http\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "ingress Http CPS",
                     "refId": "B"
                 },
                 {
-                    "expr": "sum(rate(envoy_http_rq_total{cluster=\"ingress_http\"}[1m]))",
+                    "expr": "sum(rate(envoy_http_rq_total{envoy_http_conn_manager_prefix=\"ingress_http\"}[1m]))",
                     "format": "time_series",
                     "intervalFactor": 2,
                     "legendFormat": "ingress Http RPS",
@@ -966,11 +966,13 @@
         "list": [
             {
                 "current": {
-                    "text": "prometheus",
-                    "value": "prometheus"
+                    "text": "caos-prometheus",
+                    "value": "caos-prometheus"
                 },
-                "hide": 2,
-                "label": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": null,
+                "multi": false,
                 "name": "datasource",
                 "options": [],
                 "query": "prometheus",

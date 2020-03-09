@@ -15,28 +15,34 @@ type Rbac struct {
 }
 
 type ArgocdRepository struct {
-	URL               string        `json:"url,omitempty" yaml:"url,omitempty"`
-	UsernameSecret    *ArgocdSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
-	PasswordSecret    *ArgocdSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
-	CertificateSecret *ArgocdSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
+	URL               string            `json:"url,omitempty" yaml:"url,omitempty"`
+	UsernameSecret    *ArgocdRepoSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
+	PasswordSecret    *ArgocdRepoSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
+	CertificateSecret *ArgocdRepoSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
+}
+
+type ArgocdRepoSecret struct {
+	Name string `json:"name" yaml:"name"`
+	Key  string `json:"key" yaml:"key"`
 }
 
 type ArgocdSecret struct {
-	Name string `json:"name" yaml:"name"`
-	Key  string `json:"key" yaml:"key"`
+	Name         string `json:"name" yaml:"name"`
+	Key          string `json:"key" yaml:"key"`
+	InternalName string `json:"internalName" yaml:"internalName"`
 }
 
 type ArgocdCustomImage struct {
 	Enabled         bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	ImagePullSecret string               `json:"imagePullSecret,omitempty" yaml:"imagePullSecret,omitempty"`
-	GopassGPGKey    string               `json:"gopassGPGKey,omitempty" yaml:"gopassGPGKey,omitempty"`
-	GopassSSHKey    string               `json:"gopassSSHKey,omitempty" yaml:"gopassSSHKey,omitempty"`
 	GopassStores    []*ArgocdGopassStore `json:"gopassStores,omitempty" yaml:"gopassStores,omitempty"`
 }
 
 type ArgocdGopassStore struct {
-	Directory string `json:"directory,omitempty" yaml:"directory,omitempty"`
-	StoreName string `json:"storeName,omitempty" yaml:"storeName,omitempty"`
+	SSHKey    *ArgocdSecret `json:"sshKey,omitempty" yaml:"sshKey,omitempty"`
+	GPGKey    *ArgocdSecret `json:"gpgKey,omitempty" yaml:"gpgKey,omitempty"`
+	Directory string        `json:"directory,omitempty" yaml:"directory,omitempty"`
+	StoreName string        `json:"storeName,omitempty" yaml:"storeName,omitempty"`
 }
 
 type ArgocdAuth struct {

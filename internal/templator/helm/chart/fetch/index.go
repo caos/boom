@@ -79,7 +79,7 @@ func CompareVersions(monitor mntr.Monitor, basePath string, charts []*ChartInfo)
 					"chart":         chart.Name,
 					"newAppVersion": entry.AppVersion,
 				}
-				monitor.WithFields(logFields).Info("Tshere is a newer version")
+				monitor.WithFields(logFields).Info("There is a newer version")
 			}
 		}
 	}

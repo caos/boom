@@ -24,6 +24,7 @@ import (
 
 // ToolsetSpec defines the desired state of Toolset
 type ToolsetSpec struct {
+	CurrentStateFolder     string                  `json:"currentStatePath,omitempty" yaml:"currentStatePath,omitempty"`
 	PreApply               *PreApply               `json:"preApply,omitempty" yaml:"preApply,omitempty"`
 	PostApply              *PostApply              `json:"postApply,omitempty" yaml:"postApply,omitempty"`
 	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`

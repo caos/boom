@@ -43,9 +43,15 @@ func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsets
 		}
 		if conf.AddSecretVolumes != nil {
 			for _, v := range conf.AddSecretVolumes {
+				items := make([]*helm.Item, 0)
+				for _, item := range v.Secret.Items {
+					items = append(items, &helm.Item{Key: item.Key, Path: item.Path})
+				}
+
 				values.RepoServer.Volumes = append(values.RepoServer.Volumes, &helm.Volume{
 					Secret: &helm.VolumeSecret{
-						SecretName:  v.SecretName,
+						SecretName:  v.Secret.SecretName,
+						Items:       items,
 						DefaultMode: v.DefaultMode,
 					},
 					Name: v.Name,

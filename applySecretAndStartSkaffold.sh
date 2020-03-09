@@ -1,6 +1,7 @@
 #!/bin/bash
 
 gopass sync -s caos-secrets
-gopass caos-secrets/technical/boom/git-read-secret | kubectl apply -f -
+./scripts/0_imagepull-secrets.sh | kubectl apply -f -
+./scripts/1_argocd-secrets.sh | kubectl apply -f -
 
-skaffold run -f build/skaffold/skaffold.yaml
+skaffold run -f ../build/skaffold/skaffold.yaml

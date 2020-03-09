@@ -63,9 +63,16 @@ type ConfigMap struct {
 	DefaultMode int    `yaml:"defaultMode,omitempty"`
 }
 type VolumeSecret struct {
-	SecretName  string `yaml:"secretName,omitempty"`
-	DefaultMode int    `yaml:"defaultMode,omitempty"`
+	SecretName  string  `yaml:"secretName,omitempty"`
+	Items       []*Item `yaml:"items,omitempty"`
+	DefaultMode int     `yaml:"defaultMode"`
 }
+
+type Item struct {
+	Key  string `yaml:"key"`
+	Path string `yaml:"path"`
+}
+
 type Volume struct {
 	Secret    *VolumeSecret `yaml:"secret,omitempty"`
 	ConfigMap *ConfigMap    `yaml:"configMap,omitempty"`
