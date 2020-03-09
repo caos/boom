@@ -150,7 +150,7 @@ func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, 
 		}
 	} else {
 		if deploy {
-			resultFunc = applyWithCurrentState(monitor, currentApplicationResourceList, app)
+			resultFunc = applyWithCurrentState(monitor, currentApplicationResourceList, app, spec.ForceApply)
 		} else {
 			resultFunc = deleteWithCurrentState(monitor, currentApplicationResourceList, app)
 		}
