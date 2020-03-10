@@ -30,9 +30,10 @@ type FieldSpec struct {
 type Kustomize struct {
 	path  string
 	apply bool
+	force bool
 }
 
-func New(path string, apply bool) (*Kustomize, error) {
+func New(path string, apply bool, force bool) (*Kustomize, error) {
 	abspath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -41,6 +42,7 @@ func New(path string, apply bool) (*Kustomize, error) {
 	return &Kustomize{
 		path:  abspath,
 		apply: apply,
+		force: force,
 	}, nil
 }
 
@@ -48,7 +50,11 @@ func (k *Kustomize) Build() exec.Cmd {
 	all := strings.Join([]string{"kustomize", "build", k.path}, " ")
 	if k.apply {
 		all = strings.Join([]string{all, "| kubectl apply -f -"}, " ")
+		if k.force {
+			all = strings.Join([]string{all, "--force"}, " ")
+		}
 	}
+
 	cmd := exec.Command("/bin/sh", "-c", all)
 	return *cmd
 }

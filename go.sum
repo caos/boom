@@ -39,8 +39,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0 h1:HWo1m869IqiPhD389kmkxeTalrjNbbJTC8LXupb+sl0=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/blang/semver v3.5.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
-github.com/caos/orbiter v0.16.0 h1:LLzOfXQAOA0l4I7TLVpc8mqQMYWAIJfmPyVNz1jcyAI=
-github.com/caos/orbiter v0.16.0/go.mod h1:5Iu0mEmWybNVOncYonervGAce3JhZ+ltBLGhd579leE=
+github.com/caos/orbiter v0.16.1 h1:kll/1MyJ2dQ1fY2Nr4s09DWWeEHTPLi3OO5uMMxcnoQ=
+github.com/caos/orbiter v0.16.1/go.mod h1:5Iu0mEmWybNVOncYonervGAce3JhZ+ltBLGhd579leE=
 github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5/go.mod h1:/iP1qXHoty45bqomnu2LM+VVyAEdWN+vtSHGlQgyxbw=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=

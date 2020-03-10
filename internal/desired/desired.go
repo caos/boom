@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func Apply(monitor mntr.Monitor, resultFilePath, namespace string, appName name.Application) error {
+func Apply(monitor mntr.Monitor, resultFilePath, namespace string, appName name.Application, force bool) error {
 	resultFileDirPath := filepath.Dir(resultFilePath)
 
 	if err := prepareAdditionalFiles(resultFilePath, namespace, appName); err != nil {
@@ -22,7 +22,7 @@ func Apply(monitor mntr.Monitor, resultFilePath, namespace string, appName name.
 	}
 
 	// apply resources
-	cmd, err := kustomize.New(resultFileDirPath, true)
+	cmd, err := kustomize.New(resultFileDirPath, true, force)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func Get(monitor mntr.Monitor, resultFilePath, namespace string, appName name.Ap
 	}
 
 	// apply resources
-	cmd, err := kustomize.New(resultFileDirPath, false)
+	cmd, err := kustomize.New(resultFileDirPath, false, false)
 	if err != nil {
 		return nil, err
 	}
@@ -74,11 +74,15 @@ func prepareAdditionalFiles(resultFilePath, namespace string, appName name.Appli
 	resultFileTransformerPath := filepath.Join(resultFileDirPath, "transformer.yaml")
 
 	if helper.FileExists(resultFileKustomizePath) {
-		os.Remove(resultFileKustomizePath)
+		if err := os.Remove(resultFileKustomizePath); err != nil {
+			return err
+		}
 	}
 
 	if helper.FileExists(resultFileTransformerPath) {
-		os.Remove(resultFileTransformerPath)
+		if err := os.Remove(resultFileTransformerPath); err != nil {
+			return err
+		}
 	}
 
 	transformer := &kustomize.LabelTransformer{
