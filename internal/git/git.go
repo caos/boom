@@ -242,6 +242,10 @@ func (g *Client) stage(files ...File) (bool, error) {
 
 		monitor.Debug("Overwriting local index")
 
+		if err := g.fs.MkdirAll(filepath.Dir(f.Path), os.ModePerm); err != nil {
+			return false, err
+		}
+
 		file, err := g.fs.Create(f.Path)
 		if err != nil {
 			return true, errors.Wrapf(err, "creating file %s in worktree failed", f.Path)

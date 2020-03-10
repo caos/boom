@@ -277,14 +277,16 @@ spec:
                           name:
                             type: string
                         required:
-                        - key
-                        - name
+                          - key
+                          - name
                         type: object
                     type: object
                   type: array
               type: object
             currentStatePath:
               type: string
+            forceApply:
+              type: boolean
             grafana:
               properties:
                 admin:
@@ -561,7 +563,6 @@ spec:
           description: ToolsetStatus defines the observed state of Toolset
           type: object
       type: object
-  version: v1beta1
   versions:
   - name: v1beta1
     served: true

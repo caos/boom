@@ -213,6 +213,7 @@ type Server struct {
 type RbacConfig struct {
 	Csv     string `yaml:"policy.csv,omitempty"`
 	Default string `yaml:"policy.default,omitempty"`
+	Scopes  string `yaml:"scopes,omitempty"`
 }
 
 type RepoServer struct {

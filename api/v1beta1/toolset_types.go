@@ -24,6 +24,7 @@ import (
 
 // ToolsetSpec defines the desired state of Toolset
 type ToolsetSpec struct {
+	ForceApply             bool                    `json:"forceApply,omitempty" yaml:"forceApply,omitempty"`
 	CurrentStateFolder     string                  `json:"currentStatePath,omitempty" yaml:"currentStatePath,omitempty"`
 	PreApply               *PreApply               `json:"preApply,omitempty" yaml:"preApply,omitempty"`
 	PostApply              *PostApply              `json:"postApply,omitempty" yaml:"postApply,omitempty"`

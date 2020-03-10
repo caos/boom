@@ -124,6 +124,16 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	// pre-steps
 	if toolsetCRD.Spec.PreApply != nil {
 		pre := toolsetCRD.Spec.PreApply
+		if pre.Folder != "" {
+			c.status = errors.New("PreApply defined but no folder provided")
+		}
+		if !helper.FolderExists(pre.Folder) {
+			c.status = errors.New("PreApply provided folder is nonexistent")
+		}
+		if empty, err := helper.FolderEmpty(pre.Folder); empty == true || err != nil {
+			c.status = errors.New("PreApply provided folder is empty")
+		}
+
 		c.gitMutex.Lock()
 		err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, pre.Folder)
 		c.gitMutex.Unlock()
@@ -148,6 +158,16 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	// post-steps
 	if toolsetCRD.Spec.PostApply != nil {
 		post := toolsetCRD.Spec.PostApply
+		if post.Folder != "" {
+			c.status = errors.New("PostApply defined but no folder provided")
+		}
+		if !helper.FolderExists(post.Folder) {
+			c.status = errors.New("PostApply provided folder is nonexistent")
+		}
+		if empty, err := helper.FolderEmpty(post.Folder); empty == true || err != nil {
+			c.status = errors.New("PostApply provided folder is empty")
+		}
+
 		c.gitMutex.Lock()
 		err := helper.CopyFolderToLocal(c.git, c.crdDirectoryPath, post.Folder)
 		c.gitMutex.Unlock()
@@ -199,7 +219,7 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 
 	currentFolder := toolsetCRD.Spec.CurrentStateFolder
 	if currentFolder == "" {
-		currentFolder = filepath.Join("internal", "boom")
+		currentFolder = filepath.Join("caos-internal", "boom")
 	}
 
 	file := git.File{
