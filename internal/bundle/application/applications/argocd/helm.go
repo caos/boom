@@ -94,9 +94,22 @@ func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsets
 	}
 
 	if spec.Rbac != nil {
+		scopes := ""
+		for _, scope := range spec.Rbac.Scopes {
+			if scopes == "" {
+				scopes = scope
+			} else {
+				scopes = strings.Join([]string{scopes, scope}, ", ")
+			}
+		}
+		if scopes != "" {
+			scopes = strings.Join([]string{"[", scopes, "]"}, "")
+		}
+
 		values.Server.RbacConfig = &helm.RbacConfig{
 			Csv:     spec.Rbac.Csv,
 			Default: spec.Rbac.Default,
+			Scopes:  scopes,
 		}
 	}
 

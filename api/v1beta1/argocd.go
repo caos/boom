@@ -10,8 +10,9 @@ type Argocd struct {
 }
 
 type Rbac struct {
-	Csv     string `json:"policy.csv,omitempty" yaml:"policy.csv,omitempty"`
-	Default string `json:"policy.default,omitempty" yaml:"policy.default,omitempty"`
+	Csv     string   `json:"policy.csv,omitempty" yaml:"policy.csv,omitempty"`
+	Default string   `json:"policy.default,omitempty" yaml:"policy.default,omitempty"`
+	Scopes  []string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 
 type ArgocdRepository struct {
