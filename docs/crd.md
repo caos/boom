@@ -5,6 +5,7 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `currentStatePath`                 | Relative folder path where the currentstate is written to                       |                                   |
+| `forceApply`                       | Flag if --force should be used by apply of resources                            |                                   |
 | `preApply`                         | Spec for the yaml-files applied before applications                             |                                   |
 | `postApply`                        | Spec for the yaml-files applied after applications                              |                                   |
 | `prometheus-operator`              | Spec for the Prometheus-Operator                                                |                                   |
@@ -115,8 +116,9 @@
 | `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
 | `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
 | `rbacConfig`                       | Config for RBAC in argocd                                                       | nil                               |
-| `policy.csv`                       | Attribute policy.csv which goes into configmap argocd-rbac-cm                   |                                   |
-| `policy.default`                   | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
+| `rbacConfig.policy.csv`            | Attribute policy.csv which goes into configmap argocd-rbac-cm                   |                                   |
+| `rbacConfig.policy.default`        | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
+| `rbacConfig.scopes`                | List of scopes which go into configmap argocd-rbac-cm                           |                                   |
 | `network`                          | Network configuration, [here](network.md)                                       | nil                               |
 | `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  | nil                               |
 | `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
