@@ -78,7 +78,7 @@
 | `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
 | `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
 | `network`                          | Network configuration, [here](network.md)                                       |                                   |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md)  |                                   |
 
 ### Ambassador
 
@@ -120,7 +120,7 @@
 | `rbacConfig.policy.default`        | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
 | `rbacConfig.scopes`                | List of scopes which go into configmap argocd-rbac-cm                           |                                   |
 | `network`                          | Network configuration, [here](network.md)                                       | nil                               |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-example.md)  | nil                               |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md)  | nil                               |
 | `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
 
 ### Prometheus
