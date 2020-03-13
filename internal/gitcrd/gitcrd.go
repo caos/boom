@@ -31,11 +31,13 @@ func New(conf *config.Config) (GitCrd, error) {
 	git := git.New(context.Background(), conf.Monitor, conf.User, conf.Email, conf.CrdUrl)
 	err := git.Init(conf.PrivateKey)
 	if err != nil {
+		conf.Monitor.Error(err)
 		return nil, err
 	}
 
 	err = git.Clone()
 	if err != nil {
+		conf.Monitor.Error(err)
 		return nil, err
 	}
 
@@ -48,11 +50,15 @@ func New(conf *config.Config) (GitCrd, error) {
 	groupVersion := toolsetv1beta1.GroupVersion
 	parts := strings.Split(crdFileStruct.ApiVersion, "/")
 	if parts[0] != "boom.caos.ch" {
-		return nil, errors.Errorf("Unknown CRD apiGroup %s", parts[0])
+		err := errors.Errorf("Unknown CRD apiGroup %s", parts[0])
+		conf.Monitor.Error(err)
+		return nil, err
 	}
 
 	if parts[1] != groupVersion.Version {
-		return nil, errors.Errorf("Unknown CRD version %s", parts[1])
+		err := errors.Errorf("Unknown CRD version %s", parts[1])
+		conf.Monitor.Error(err)
+		return nil, err
 	}
 
 	monitor := conf.Monitor.WithFields(map[string]interface{}{
