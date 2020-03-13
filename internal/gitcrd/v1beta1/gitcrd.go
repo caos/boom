@@ -122,9 +122,9 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	}
 
 	// pre-steps
-	if toolsetCRD.Spec.PreApply != nil {
+	if toolsetCRD.Spec.PreApply != nil && toolsetCRD.Spec.PreApply.Deploy == true {
 		pre := toolsetCRD.Spec.PreApply
-		if pre.Folder != "" {
+		if pre.Folder == "" {
 			c.status = errors.New("PreApply defined but no folder provided")
 		}
 		if !helper.FolderExists(pre.Folder) {
@@ -156,9 +156,9 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	}
 
 	// post-steps
-	if toolsetCRD.Spec.PostApply != nil {
+	if toolsetCRD.Spec.PostApply != nil && toolsetCRD.Spec.PostApply.Deploy == true {
 		post := toolsetCRD.Spec.PostApply
-		if post.Folder != "" {
+		if post.Folder == "" {
 			c.status = errors.New("PostApply defined but no folder provided")
 		}
 		if !helper.FolderExists(post.Folder) {
