@@ -1,9 +1,12 @@
-# boom: the base tooling operator
+![ORBOS](./raw/img/orbos-logo-oneline-lightdesign@2x.png)
+
+# ORBOS Boom The Base Tooling Operator
 
 ![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)
 ![release](https://github.com/caos/boom/workflows/Release/badge.svg)
 [![GitHub license](https://img.shields.io/github/license/caos/boom)](https://github.com/caos/boom/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/caos/boom)](https://GitHub.com/caos/boom/releases/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/caos/boom)](https://goreportcard.com/report/github.com/caos/boom)
 
 > This project is in alpha state. The API will continue breaking until version 1.0.0 is released
 
