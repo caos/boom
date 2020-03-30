@@ -1,6 +1,6 @@
 ![ORBOS](./raw/img/orbos-logo-oneline-lightdesign@2x.png)
 
-# ORBOS Boom The Base Tooling Operator
+# ORBOS Boom - The Base Tooling Operator
 
 ![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)
 ![release](https://github.com/caos/boom/workflows/Release/badge.svg)
