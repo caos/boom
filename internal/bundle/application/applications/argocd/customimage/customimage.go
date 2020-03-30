@@ -92,7 +92,7 @@ func FromSpec(spec *toolsetsv1beta1.Argocd, imageTags map[string]string) *Custom
 				DefaultMode: 0544,
 			}
 			vols = append(vols, vol)
-			mountPath := filepath.Join(sshFolderName, store.GPGKey.InternalName)
+			mountPath := filepath.Join(sshFolderName, store.SSHKey.InternalName)
 			volMount := &VolumeMount{
 				Name:      store.SSHKey.InternalName,
 				MountPath: mountPath,
