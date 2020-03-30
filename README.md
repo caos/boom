@@ -3,7 +3,7 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Release](https://github.com/caos/boom/workflows/Release/badge.svg)](https://github.com/caos/boom/actions)
 [![license](https://badgen.net/github/license/caos/boom/)](https://github.com/caos/boom/blob/master/LICENSE)
-[![release](https://badgen.net/github/release/caos/boom)](https://github.com/caos/boom/releases)
+[![release](https://badgen.net/github/release/caos/boom/stable)](https://github.com/caos/boom/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/caos/boom)](https://goreportcard.com/report/github.com/caos/boom)
 
 > This project is in alpha state. The API will continue breaking until version 1.0.0 is released
