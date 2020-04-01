@@ -227,6 +227,10 @@ spec:
                   type: object
                 deploy:
                   type: boolean
+                knownHosts:
+                  items:
+                    type: string
+                  type: array
                 network:
                   properties:
                     acmeAuthority:
@@ -236,7 +240,7 @@ spec:
                     email:
                       type: string
                   required:
-                  - domain
+                    - domain
                   type: object
                 rbacConfig:
                   properties:
@@ -244,6 +248,10 @@ spec:
                       type: string
                     policy.default:
                       type: string
+                    scopes:
+                      items:
+                        type: string
+                      type: array
                   type: object
                 repositories:
                   items:
@@ -563,6 +571,7 @@ spec:
           description: ToolsetStatus defines the observed state of Toolset
           type: object
       type: object
+  version: v1beta1
   versions:
   - name: v1beta1
     served: true

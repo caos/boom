@@ -113,6 +113,16 @@ func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsets
 		}
 	}
 
+	if spec.KnownHosts != nil && len(spec.KnownHosts) > 0 {
+		knownHostsStr := values.Configs.KnownHosts.Data["ssh_known_hosts"]
+
+		for _, v := range spec.KnownHosts {
+			knownHostsStr = strings.Join([]string{knownHostsStr, v}, "\n")
+		}
+
+		values.Configs.KnownHosts.Data["ssh_known_hosts"] = knownHostsStr
+	}
+
 	return values
 }
 
