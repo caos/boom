@@ -86,6 +86,27 @@ The use google as IDP there is the possbility to limit the allowed organizations
         - caos
 ```
 
+## GenericOIDC
+
+To use any generic OIDC as IDP:
+
+```yaml
+      genericOAuth:
+        secretName: secret
+        clientIDKey: key_in_secret
+        clientSecret: key_in_secret
+        scopes:
+          - openid
+          - profile
+          - email
+        authURL:
+        tokenURL:
+        apiURL:
+        allowedDomains:
+          - mycompany.com 
+          - mycompany.org
+```
+
 # Argocd
 
 In the IDP used for auth there has to be a registered client with clientID and clientSecret, whereas there also has to be a registered redirectURI. This redirectURI should be *domain-for-argocd*/login/*id*, for example with google: "https://argocd.example.caos.ch/api/dex/callback".
@@ -150,4 +171,26 @@ The use google as IDP there is the possbility to limit the allowed organizations
           clientSecretKey: client_secret
           orgs:
           - name: caos
+```
+
+
+## OIDC
+
+To use any generic OIDC as IDP:
+
+```yaml
+      oidc:
+        Name: unique
+        Issuer: test
+        SecretName: secret
+        ClientIDKey: key_in_secret
+        ClientSecretKey: key_in_secret
+        RequestedScopes:
+          - openid
+          - profile
+          - email
+      # optional
+        RequestedIDTokenClaims:
+          groups: 
+            essential: true
 ```
