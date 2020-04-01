@@ -17,8 +17,11 @@ package main
 
 import (
 	"flag"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -62,6 +65,8 @@ func main() {
 	var enableLeaderElection, localMode bool
 	var intervalSeconds int
 	var gitCrdEmail, gitCrdUser string
+	var metrics bool
+	var metricsport string
 
 	verbose := flag.Bool("verbose", false, "Print logs for debugging")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -83,6 +88,9 @@ func main() {
 	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "/dashboards", "The local path where the dashboards folder should be")
 
 	flag.IntVar(&intervalSeconds, "intervalSeconds", 60, "defines the interval in which the reconiliation of the gitCrds runs")
+
+	flag.BoolVar(&metrics, "metrics", false, "Defines if a metrics endpoint should be exposed")
+	flag.StringVar(&metricsport, "metricsport", "2112", "Port with which the metrics endpoint will get exposed")
 	flag.Parse()
 
 	gconfig.DashboardsDirectoryPath = dashboardsDirectoryPath
@@ -235,5 +243,12 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	if metrics {
+		http.Handle("/metrics", promhttp.Handler())
+		address := strings.Join([]string{":", metricsport}, "")
+		http.ListenAndServe(address, nil)
+	}
+
 	<-gitCrdError
 }
