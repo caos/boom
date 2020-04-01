@@ -55,7 +55,6 @@ func DefaultValues(imageTags map[string]string) *Values {
 			knownHostsStr = strings.Join([]string{knownHostsStr, v}, "\n")
 		}
 	}
-	knownHostsStr = strings.Join([]string{knownHostsStr, "\n"}, "")
 
 	values := &Values{
 		FullnameOverride: "argocd",
