@@ -1,9 +1,10 @@
 package v1beta1
 
 type Prometheus struct {
-	Deploy  bool         `json:"deploy,omitempty"`
-	Metrics *Metrics     `json:"metrics,omitempty"`
-	Storage *StorageSpec `json:"storage,omitempty"`
+	Deploy      bool         `json:"deploy,omitempty"`
+	Metrics     *Metrics     `json:"metrics,omitempty"`
+	Storage     *StorageSpec `json:"storage,omitempty"`
+	RemoteWrite *RemoteWrite `json:"remoteWrite,omitempty" yaml:"remoteWrite,omitempty"`
 }
 
 type StorageSpec struct {
@@ -21,4 +22,17 @@ type Metrics struct {
 	PrometheusOperator     bool `json:"prometheus-operator" yaml:"prometheus-operator"`
 	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
 	Loki                   bool `json:"loki"`
+}
+
+type RemoteWrite struct {
+	URL       string     `json:"url" yaml:"url"`
+	BasicAuth *BasicAuth `json:"basicAuth,omitempty" yaml:"basicAuth,omitempty"`
+}
+type BasicAuth struct {
+	Username *SecretKeySelector `json:"username" yaml:"username"`
+	Password *SecretKeySelector `json:"password" yaml:"password"`
+}
+type SecretKeySelector struct {
+	Name string `json:"name" yaml:"name"`
+	Key  string `json:"key" yaml:"key"`
 }

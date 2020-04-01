@@ -183,7 +183,7 @@ type PrometheusSpec struct {
 	PodAntiAffinityTopologyKey              string                    `yaml:"podAntiAffinityTopologyKey,omitempty"`
 	Affinity                                struct{}                  `yaml:"affinity,omitempty"`
 	RemoteRead                              []interface{}             `yaml:"remoteRead,omitempty"`
-	RemoteWrite                             []interface{}             `yaml:"remoteWrite,omitempty"`
+	RemoteWrite                             []*RemoteWrite            `yaml:"remoteWrite,omitempty"`
 	RemoteWriteDashboards                   bool                      `yaml:"remoteWriteDashboards,omitempty"`
 	Resources                               struct{}                  `yaml:"resources,omitempty"`
 	StorageSpec                             *StorageSpec              `yaml:"storageSpec,omitempty"`
@@ -195,6 +195,19 @@ type PrometheusSpec struct {
 	Thanos                                  struct{}                  `yaml:"thanos,omitempty"`
 	Containers                              []interface{}             `yaml:"containers,omitempty"`
 	AdditionalScrapeConfigsExternal         bool                      `yaml:"additionalScrapeConfigsExternal,omitempty"`
+}
+
+type RemoteWrite struct {
+	URL       string     `yaml:"url"`
+	BasicAuth *BasicAuth `yaml:"basicAuth"`
+}
+type BasicAuth struct {
+	Username *SecretKeySelector `yaml:"username"`
+	Password *SecretKeySelector `yaml:"password"`
+}
+type SecretKeySelector struct {
+	Name string `yaml:"name"`
+	Key  string `yaml:"key"`
 }
 
 type ServiceAccount struct {

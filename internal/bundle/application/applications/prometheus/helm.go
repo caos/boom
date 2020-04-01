@@ -60,6 +60,24 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 		values.Prometheus.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
 
+	if toolsetCRDSpec.Prometheus.RemoteWrite != nil {
+		remWrite := &helm.RemoteWrite{
+			URL: toolsetCRDSpec.Prometheus.RemoteWrite.URL,
+			BasicAuth: &helm.BasicAuth{
+				Username: &helm.SecretKeySelector{
+					Name: toolsetCRDSpec.Prometheus.RemoteWrite.BasicAuth.Username.Name,
+					Key:  toolsetCRDSpec.Prometheus.RemoteWrite.BasicAuth.Username.Key,
+				},
+				Password: &helm.SecretKeySelector{
+					Name: toolsetCRDSpec.Prometheus.RemoteWrite.BasicAuth.Password.Name,
+					Key:  toolsetCRDSpec.Prometheus.RemoteWrite.BasicAuth.Password.Key,
+				},
+			},
+		}
+
+		values.Prometheus.PrometheusSpec.RemoteWrite = []*helm.RemoteWrite{remWrite}
+	}
+
 	ruleLabels := labels.GetRuleLabels(info.GetInstanceName())
 	rules, _ := helm.GetDefaultRules(ruleLabels)
 
