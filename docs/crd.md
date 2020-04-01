@@ -120,8 +120,9 @@
 | `rbacConfig.policy.default`        | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
 | `rbacConfig.scopes`                | List of scopes which go into configmap argocd-rbac-cm                           |                                   |
 | `network`                          | Network configuration, [here](network.md)                                       | nil                               |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md)  | nil                               |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md) | nil                               |
 | `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
+| `knownHosts`                       | List of known_hosts as strings for argocd                                       | nil                               |
 
 ### Prometheus
 
