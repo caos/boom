@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"errors"
+	"github.com/caos/boom/internal/metrics"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -118,4 +119,9 @@ func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *to
 	}
 
 	c.status = c.bundle.Reconcile(currentResourceList, toolsetCRD.Spec)
+	if c.status != nil {
+		metrics.FailureReconcilingBundle(c.bundle.GetPredefinedBundle())
+		return
+	}
+	metrics.SuccessfulReconcilingBundle(c.bundle.GetPredefinedBundle())
 }

@@ -1,6 +1,7 @@
 package v1beta1
 
 import (
+	"github.com/caos/boom/internal/metrics"
 	"os"
 	"path/filepath"
 	"sync"
@@ -71,6 +72,13 @@ func (c *GitCrd) SetBackStatus() {
 	c.status = nil
 }
 
+func (c *GitCrd) GetRepoURL() string {
+	return c.git.GetURL()
+}
+func (c *GitCrd) GetRepoCRDPath() string {
+	return c.crdPath
+}
+
 func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 	if c.status != nil {
 		return
@@ -112,7 +120,7 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	}
 
 	monitor := c.monitor.WithFields(map[string]interface{}{
-		"action": "reconiling",
+		"action": "reconciling",
 	})
 
 	toolsetCRD, err := c.getCrdContent()
@@ -187,13 +195,17 @@ func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()
 
+	repoURL := c.git.GetURL()
 	if err := c.git.Clone(); err != nil {
+		metrics.FailedGitClone(repoURL)
 		return nil, err
 	}
+	metrics.SuccessfulGitClone(repoURL)
 
 	toolsetCRD := &toolsetsv1beta1.Toolset{}
 	err := c.git.ReadYamlIntoStruct(c.crdPath, toolsetCRD)
 	if err != nil {
+		metrics.WrongCRDFormat(repoURL, c.crdPath)
 		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
 	}
 
@@ -229,6 +241,7 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()
+
 	c.status = c.git.UpdateRemote("current state changed", file)
 }
 

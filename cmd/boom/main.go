@@ -189,6 +189,22 @@ func main() {
 		}()
 	}
 
+	if metrics {
+		http.Handle("/metrics", promhttp.Handler())
+		address := strings.Join([]string{":", metricsport}, "")
+		go func() {
+			if err := http.ListenAndServe(address, nil); err != nil {
+				setupLog.Error(err, "error while serving metrics endpoint")
+				os.Exit(1)
+			}
+
+			monitor.WithFields(map[string]interface{}{
+				"port":     metricsport,
+				"endpoint": "/metrics",
+			}).Info("Started metrics")
+		}()
+	}
+
 	if !localMode {
 		cmd, err := kustomize.New("/crd", true, false)
 		if err != nil {
@@ -242,12 +258,6 @@ func main() {
 			setupLog.Error(err, "unable to apply crd")
 			os.Exit(1)
 		}
-	}
-
-	if metrics {
-		http.Handle("/metrics", promhttp.Handler())
-		address := strings.Join([]string{":", metricsport}, "")
-		http.ListenAndServe(address, nil)
 	}
 
 	<-gitCrdError

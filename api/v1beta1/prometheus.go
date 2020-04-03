@@ -22,6 +22,7 @@ type Metrics struct {
 	PrometheusOperator     bool `json:"prometheus-operator" yaml:"prometheus-operator"`
 	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
 	Loki                   bool `json:"loki"`
+	Boom                   bool `json:"boom" yaml:"boom"`
 }
 
 type RemoteWrite struct {

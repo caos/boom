@@ -1,6 +1,7 @@
 package bundle
 
 import (
+	"github.com/caos/boom/internal/metrics"
 	"sync"
 
 	"github.com/caos/boom/api/v1beta1"
@@ -25,6 +26,7 @@ var (
 type Bundle struct {
 	baseDirectoryPath string
 	crdName           string
+	predefinedBundle  name.Bundle
 	Applications      map[name.Application]application.Application
 	HelmTemplator     templator.Templator
 	YamlTemplator     templator.Templator
@@ -43,8 +45,13 @@ func New(conf *config.Config) *Bundle {
 		HelmTemplator:     helmTemplator,
 		YamlTemplator:     yamlTemplator,
 		Applications:      apps,
+		predefinedBundle:  "",
 	}
 	return b
+}
+
+func (b *Bundle) GetPredefinedBundle() string {
+	return b.predefinedBundle.String()
 }
 
 func (b *Bundle) CleanUp() error {
@@ -63,14 +70,14 @@ func (b *Bundle) GetApplications() map[name.Application]application.Application 
 
 func (b *Bundle) AddApplicationsByBundleName(name name.Bundle) error {
 
-	names := bundles.Get(name)
-	if names == nil {
+	appNames := bundles.Get(name)
+	if appNames == nil {
 		return errors.Errorf("No bundle known with name %s", name)
 	}
+	b.predefinedBundle = name
 
-	bnew := b
-	for _, name := range names {
-		if err := bnew.AddApplicationByName(name); err != nil {
+	for _, appName := range appNames {
+		if err := b.AddApplicationByName(appName); err != nil {
 			return err
 		}
 	}
@@ -158,19 +165,25 @@ func (b *Bundle) ReconcileApplication(currentResourceList []*clientgo.Resource, 
 
 	_, usedHelm := app.(application.HelmApplication)
 	if usedHelm {
+		templatorName := helm.GetName()
 		err := b.HelmTemplator.Template(app, spec, resultFunc)
 		if err != nil {
+			metrics.FailureReconcilingApplication(appName.String(), templatorName.String(), deploy)
 			errChan <- err
 			return
 		}
+		metrics.SuccessfulReconcilingApplication(appName.String(), templatorName.String(), deploy)
 	}
 	_, usedYaml := app.(application.YAMLApplication)
 	if usedYaml {
+		templatorName := yaml.GetName()
 		err := b.YamlTemplator.Template(app, spec, resultFunc)
 		if err != nil {
+			metrics.FailureReconcilingApplication(appName.String(), templatorName.String(), deploy)
 			errChan <- err
 			return
 		}
+		metrics.SuccessfulReconcilingApplication(appName.String(), templatorName.String(), deploy)
 	}
 
 	monitor.Info("Done")

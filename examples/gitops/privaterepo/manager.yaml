@@ -11,7 +11,10 @@ metadata:
   name: boom
   namespace: caos-system
   labels:
-    control-plane: boom
+    app.kubernetes.io/instance: boom
+    app.kubernetes.io/part-of: boom
+    app.kubernetes.io/component: boom
+    boom.caos.ch/application: boom
 spec:
   selector:
     matchLabels:
@@ -27,20 +30,27 @@ spec:
       - command:
         - /boom
         args:
-        - "--enable-leader-election"
-        - "-git-crd-private-key" 
-        - "/secrets/tools-secret/example.rsa"
-        - "-git-crd-url"
-        - "git@github.com:caos/gitopsexample.git"
-        - "-git-crd-path"
-        - "boom.yml"
+          - "--enable-leader-election"
+          - "-git-crd-private-key"
+          - "/secrets/tools-secret/example.rsa"
+          - "-git-crd-url"
+          - "git@github.com:caos/gitopsexample.git"
+          - "-git-crd-path"
+          - "boom.yml"
+          - "-metricsport"
+          - "2112"
+          - "-metrics"
         image: boom:latest
         imagePullPolicy: IfNotPresent
         name: manager
         volumeMounts:
-        - name: privaterepo-secret
-          mountPath: /secrets/tools-secret
-          readOnly: true
+          - name: privaterepo-secret
+            mountPath: /secrets/tools-secret
+            readOnly: true
+        ports:
+          - name: metrics
+            containerPort: 2112
+            protocol: TCP
       imagePullSecrets: 
       - name: boomregistry
       terminationGracePeriodSeconds: 10

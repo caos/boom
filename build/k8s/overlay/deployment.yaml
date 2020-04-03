@@ -4,36 +4,52 @@ metadata:
   name: boom
   namespace: caos-system
   labels:
-    control-plane: boom
+    app.kubernetes.io/instance: boom
+    app.kubernetes.io/part-of: boom
+    app.kubernetes.io/component: boom
+    boom.caos.ch/application: boom
 spec:
   selector:
     matchLabels:
-      control-plane: boom
+      app.kubernetes.io/instance: boom
+      app.kubernetes.io/part-of: boom
+      app.kubernetes.io/component: boom
+      boom.caos.ch/application: boom
   replicas: 1
   template:
     metadata:
       labels:
-        control-plane: boom
+        app.kubernetes.io/instance: boom
+        app.kubernetes.io/part-of: boom
+        app.kubernetes.io/component: boom
+        boom.caos.ch/application: boom
     spec:
       serviceAccountName: boom
       containers:
       - command:
         - /boom
         args:
-        - "--enable-leader-election"
-        - "-git-crd-private-key" 
-        - "/secrets/tools-secret/id_rsa"
-        - "-git-crd-url"
-        - "git@github.com:stebenz/boom-crd.git"
-        - "-git-crd-path"
-        - "crd.yaml"
+          - "--enable-leader-election"
+          - "-git-crd-private-key"
+          - "/secrets/tools-secret/id_rsa"
+          - "-git-crd-url"
+          - "git@github.com:stebenz/boom-crd.git"
+          - "-git-crd-path"
+          - "crd.yaml"
+          - "-metricsport"
+          - "2112"
+          - "-metrics"
         image: eu.gcr.io/caos-ops/boom
         imagePullPolicy: IfNotPresent
         name: boom
+        ports:
+          - name: metrics
+            containerPort: 2112
+            protocol: TCP
         volumeMounts:
-        - name: privaterepo-secret
-          mountPath: /secrets/tools-secret
-          readOnly: true
+          - name: privaterepo-secret
+            mountPath: /secrets/tools-secret
+            readOnly: true
       # imagePullSecrets: 
       # - name: boomregistry
       terminationGracePeriodSeconds: 10

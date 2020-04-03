@@ -5,6 +5,7 @@ import (
 	ambassadormetrics "github.com/caos/boom/internal/bundle/application/applications/ambassador/metrics"
 	"github.com/caos/boom/internal/bundle/application/applications/apiserver"
 	argocdmetrics "github.com/caos/boom/internal/bundle/application/applications/argocd/metrics"
+	"github.com/caos/boom/internal/bundle/application/applications/boom"
 	kubestatemetrics "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/metrics"
 	lometrics "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/metrics"
 	lokimetrics "github.com/caos/boom/internal/bundle/application/applications/loki/metrics"
@@ -55,6 +56,10 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 
 	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.APIServer {
 		servicemonitors = append(servicemonitors, apiserver.GetServicemonitor(instanceName))
+	}
+
+	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Boom {
+		servicemonitors = append(servicemonitors, boom.GetServicemonitor(instanceName))
 	}
 
 	if len(servicemonitors) > 0 {

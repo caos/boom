@@ -7,6 +7,7 @@ import (
 	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/gitcrd"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
+	"github.com/caos/boom/internal/metrics"
 
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm"
@@ -83,8 +84,10 @@ func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
 	if err != nil {
 		monitor.Error(err)
+		metrics.FailedReadingCurrentState()
 		return nil, err
 	}
+	metrics.SuccessfulReadingCurrentState()
 
 	return current.Get(a.monitor, resourceInfoList), nil
 }
@@ -128,8 +131,10 @@ func (a *App) WriteBackCurrentState() error {
 
 		crdGit.WriteBackCurrentState(currentResourceList)
 		if err := crdGit.GetStatus(); err != nil {
+			metrics.FailedWritingCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 			return err
 		}
+		metrics.WroteCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 	}
 	return nil
 }
