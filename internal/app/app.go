@@ -134,7 +134,7 @@ func (a *App) WriteBackCurrentState() error {
 			metrics.FailedWritingCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 			return err
 		}
-		metrics.WroteCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
+		metrics.SuccessfulWriteCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 	}
 	return nil
 }

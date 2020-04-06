@@ -69,6 +69,7 @@ func New(conf *config.Config) (GitCrd, error) {
 		return nil, err
 	}
 
+	metrics.SuccessfulUnmarshalCRD(conf.CrdUrl, conf.CrdPath)
 	monitor := conf.Monitor.WithFields(map[string]interface{}{
 		"type": "gitcrd",
 	})

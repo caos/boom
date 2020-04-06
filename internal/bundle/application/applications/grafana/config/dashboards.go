@@ -68,6 +68,16 @@ func getGrafanaDashboards(dashboardsfolder string, toolsetCRDSpec *toolsetsv1bet
 		providers = append(providers, provider)
 	}
 
+	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Boom {
+		provider := &Provider{
+			ConfigMaps: []string{
+				"grafana-dashboard-boom",
+			},
+			Folder: filepath.Join(dashboardsfolder, "boom"),
+		}
+		providers = append(providers, provider)
+	}
+
 	provider := &Provider{
 		ConfigMaps: []string{
 			"grafana-dashboard-kubelet",

@@ -209,6 +209,7 @@ func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
 	}
 
+	metrics.SuccessfulUnmarshalCRD(repoURL, c.crdPath)
 	return toolsetCRD, nil
 }
 
