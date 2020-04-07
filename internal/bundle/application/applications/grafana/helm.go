@@ -118,10 +118,13 @@ func (g *Grafana) SpecToHelmValues(monitor mntr.Monitor, toolset *toolsetsv1beta
 	}
 
 	if toolset.Grafana.Admin != nil {
-		values.Grafana.Admin.ExistingSecret = toolset.Grafana.Admin.ExistingSecret
-		values.Grafana.Admin.UserKey = toolset.Grafana.Admin.UserKey
-		values.Grafana.Admin.PasswordKey = toolset.Grafana.Admin.PasswordKey
+		values.Grafana.Admin = &helm.Admin{
+			ExistingSecret: toolset.Grafana.Admin.ExistingSecret,
+			UserKey:        toolset.Grafana.Admin.UserKey,
+			PasswordKey:    toolset.Grafana.Admin.PasswordKey,
+		}
 	}
+
 	if toolset.Grafana.Storage != nil {
 		values.Grafana.Persistence.Enabled = true
 		values.Grafana.Persistence.Size = toolset.Grafana.Storage.Size
