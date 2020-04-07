@@ -14,6 +14,7 @@ import (
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	pnemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/metrics"
 	pometrics "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/metrics"
+	psemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheussystemdexporter/metrics"
 	"github.com/caos/boom/internal/labels"
 )
 
@@ -33,6 +34,11 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusNodeExporter) {
 		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitors(instanceName)...)
+	}
+
+	if toolsetCRDSpec.PrometheusSystemdExporter != nil && toolsetCRDSpec.PrometheusSystemdExporter.Deploy &&
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusSystemdExporter) {
+		servicemonitors = append(servicemonitors, psemetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&

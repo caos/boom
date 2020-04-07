@@ -62,7 +62,7 @@ func New(monitor mntr.Monitor, appName name.Application, orb string) Application
 	case prometheusnodeexporterinfo.GetName():
 		return prometheusnodeexporter.New(monitor)
 	case prometheussystemdexporterinfo.GetName():
-		return prometheussystemdexporter.New(monitor)
+		return prometheussystemdexporter.New()
 	case prometheusinfo.GetName():
 		return prometheus.New(monitor, orb)
 	case lokiinfo.GetName():
