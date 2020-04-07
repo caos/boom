@@ -62,7 +62,7 @@
 | `admin`                            | Spec for the definition of the admin account                                    | nil                               |
 | `admin.existingSecret`             | Name of the secret which contains the admin account                             |                                   |
 | `admin.userKey`                    | Key of the username in the secret                                               |                                   |
-| `admin.PasswordKey`                | Key of the password in the secret                                               |                                   |
+| `admin.passwordKey`                | Key of the password in the secret                                               |                                   |
 | `admin`                            | Spec for the definition of the admin account                                    |                                   |
 | `datasources`                      | Spec for additional datasources                                                 | nil                               |
 | `datasources.name`                 | Name of the datasource                                                          |                                   |
