@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
@@ -63,6 +65,7 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 	}
 
 	bundleConf := &bundleconfig.Config{
+		Orb:               strings.TrimSuffix(strings.TrimPrefix(gitCrdConf.CrdUrl, "git@"), ".git"),
 		BundleName:        bundles.Caos,
 		BaseDirectoryPath: a.ToolsDirectoryPath,
 		Templator:         helm.GetName(),

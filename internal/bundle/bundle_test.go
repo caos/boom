@@ -55,11 +55,12 @@ func newMonitor() mntr.Monitor {
 	return monitor
 }
 
-func NewBundle(templator name.Templator) *Bundle {
+func NewBundle(templator name.Templator, orb string) *Bundle {
 	monitor := newMonitor()
 
 	bundleConf := &config.Config{
 		Monitor:           monitor,
+		Orb:               orb,
 		CrdName:           "caos_test",
 		BaseDirectoryPath: baseDirectoryPath,
 		Templator:         templator,

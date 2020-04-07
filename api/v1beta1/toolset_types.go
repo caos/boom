@@ -24,19 +24,20 @@ import (
 
 // ToolsetSpec defines the desired state of Toolset
 type ToolsetSpec struct {
-	ForceApply             bool                    `json:"forceApply,omitempty" yaml:"forceApply,omitempty"`
-	CurrentStateFolder     string                  `json:"currentStatePath,omitempty" yaml:"currentStatePath,omitempty"`
-	PreApply               *PreApply               `json:"preApply,omitempty" yaml:"preApply,omitempty"`
-	PostApply              *PostApply              `json:"postApply,omitempty" yaml:"postApply,omitempty"`
-	PrometheusOperator     *PrometheusOperator     `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
-	LoggingOperator        *LoggingOperator        `json:"logging-operator,omitempty" yaml:"logging-operator"`
-	PrometheusNodeExporter *PrometheusNodeExporter `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
-	Grafana                *Grafana                `json:"grafana,omitempty" yaml:"grafana"`
-	Ambassador             *Ambassador             `json:"ambassador,omitempty" yaml:"ambassador"`
-	KubeStateMetrics       *KubeStateMetrics       `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
-	Argocd                 *Argocd                 `json:"argocd,omitempty" yaml:"argocd"`
-	Prometheus             *Prometheus             `json:"prometheus,omitempty" yaml:"prometheus"`
-	Loki                   *Loki                   `json:"loki,omitempty" yaml:"loki"`
+	ForceApply                bool                       `json:"forceApply,omitempty" yaml:"forceApply,omitempty"`
+	CurrentStateFolder        string                     `json:"currentStatePath,omitempty" yaml:"currentStatePath,omitempty"`
+	PreApply                  *PreApply                  `json:"preApply,omitempty" yaml:"preApply,omitempty"`
+	PostApply                 *PostApply                 `json:"postApply,omitempty" yaml:"postApply,omitempty"`
+	PrometheusOperator        *PrometheusOperator        `json:"prometheus-operator,omitempty" yaml:"prometheus-operator"`
+	LoggingOperator           *LoggingOperator           `json:"logging-operator,omitempty" yaml:"logging-operator"`
+	PrometheusNodeExporter    *PrometheusNodeExporter    `json:"prometheus-node-exporter,omitempty" yaml:"prometheus-node-exporter"`
+	PrometheusSystemdExporter *PrometheusSystemdExporter `json:"prometheus-systemd-exporter,omitempty" yaml:"prometheus-systemd-exporter"`
+	Grafana                   *Grafana                   `json:"grafana,omitempty" yaml:"grafana"`
+	Ambassador                *Ambassador                `json:"ambassador,omitempty" yaml:"ambassador"`
+	KubeStateMetrics          *KubeStateMetrics          `json:"kube-state-metrics,omitempty" yaml:"kube-state-metrics"`
+	Argocd                    *Argocd                    `json:"argocd,omitempty" yaml:"argocd"`
+	Prometheus                *Prometheus                `json:"prometheus,omitempty" yaml:"prometheus"`
+	Loki                      *Loki                      `json:"loki,omitempty" yaml:"loki"`
 }
 
 // ToolsetStatus defines the observed state of Toolset

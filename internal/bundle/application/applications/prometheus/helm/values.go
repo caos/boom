@@ -128,19 +128,14 @@ type RelabelConfig struct {
 	Replacement  string   `yaml:"replacement,omitempty"`
 }
 
-type MetricRelabelConfig struct {
-	Regex  string `yaml:"regex,omitempty"`
-	Action string `yaml:"action,omitempty"`
-}
-
 type AdditionalScrapeConfig struct {
-	JobName              string                 `yaml:"job_name,omitempty"`
-	KubernetesSdConfigs  []*KubernetesSdConfig  `yaml:"kubernetes_sd_configs,omitempty"`
-	Scheme               string                 `yaml:"scheme,omitempty"`
-	TLSConfig            *TLSConfig             `yaml:"tls_config,omitempty"`
-	RelabelConfigs       []*RelabelConfig       `yaml:"relabel_configs,omitempty"`
-	MetricRelabelConfigs []*MetricRelabelConfig `yaml:"metric_relabel_configs,omitempty"`
-	BearerTokenFile      string                 `yaml:"bearer_token_file,omitempty"`
+	JobName              string                `yaml:"job_name,omitempty"`
+	KubernetesSdConfigs  []*KubernetesSdConfig `yaml:"kubernetes_sd_configs,omitempty"`
+	Scheme               string                `yaml:"scheme,omitempty"`
+	TLSConfig            *TLSConfig            `yaml:"tls_config,omitempty"`
+	RelabelConfigs       []*RelabelConfig      `yaml:"relabel_configs,omitempty"`
+	MetricRelabelConfigs []*RelabelConfig      `yaml:"metric_relabel_configs,omitempty"`
+	BearerTokenFile      string                `yaml:"bearer_token_file,omitempty"`
 }
 
 type PrometheusSpec struct {
@@ -198,16 +193,19 @@ type PrometheusSpec struct {
 }
 
 type RemoteWrite struct {
-	URL       string     `yaml:"url"`
-	BasicAuth *BasicAuth `yaml:"basicAuth"`
+	URL                 string           `yaml:"url,omitempty"`
+	BasicAuth           *BasicAuth       `yaml:"basicAuth,omitempty"`
+	WriteRelabelConfigs []*RelabelConfig `yaml:"writeRelabelConfigs,omitempty"`
 }
+
 type BasicAuth struct {
-	Username *SecretKeySelector `yaml:"username"`
-	Password *SecretKeySelector `yaml:"password"`
+	Username *SecretKeySelector `yaml:"username,omitempty"`
+	Password *SecretKeySelector `yaml:"password,omitempty"`
 }
+
 type SecretKeySelector struct {
-	Name string `yaml:"name"`
-	Key  string `yaml:"key"`
+	Name string `yaml:"name,omitempty"`
+	Key  string `yaml:"key,omitempty"`
 }
 
 type ServiceAccount struct {

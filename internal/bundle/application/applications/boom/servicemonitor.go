@@ -18,7 +18,7 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	}
 
 	ls["app.kubernetes.io/instance"] = "boom"
-	ls["app.kubernetes.io/part-of"] = "boom"
+	ls["app.kubernetes.io/part-of"] = "orbos"
 	ls["app.kubernetes.io/component"] = "boom"
 
 	return &servicemonitor.Config{

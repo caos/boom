@@ -1,11 +1,14 @@
 package prometheus
 
 import (
+	"errors"
+
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/helm"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
+	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/boom/internal/labels"
 	"github.com/caos/boom/internal/templator/helm/chart"
@@ -15,8 +18,16 @@ import (
 func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1beta1.ToolsetSpec) interface{} {
 	version, err := kubectl.NewVersion().GetKubeVersion(monitor)
 	if err != nil {
+		// TODO: Better error handling?
 		return nil
 	}
+
+	_, err = clientgo.GetSecret("grafana-cloud", "caos-system")
+	if err != nil && !errors.Is(err, clientgo.ErrNotFound{}) {
+		// TODO: Better error handling?
+		panic(err)
+	}
+	ingestionSecretPresent := err == nil
 
 	config := config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 
@@ -60,8 +71,36 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 		values.Prometheus.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
 
+	if ingestionSecretPresent {
+		if values.Prometheus.PrometheusSpec.ExternalLabels == nil {
+			values.Prometheus.PrometheusSpec.ExternalLabels = make(map[string]string)
+		}
+		values.Prometheus.PrometheusSpec.ExternalLabels["orb"] = p.orb
+		values.Prometheus.PrometheusSpec.RemoteWrite = append(values.Prometheus.PrometheusSpec.RemoteWrite, &helm.RemoteWrite{
+			URL: "https://prometheus-us-central1.grafana.net/api/prom/push",
+			BasicAuth: &helm.BasicAuth{
+				Username: &helm.SecretKeySelector{
+					Name: "grafana-cloud",
+					Key:  "username",
+				},
+				Password: &helm.SecretKeySelector{
+					Name: "grafana-cloud",
+					Key:  "password",
+				},
+			},
+			WriteRelabelConfigs: []*helm.RelabelConfig{{
+				Action: "keep",
+				SourceLabels: []string{
+					"__name__",
+					"job",
+				},
+				Regex: "caos_.+;.*|up;caos_remote_.+",
+			}},
+		})
+	}
+
 	if toolsetCRDSpec.Prometheus.RemoteWrite != nil {
-		remWrite := &helm.RemoteWrite{
+		values.Prometheus.PrometheusSpec.RemoteWrite = append(values.Prometheus.PrometheusSpec.RemoteWrite, &helm.RemoteWrite{
 			URL: toolsetCRDSpec.Prometheus.RemoteWrite.URL,
 			BasicAuth: &helm.BasicAuth{
 				Username: &helm.SecretKeySelector{
@@ -73,9 +112,7 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 					Key:  toolsetCRDSpec.Prometheus.RemoteWrite.BasicAuth.Password.Key,
 				},
 			},
-		}
-
-		values.Prometheus.PrometheusSpec.RemoteWrite = []*helm.RemoteWrite{remWrite}
+		})
 	}
 
 	ruleLabels := labels.GetRuleLabels(info.GetInstanceName())

@@ -5,6 +5,7 @@ import (
 )
 
 func DefaultValues(imageTags map[string]string) *Values {
+
 	promValues := &PrometheusValues{
 		Enabled: true,
 		ServiceAccount: &ServiceAccount{
@@ -55,6 +56,7 @@ func DefaultValues(imageTags map[string]string) *Values {
 				RunAsUser:    1000,
 				FsGroup:      2000,
 			},
+			RemoteWrite: nil,
 		},
 	}
 

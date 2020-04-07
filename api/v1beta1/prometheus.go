@@ -23,6 +23,7 @@ type Metrics struct {
 	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
 	Loki                   bool `json:"loki"`
 	Boom                   bool `json:"boom" yaml:"boom"`
+	Orbiter                bool `json:"orbiter" yaml:"orbiter"`
 }
 
 type RemoteWrite struct {
