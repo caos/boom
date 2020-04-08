@@ -5,14 +5,14 @@ metadata:
   namespace: caos-system
   labels:
     app.kubernetes.io/instance: boom
-    app.kubernetes.io/part-of: boom
+    app.kubernetes.io/part-of: orbos
     app.kubernetes.io/component: boom
     boom.caos.ch/application: boom
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/instance: boom
-      app.kubernetes.io/part-of: boom
+      app.kubernetes.io/part-of: orbos
       app.kubernetes.io/component: boom
       boom.caos.ch/application: boom
   replicas: 1
@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/instance: boom
-        app.kubernetes.io/part-of: boom
+        app.kubernetes.io/part-of: orbos
         app.kubernetes.io/component: boom
         boom.caos.ch/application: boom
     spec:

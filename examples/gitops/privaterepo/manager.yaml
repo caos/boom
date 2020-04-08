@@ -12,7 +12,7 @@ metadata:
   namespace: caos-system
   labels:
     app.kubernetes.io/instance: boom
-    app.kubernetes.io/part-of: boom
+    app.kubernetes.io/part-of: orbos
     app.kubernetes.io/component: boom
     boom.caos.ch/application: boom
 spec:
