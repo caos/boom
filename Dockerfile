@@ -1,7 +1,7 @@
 ####################################################################################################
 # Download dependencies and build
 ####################################################################################################
-FROM golang:1.14.0-alpine3.11 AS dependencies
+FROM golang:1.14.2-alpine3.11 AS dependencies
 
 WORKDIR $GOPATH/src/github.com/caos/boom
 
@@ -15,7 +15,8 @@ RUN apk update && apk add git curl && \
     mv ./kubectl /artifacts/kubectl && \
     curl -L "https://get.helm.sh/helm-v2.12.0-linux-amd64.tar.gz" |tar xvz && \
     mv linux-amd64/helm /artifacts/helm && \
-    chmod +x /artifacts/helm
+    chmod +x /artifacts/helm && \
+    go get -u github.com/go-delve/delve/cmd/dlv
 
 # copy all sourcecode from the current repository
 COPY ./go.mod ./go.sum ./
@@ -26,6 +27,22 @@ COPY cmd cmd
 COPY api api
 COPY controllers controllers
 COPY internal internal
+
+# ####################################################################################################
+# Run debug
+# ####################################################################################################
+FROM dependencies AS debug
+
+RUN mv /artifacts/* /usr/local/bin/
+
+# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -gcflags 'all=-N -l' -o /boom cmd/boom/*.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /gen cmd/gen-executable/*.go
+
+COPY config/crd /crd
+COPY dashboards /dashboards
+
+ENTRYPOINT [ "dlv", "exec", "--api-version", "2", "--headless", "--accept-multiclient", "--listen", ":5000", "/boom", "--"]
 
 # ####################################################################################################
 # Run tests

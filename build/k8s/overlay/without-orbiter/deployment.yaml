@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom
+  namespace: caos-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: boom
+        args:
+          - "--enable-leader-election"
+          - "-git-crd-private-key"
+          - "/secrets/tools-secret/id_rsa"
+          - "-git-crd-url"
+          - "git@github.com:stebenz/boom-crd.git"
+          - "-git-crd-path"
+          - "crd.yaml"
+          - "-metricsport"
+          - "2112"
+          - "-metrics"
+        volumeMounts:
+          - name: privaterepo-secret
+            mountPath: /secrets/tools-secret
+            readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: "privaterepo-secret"
+        secret:
+          secretName: privaterepo-secret

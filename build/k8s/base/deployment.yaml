@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: boom
-  namespace: caos-system
   labels:
     app.kubernetes.io/instance: boom
     app.kubernetes.io/part-of: orbos
     app.kubernetes.io/component: boom
     boom.caos.ch/application: boom
+  name: boom
+  namespace: caos-system
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/instance: boom
       app.kubernetes.io/part-of: orbos
       app.kubernetes.io/component: boom
       boom.caos.ch/application: boom
-  replicas: 1
   template:
     metadata:
       labels:
@@ -24,36 +24,27 @@ spec:
         app.kubernetes.io/component: boom
         boom.caos.ch/application: boom
     spec:
-      serviceAccountName: boom
       containers:
-      - command:
-        - /boom
-        args:
-          - "--enable-leader-election"
-          - "-git-crd-private-key"
-          - "/secrets/tools-secret/id_rsa"
-          - "-git-crd-url"
-          - "git@github.com:stebenz/boom-crd.git"
-          - "-git-crd-path"
-          - "crd.yaml"
-          - "-metricsport"
-          - "2112"
-          - "-metrics"
+      - name: boom
         image: eu.gcr.io/caos-ops/boom
         imagePullPolicy: IfNotPresent
-        name: boom
         ports:
           - name: metrics
             containerPort: 2112
             protocol: TCP
-        volumeMounts:
-          - name: privaterepo-secret
-            mountPath: /secrets/tools-secret
-            readOnly: true
-      # imagePullSecrets: 
-      # - name: boomregistry
+          - name: debug
+            containerPort: 5000
+            protocol: TCP
+#        resources:
+#          limits:
+#            cpu: 500m
+#            memory: 500Mi
+#          requests:
+#            cpu: 250m
+#            memory: 250Mi
+      serviceAccount: boom
+      serviceAccountName: boom
+      imagePullSecrets:
+      - name: local-docker-login
+      restartPolicy: Always
       terminationGracePeriodSeconds: 10
-      volumes:
-      - name: "privaterepo-secret"
-        secret:
-          secretName: privaterepo-secret

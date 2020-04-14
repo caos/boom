@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: caos-system
 
 bases:
-- ../base
+- ../../base
 
-resources:
-- deployment.yaml
+patches:
+- path: deployment.yaml

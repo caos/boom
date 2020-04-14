@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom
+  namespace: caos-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: boom
+        args:
+        - --metrics-addr
+        - 127.0.0.1:8080
+        - --enable-leader-election
+        - --git-orbconfig
+        - /secrets/orbconfig
+        - --git-crd-path
+        - boom.yml
+        volumeMounts:
+        - mountPath: /secrets
+          name: orbconfig
+          readOnly: true
+      volumes:
+      - name: orbconfig
+        secret:
+          secretName: caos
