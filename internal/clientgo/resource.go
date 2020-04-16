@@ -1,8 +1,7 @@
 package clientgo
 
 import (
-	"strings"
-
+	"fmt"
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"strings"
 )
 
 var (
@@ -47,6 +47,10 @@ var (
 		"networking.gke.io/ingresses",
 		"networking.gke.io/networkpolicies",
 	}
+)
+
+var (
+	Limit int64 = 50
 )
 
 type ResourceInfo struct {
@@ -131,7 +135,11 @@ func DeleteResource(resource *Resource) error {
 	return errors.Wrapf(err, "Error while deleting %s", resource.Name)
 }
 
-func GetGroupVersionsResources(filtersResources []string) ([]*ResourceInfo, error) {
+func GetGroupVersionsResources(monitor mntr.Monitor, filtersResources []string) ([]*ResourceInfo, error) {
+	listMonitor := monitor.WithFields(map[string]interface{}{
+		"action": "groupVersionResources",
+	})
+
 	conf, err := getClusterConfig()
 	if err != nil {
 		return nil, err
@@ -146,7 +154,6 @@ func GetGroupVersionsResources(filtersResources []string) ([]*ResourceInfo, erro
 	if err != nil {
 		return nil, err
 	}
-
 	resourceInfoList := make([]*ResourceInfo, 0)
 	for _, apiGroup := range apiGroups.Groups {
 		version := apiGroup.PreferredVersion
@@ -177,6 +184,7 @@ func GetGroupVersionsResources(filtersResources []string) ([]*ResourceInfo, erro
 			}
 		}
 	}
+	listMonitor.WithField("count", len(resourceInfoList)).Debug("Listed groupVersionsResources")
 	return resourceInfoList, nil
 }
 
@@ -190,7 +198,9 @@ func contains(s []string, e string) bool {
 }
 
 func ListResources(monitor mntr.Monitor, resourceInfoList []*ResourceInfo, labels map[string]string) ([]*Resource, error) {
-
+	listMonitor := monitor.WithFields(map[string]interface{}{
+		"action": "listResources",
+	})
 	conf, err := getClusterConfig()
 	if err != nil {
 		return nil, err
@@ -211,63 +221,111 @@ func ListResources(monitor mntr.Monitor, resourceInfoList []*ResourceInfo, label
 		}
 	}
 
+	listMonitor.WithFields(map[string]interface{}{
+		"labelSelector": labelSelector,
+	}).Debug(fmt.Sprintf("Used labels"))
+
 	resourceList := make([]*Resource, 0)
 	for _, resourceInfo := range resourceInfoList {
 
 		gvr := schema.GroupVersionResource{Group: resourceInfo.Group, Version: resourceInfo.Version, Resource: resourceInfo.Resource}
-		list, err := client.Resource(gvr).List(metav1.ListOptions{LabelSelector: labelSelector})
+
+		listOpt := metav1.ListOptions{
+			LabelSelector: labelSelector,
+			Limit:         Limit,
+		}
+		list, err := client.Resource(gvr).List(listOpt)
 		if err != nil {
 			continue
 		}
-		for _, item := range list.Items {
 
-			name, found, err := unstructured.NestedString(item.Object, "metadata", "name")
-			if err != nil || !found {
-				return nil, err
-			}
+		resList, err := getResourcesFromList(resourceInfo.Group, resourceInfo.Version, resourceInfo.Resource, list.Items)
+		if err != nil {
+			return nil, err
+		}
 
-			kind, _, err := unstructured.NestedString(item.Object, "kind")
+		for list.GetContinue() != "" {
+			listOpt.Continue = list.GetContinue()
+			listInternal, err := client.Resource(gvr).List(listOpt)
 			if err != nil {
-				return nil, err
-			}
-
-			namespace, _, err := unstructured.NestedString(item.Object, "metadata", "namespace")
-			if err != nil {
-				return nil, err
-			}
-
-			labels, _, err := unstructured.NestedMap(item.Object, "metadata", "labels")
-			if err != nil {
-				return nil, err
-			}
-
-			_, found, err = unstructured.NestedSlice(item.Object, "metadata", "ownerReferences")
-			if err != nil {
-				return nil, err
-			}
-			if found == true {
 				continue
 			}
+			list = listInternal
 
-			labelStrs := make(map[string]string)
-			for k, label := range labels {
-				labelStrs[k] = label.(string)
+			resListContinue, err := getResourcesFromList(resourceInfo.Group, resourceInfo.Version, resourceInfo.Resource, list.Items)
+			if err != nil {
+				return nil, err
 			}
-
-			resourceList = append(resourceList, &Resource{
-				Group:     resourceInfo.Group,
-				Version:   resourceInfo.Version,
-				Resource:  resourceInfo.Resource,
-				Name:      name,
-				Kind:      kind,
-				Namespace: namespace,
-				Labels:    labelStrs,
-			})
+			resList = append(resList, resListContinue...)
 		}
+
+		listMonitor.WithFields(map[string]interface{}{
+			"group":    resourceInfo.Group,
+			"version":  resourceInfo.Version,
+			"resource": resourceInfo.Resource,
+			"count":    len(resList),
+		}).Debug("Listed resources")
+		resourceList = append(resourceList, resList...)
+	}
+
+	listMonitor.WithFields(map[string]interface{}{
+		"count": len(resourceList),
+	}).Info("All current resources")
+	return resourceList, nil
+}
+
+func getResourcesFromList(group, version, resource string, list []unstructured.Unstructured) ([]*Resource, error) {
+
+	resourceList := make([]*Resource, 0)
+	for _, item := range list {
+
+		name, found, err := unstructured.NestedString(item.Object, "metadata", "name")
+		if err != nil || !found {
+			return nil, err
+		}
+
+		kind, _, err := unstructured.NestedString(item.Object, "kind")
+		if err != nil {
+			return nil, err
+		}
+
+		namespace, _, err := unstructured.NestedString(item.Object, "metadata", "namespace")
+		if err != nil {
+			return nil, err
+		}
+
+		labels, _, err := unstructured.NestedMap(item.Object, "metadata", "labels")
+		if err != nil {
+			return nil, err
+		}
+
+		_, found, err = unstructured.NestedSlice(item.Object, "metadata", "ownerReferences")
+		if err != nil {
+			return nil, err
+		}
+		if found == true {
+			continue
+		}
+
+		labelStrs := make(map[string]string)
+		for k, label := range labels {
+			labelStrs[k] = label.(string)
+		}
+
+		resourceList = append(resourceList, &Resource{
+			Group:     group,
+			Version:   version,
+			Resource:  resource,
+			Name:      name,
+			Kind:      kind,
+			Namespace: namespace,
+			Labels:    labelStrs,
+		})
 	}
 
 	return resourceList, nil
 }
+
 func GetFilter(group, version, kind string) string {
 	return strings.Join([]string{group, version, kind}, "/")
 }

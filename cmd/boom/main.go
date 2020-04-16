@@ -62,6 +62,7 @@ func main() {
 	var enableLeaderElection, localMode bool
 	var intervalSeconds int
 	var gitCrdEmail, gitCrdUser string
+	var limitResources int64
 
 	verbose := flag.Bool("verbose", false, "Print logs for debugging")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -83,6 +84,7 @@ func main() {
 	flag.StringVar(&dashboardsDirectoryPath, "dashboards-directory-path", "/dashboards", "The local path where the dashboards folder should be")
 
 	flag.IntVar(&intervalSeconds, "intervalSeconds", 60, "defines the interval in which the reconiliation of the gitCrds runs")
+	flag.Int64Var(&limitResources, "limit", 0, "Defines the limit which is used by the request for current state")
 	flag.Parse()
 
 	gconfig.DashboardsDirectoryPath = dashboardsDirectoryPath
@@ -91,6 +93,9 @@ func main() {
 
 	if localMode {
 		clientgo.InConfig = false
+	}
+	if limitResources != 0 {
+		clientgo.Limit = limitResources
 	}
 
 	if gitOrbConfig != "" {

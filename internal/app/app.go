@@ -80,7 +80,7 @@ func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 
 	monitor.Info("Started determining current state")
 
-	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
+	resourceInfoList, err := clientgo.GetGroupVersionsResources(monitor, []string{})
 	if err != nil {
 		monitor.Error(err)
 		return nil, err
