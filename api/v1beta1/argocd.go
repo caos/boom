@@ -1,5 +1,7 @@
 package v1beta1
 
+import "github.com/caos/boom/api/v1beta1/secret"
+
 type Argocd struct {
 	Deploy       bool                `json:"deploy,omitempty"`
 	CustomImage  *ArgocdCustomImage  `json:"customImage,omitempty" yaml:"customImage,omitempty"`
@@ -17,21 +19,13 @@ type Rbac struct {
 }
 
 type ArgocdRepository struct {
-	URL               string            `json:"url,omitempty" yaml:"url,omitempty"`
-	UsernameSecret    *ArgocdRepoSecret `json:"usernameSecret,omitempty" yaml:"usernameSecret,omitempty"`
-	PasswordSecret    *ArgocdRepoSecret `json:"passwordSecret,omitempty" yaml:"passwordSecret,omitempty"`
-	CertificateSecret *ArgocdRepoSecret `json:"certificateSecret,omitempty" yaml:"certificateSecret,omitempty"`
-}
-
-type ArgocdRepoSecret struct {
-	Name string `json:"name" yaml:"name"`
-	Key  string `json:"key" yaml:"key"`
-}
-
-type ArgocdSecret struct {
-	Name         string `json:"name" yaml:"name"`
-	Key          string `json:"key" yaml:"key"`
-	InternalName string `json:"internalName" yaml:"internalName"`
+	URL                       string           `json:"url,omitempty" yaml:"url,omitempty"`
+	Username                  *secret.Secret   `yaml:"username,omitempty"`
+	ExistingUsernameSecret    *secret.Existing `json:"existingUsernameSecret,omitempty" yaml:"existingUsernameSecret,omitempty"`
+	Password                  *secret.Secret   `yaml:"password,omitempty"`
+	ExistingPasswordSecret    *secret.Existing `json:"existingPasswordSecret,omitempty" yaml:"existingPasswordSecret,omitempty"`
+	Certificate               *secret.Secret   `yaml:"certificate,omitempty"`
+	ExistingCertificateSecret *secret.Existing `json:"existingCertificateSecret,omitempty" yaml:"existingCertificateSecret,omitempty"`
 }
 
 type ArgocdCustomImage struct {
@@ -41,10 +35,12 @@ type ArgocdCustomImage struct {
 }
 
 type ArgocdGopassStore struct {
-	SSHKey    *ArgocdSecret `json:"sshKey,omitempty" yaml:"sshKey,omitempty"`
-	GPGKey    *ArgocdSecret `json:"gpgKey,omitempty" yaml:"gpgKey,omitempty"`
-	Directory string        `json:"directory,omitempty" yaml:"directory,omitempty"`
-	StoreName string        `json:"storeName,omitempty" yaml:"storeName,omitempty"`
+	SSHKey               *secret.Secret               `yaml:"sshKey"`
+	ExistingSSHKeySecret *secret.ExistingToFilesystem `json:"existingSshKeySecret,omitempty" yaml:"existingSshKeySecret,omitempty"`
+	GPGKey               *secret.Secret               `yaml:"gpgKey"`
+	ExistingGPGKeySecret *secret.ExistingToFilesystem `json:"existingGpgKeySecret,omitempty" yaml:"existingGpgKeySecret,omitempty"`
+	Directory            string                       `json:"directory,omitempty" yaml:"directory,omitempty"`
+	StoreName            string                       `json:"storeName,omitempty" yaml:"storeName,omitempty"`
 }
 
 type ArgocdAuth struct {
@@ -55,13 +51,14 @@ type ArgocdAuth struct {
 }
 
 type ArgocdOIDC struct {
-	Name                   string                 `json:"name,omitempty" yaml:"name,omitempty"`
-	Issuer                 string                 `json:"issuer,omitempty" yaml:"issuer,omitempty"`
-	SecretName             string                 `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey            string                 `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecretKey        string                 `json:"clientSecretKey,omitempty" yaml:"clientSecret,omitempty"`
-	RequestedScopes        []string               `json:"requestedScopes,omitempty" yaml:"requestedScopes,omitempty"`
-	RequestedIDTokenClaims map[string]ArgocdClaim `json:"requestedIDTokenClaims,omitempty" yaml:"requestedIDTokenClaims,omitempty"`
+	Name                       string                 `json:"name,omitempty" yaml:"name,omitempty"`
+	Issuer                     string                 `json:"issuer,omitempty" yaml:"issuer,omitempty"`
+	ClientID                   *secret.Secret         `yaml:"clientID"`
+	ExistingClientIDSecret     *secret.Existing       `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ClientSecret               *secret.Secret         `yaml:"clientSecret"`
+	ExistingClientSecretSecret *secret.Existing       `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
+	RequestedScopes            []string               `json:"requestedScopes,omitempty" yaml:"requestedScopes,omitempty"`
+	RequestedIDTokenClaims     map[string]ArgocdClaim `json:"requestedIDTokenClaims,omitempty" yaml:"requestedIDTokenClaims,omitempty"`
 }
 
 type ArgocdClaim struct {
@@ -76,13 +73,14 @@ type ArgocdGithubConnector struct {
 }
 
 type ArgocdGithubConfig struct {
-	SecretName      string             `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey     string             `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecretKey string             `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
-	Orgs            []*ArgocdGithubOrg `json:"orgs,omitempty" yaml:"orgs,omitempty"`
-	LoadAllGroups   bool               `json:"loadAllGroups,omitempty" yaml:"loadAllGroups,omitempty"`
-	TeamNameField   string             `json:"teamNameField,omitempty" yaml:"teamNameField,omitempty"`
-	UseLoginAsID    bool               `json:"useLoginAsID,omitempty" yaml:"useLoginAsID,omitempty"`
+	ClientID                   *secret.Secret     `yaml:"clientID"`
+	ExistingClientIDSecret     *secret.Existing   `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ClientSecret               *secret.Secret     `yaml:"clientSecret"`
+	ExistingClientSecretSecret *secret.Existing   `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
+	Orgs                       []*ArgocdGithubOrg `json:"orgs,omitempty" yaml:"orgs,omitempty"`
+	LoadAllGroups              bool               `json:"loadAllGroups,omitempty" yaml:"loadAllGroups,omitempty"`
+	TeamNameField              string             `json:"teamNameField,omitempty" yaml:"teamNameField,omitempty"`
+	UseLoginAsID               bool               `json:"useLoginAsID,omitempty" yaml:"useLoginAsID,omitempty"`
 }
 
 type ArgocdGithubOrg struct {
@@ -97,12 +95,13 @@ type ArgocdGitlabConnector struct {
 }
 
 type ArgocdGitlabConfig struct {
-	SecretName      string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey     string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecretKey string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
-	BaseURL         string   `json:"baseURL,omitempty" yaml:"baseURL,omitempty"`
-	Groups          []string `json:"groups,omitempty" yaml:"groups,omitempty"`
-	UseLoginAsID    bool     `json:"useLoginAsID,omitempty" yaml:"useLoginAsID,omitempty"`
+	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
+	BaseURL                    string           `json:"baseURL,omitempty" yaml:"baseURL,omitempty"`
+	Groups                     []string         `json:"groups,omitempty" yaml:"groups,omitempty"`
+	UseLoginAsID               bool             `json:"useLoginAsID,omitempty" yaml:"useLoginAsID,omitempty"`
 }
 
 type ArgocdGoogleConnector struct {
@@ -112,12 +111,13 @@ type ArgocdGoogleConnector struct {
 }
 
 type ArgocdGoogleConfig struct {
-	SecretName             string   `json:"secretName,omitempty" yaml:"secretName,omitempty"`
-	ClientIDKey            string   `json:"clientIDKey,omitempty" yaml:"clientIDKey,omitempty"`
-	ClientSecretKey        string   `json:"clientSecretKey,omitempty" yaml:"clientSecretKey,omitempty"`
-	HostedDomains          []string `json:"hostedDomains,omitempty" yaml:"hostedDomains,omitempty"`
-	Groups                 []string `json:"groups,omitempty" yaml:"groups,omitempty"`
-	ServiceAccountJSONKey  string   `json:"serviceAccountJSONKey,omitempty" yaml:"serviceAccountJSONKey,omitempty"`
-	ServiceAccountFilePath string   `json:"serviceAccountFilePath,omitempty" yaml:"serviceAccountFilePath,omitempty"`
-	AdminEmail             string   `json:"adminEmail,omitempty" yaml:"adminEmail,omitempty"`
+	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
+	HostedDomains              []string         `json:"hostedDomains,omitempty" yaml:"hostedDomains,omitempty"`
+	Groups                     []string         `json:"groups,omitempty" yaml:"groups,omitempty"`
+	ServiceAccountJSONKey      string           `json:"serviceAccountJSONKey,omitempty" yaml:"serviceAccountJSONKey,omitempty"`
+	ServiceAccountFilePath     string           `json:"serviceAccountFilePath,omitempty" yaml:"serviceAccountFilePath,omitempty"`
+	AdminEmail                 string           `json:"adminEmail,omitempty" yaml:"adminEmail,omitempty"`
 }

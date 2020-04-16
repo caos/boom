@@ -1,15 +1,11 @@
 package v1beta1
 
-type Prometheus struct {
-	Deploy  bool         `json:"deploy,omitempty"`
-	Metrics *Metrics     `json:"metrics,omitempty"`
-	Storage *StorageSpec `json:"storage,omitempty"`
-}
+import "github.com/caos/boom/api/v1beta1/storage"
 
-type StorageSpec struct {
-	StorageClass string   `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
-	AccessModes  []string `json:"accessModes,omitempty" yaml:"accessModes,omitempty"`
-	Size         string   `json:"size,omitempty" yaml:"size,omitempty"`
+type Prometheus struct {
+	Deploy  bool          `json:"deploy,omitempty"`
+	Metrics *Metrics      `json:"metrics,omitempty"`
+	Storage *storage.Spec `json:"storage,omitempty"`
 }
 
 type Metrics struct {

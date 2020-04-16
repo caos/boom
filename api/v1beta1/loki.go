@@ -1,10 +1,12 @@
 package v1beta1
 
+import "github.com/caos/boom/api/v1beta1/storage"
+
 type Loki struct {
-	Deploy        bool         `json:"deploy,omitempty"`
-	Logs          *Logs        `json:"logs,omitempty"`
-	Storage       *StorageSpec `json:"storage,omitempty"`
-	ClusterOutput bool         `json:"clusterOutput,omitempty" yaml:"clusterOutput,omitempty"`
+	Deploy        bool          `json:"deploy,omitempty"`
+	Logs          *Logs         `json:"logs,omitempty"`
+	Storage       *storage.Spec `json:"storage,omitempty"`
+	ClusterOutput bool          `json:"clusterOutput,omitempty" yaml:"clusterOutput,omitempty"`
 }
 
 type Logs struct {
