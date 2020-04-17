@@ -2,6 +2,10 @@ package customimage
 
 import (
 	"encoding/json"
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/info"
+	"github.com/caos/boom/internal/bundle/application/resources"
+	"github.com/caos/boom/internal/labels"
+	"github.com/caos/boom/internal/secret"
 	"path/filepath"
 	"strings"
 
@@ -47,6 +51,41 @@ type CustomImage struct {
 	AddVolumeMounts  []*VolumeMount
 }
 
+func getSecretName(store string, ty string) string {
+	return strings.Join([]string{"argocd", getInternalName(store, ty)}, "-")
+}
+func getSecretKey(store string, ty string) string {
+	return strings.Join([]string{store, ty}, "-")
+}
+func getInternalName(store string, ty string) string {
+	return strings.Join([]string{"store", store, ty}, "-")
+}
+
+func GetSecrets(spec *toolsetsv1beta1.Argocd) []interface{} {
+	namespace := "caos-system"
+
+	secrets := make([]interface{}, 0)
+	for _, store := range spec.CustomImage.GopassStores {
+		if helper.IsCrdSecret(store.GPGKey, store.ExistingGPGKeySecret) {
+			ty := "gpg"
+			data := map[string]string{
+				getSecretKey(store.StoreName, ty): store.GPGKey.Value,
+			}
+
+			conf := &resources.SecretConfig{
+				Name:      getSecretName(store.StoreName, ty),
+				Namespace: namespace,
+				Labels:    labels.GetAllApplicationLabels(info.GetName()),
+				Data:      data,
+			}
+			secretRes := resources.NewSecret(conf)
+			secrets = append(secrets, secretRes)
+		}
+	}
+
+	return secrets
+}
+
 func FromSpec(spec *toolsetsv1beta1.Argocd, imageTags map[string]string) *CustomImage {
 	imageRepository := "docker.pkg.github.com/caos/argocd-secrets/argocd"
 
@@ -54,53 +93,13 @@ func FromSpec(spec *toolsetsv1beta1.Argocd, imageTags map[string]string) *Custom
 	volMounts := make([]*VolumeMount, 0)
 	for _, store := range spec.CustomImage.GopassStores {
 
-		if store.GPGKey != nil {
-			vol := &SecretVolume{
-				Name: store.GPGKey.InternalName,
-				Secret: &Secret{
-					SecretName: store.GPGKey.Name,
-					Items: []*Item{&Item{
-						Key:  store.GPGKey.Key,
-						Path: store.GPGKey.InternalName,
-					},
-					},
-				},
-				DefaultMode: 0544,
-			}
-			vols = append(vols, vol)
-			mountPath := filepath.Join(gpgFolderName, store.GPGKey.InternalName)
-			volMount := &VolumeMount{
-				Name:      store.GPGKey.InternalName,
-				MountPath: mountPath,
-				SubPath:   store.GPGKey.InternalName,
-				ReadOnly:  false,
-			}
-			volMounts = append(volMounts, volMount)
-		}
+		volGPG, volMountGPG := getVolAndVolMount(store.StoreName, "gpg", store.GPGKey, store.ExistingGPGKeySecret)
+		vols = append(vols, volGPG)
+		volMounts = append(volMounts, volMountGPG)
 
-		if store.SSHKey != nil {
-			vol := &SecretVolume{
-				Name: store.SSHKey.InternalName,
-				Secret: &Secret{
-					SecretName: store.SSHKey.Name,
-					Items: []*Item{&Item{
-						Key:  store.SSHKey.Key,
-						Path: store.SSHKey.InternalName,
-					},
-					},
-				},
-				DefaultMode: 0544,
-			}
-			vols = append(vols, vol)
-			mountPath := filepath.Join(sshFolderName, store.SSHKey.InternalName)
-			volMount := &VolumeMount{
-				Name:      store.SSHKey.InternalName,
-				MountPath: mountPath,
-				SubPath:   store.SSHKey.InternalName,
-				ReadOnly:  false,
-			}
-			volMounts = append(volMounts, volMount)
-		}
+		volSSH, volMountSSH := getVolAndVolMount(store.StoreName, "ssh", store.SSHKey, store.ExistingSSHKeySecret)
+		vols = append(vols, volSSH)
+		volMounts = append(volMounts, volMountSSH)
 	}
 
 	return &CustomImage{
@@ -108,6 +107,51 @@ func FromSpec(spec *toolsetsv1beta1.Argocd, imageTags map[string]string) *Custom
 		ImageTag:         imageTags[imageRepository],
 		AddSecretVolumes: vols,
 		AddVolumeMounts:  volMounts,
+	}
+}
+
+func getVolAndVolMount(storeName string, ty string, secret *secret.Secret, existent *secret.Existing) (*SecretVolume, *VolumeMount) {
+	internalName := ""
+	name := ""
+	key := ""
+
+	if helper.IsCrdSecret(secret, existent) {
+		internalName = getInternalName(storeName, ty)
+		name = getSecretName(storeName, ty)
+		key = getSecretKey(storeName, ty)
+	} else if helper.IsExistentSecret(secret, existent) {
+		internalName = existent.InternalName
+		name = existent.Name
+		key = existent.Key
+	} else {
+		//TODO
+	}
+
+	return getVol(internalName, name, key), getVolMount(internalName)
+}
+
+func getVol(internal string, name string, key string) *SecretVolume {
+	return &SecretVolume{
+		Name: internal,
+		Secret: &Secret{
+			SecretName: name,
+			Items: []*Item{&Item{
+				Key:  key,
+				Path: internal,
+			},
+			},
+		},
+		DefaultMode: 0544,
+	}
+}
+
+func getVolMount(internal string) *VolumeMount {
+	mountPath := filepath.Join(gpgFolderName, internal)
+	return &VolumeMount{
+		Name:      internal,
+		MountPath: mountPath,
+		SubPath:   internal,
+		ReadOnly:  false,
 	}
 }
 

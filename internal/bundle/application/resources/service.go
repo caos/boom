@@ -1,6 +1,6 @@
-package service
+package resources
 
-type Config struct {
+type ServiceConfig struct {
 	Name       string
 	Namespace  string
 	Labels     map[string]string
@@ -11,16 +11,11 @@ type Config struct {
 	Selector   map[string]string
 }
 
-type Metadata struct {
-	Name      string            `yaml:"name"`
-	Namespace string            `yaml:"namespace"`
-	Labels    map[string]string `yaml:"labels"`
-}
-
 type Spec struct {
 	Selector map[string]string `yaml:"selector"`
 	Ports    []*Port           `yaml:"ports"`
 }
+
 type Port struct {
 	Name       string `yaml:"name"`
 	Protocol   string `yaml:"protocol"`
@@ -35,7 +30,7 @@ type Service struct {
 	Spec       *Spec     `yaml:"spec"`
 }
 
-func New(conf *Config) *Service {
+func NewService(conf *ServiceConfig) *Service {
 	return &Service{
 		APIVersion: "v1",
 		Kind:       "Service",
@@ -46,7 +41,7 @@ func New(conf *Config) *Service {
 		},
 		Spec: &Spec{
 			Selector: conf.Selector,
-			Ports: []*Port{&Port{
+			Ports: []*Port{{
 				Name:       conf.PortName,
 				Protocol:   conf.Protocol,
 				Port:       conf.Port,

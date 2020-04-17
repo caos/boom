@@ -1,12 +1,12 @@
 package auth
 
 import (
+	"github.com/caos/boom/internal/helper"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/clientgo"
 	"github.com/pkg/errors"
 )
 
@@ -22,14 +22,20 @@ type google struct {
 }
 
 func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector, redirect string) (interface{}, error) {
-	secret, err := clientgo.GetSecret(spec.Config.SecretName, "caos-system")
+	clientID, err := helper.GetSecretValue(spec.Config.ClientID, spec.Config.ExistingClientIDSecret)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	clientID := string(secret.Data[spec.Config.ClientIDKey])
-	clientSecret := string(secret.Data[spec.Config.ClientSecretKey])
-	serviceAccountJSON := secret.Data[spec.Config.ServiceAccountJSONKey]
+	clientSecret, err := helper.GetSecretValue(spec.Config.ClientSecret, spec.Config.ExistingClientSecretSecret)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceAccountJSON, err := helper.GetSecretValue(spec.Config.ServiceAccountJSON, spec.Config.ExistingServiceAccountJSONSecret)
+	if err != nil {
+		return nil, err
+	}
 
 	// get base path
 	base, err := filepath.Abs(spec.Config.ServiceAccountFilePath)
@@ -50,9 +56,9 @@ func getGoogle(spec *toolsetsv1beta1.ArgocdGoogleConnector, redirect string) (in
 		return nil, err
 	}
 
-	if serviceAccountJSON != nil {
+	if serviceAccountJSON != "" {
 		// write json to file
-		err = ioutil.WriteFile(spec.Config.ServiceAccountFilePath, serviceAccountJSON, 0644)
+		err = ioutil.WriteFile(spec.Config.ServiceAccountFilePath, []byte(serviceAccountJSON), 0644)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error while writing json to file %s", spec.Config.ServiceAccountFilePath)
 		}

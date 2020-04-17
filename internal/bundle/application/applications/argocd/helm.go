@@ -1,6 +1,7 @@
 package argocd
 
 import (
+	"github.com/caos/boom/internal/bundle/application/applications/argocd/config/repository"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -10,6 +11,14 @@ import (
 	"github.com/caos/boom/internal/templator/helm/chart"
 	"github.com/caos/orbiter/mntr"
 )
+
+func (a *Argocd) HelmPreApplySteps(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec) ([]interface{}, error) {
+	repoSecrets := repository.GetSecrets(toolsetCRDSpec.Argocd)
+	addedSecrets := customimage.GetSecrets(toolsetCRDSpec.Argocd)
+
+	addedSecrets = append(addedSecrets, repoSecrets...)
+	return addedSecrets, nil
+}
 
 func (a *Argocd) HelmMutate(monitor mntr.Monitor, toolsetCRDSpec *toolsetsv1beta1.ToolsetSpec, resultFilePath string) error {
 	spec := toolsetCRDSpec.Argocd

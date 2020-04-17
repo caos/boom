@@ -30,7 +30,7 @@ func GetFromSpec(monitor mntr.Monitor, spec *toolsetsv1beta1.Argocd) *Config {
 		conf.Repositories = string(data2)
 	}
 
-	oidc, err := auth.GetOIDC(spec)
+	oidc, err := auth.GetOIDC(spec.Auth)
 	if err == nil {
 		conf.OIDC = oidc
 	}

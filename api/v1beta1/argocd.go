@@ -1,6 +1,6 @@
 package v1beta1
 
-import "github.com/caos/boom/api/v1beta1/secret"
+import "github.com/caos/boom/internal/secret"
 
 type Argocd struct {
 	Deploy       bool                `json:"deploy,omitempty"`
@@ -19,6 +19,7 @@ type Rbac struct {
 }
 
 type ArgocdRepository struct {
+	Name                      string           `json:"name" yaml:"name"`
 	URL                       string           `json:"url,omitempty" yaml:"url,omitempty"`
 	Username                  *secret.Secret   `yaml:"username,omitempty"`
 	ExistingUsernameSecret    *secret.Existing `json:"existingUsernameSecret,omitempty" yaml:"existingUsernameSecret,omitempty"`
@@ -35,12 +36,12 @@ type ArgocdCustomImage struct {
 }
 
 type ArgocdGopassStore struct {
-	SSHKey               *secret.Secret               `yaml:"sshKey"`
-	ExistingSSHKeySecret *secret.ExistingToFilesystem `json:"existingSshKeySecret,omitempty" yaml:"existingSshKeySecret,omitempty"`
-	GPGKey               *secret.Secret               `yaml:"gpgKey"`
-	ExistingGPGKeySecret *secret.ExistingToFilesystem `json:"existingGpgKeySecret,omitempty" yaml:"existingGpgKeySecret,omitempty"`
-	Directory            string                       `json:"directory,omitempty" yaml:"directory,omitempty"`
-	StoreName            string                       `json:"storeName,omitempty" yaml:"storeName,omitempty"`
+	SSHKey               *secret.Secret   `yaml:"sshKey"`
+	ExistingSSHKeySecret *secret.Existing `json:"existingSshKeySecret,omitempty" yaml:"existingSshKeySecret,omitempty"`
+	GPGKey               *secret.Secret   `yaml:"gpgKey"`
+	ExistingGPGKeySecret *secret.Existing `json:"existingGpgKeySecret,omitempty" yaml:"existingGpgKeySecret,omitempty"`
+	Directory            string           `json:"directory,omitempty" yaml:"directory,omitempty"`
+	StoreName            string           `json:"storeName,omitempty" yaml:"storeName,omitempty"`
 }
 
 type ArgocdAuth struct {
@@ -111,13 +112,14 @@ type ArgocdGoogleConnector struct {
 }
 
 type ArgocdGoogleConfig struct {
-	ClientID                   *secret.Secret   `yaml:"clientID"`
-	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
-	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
-	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
-	HostedDomains              []string         `json:"hostedDomains,omitempty" yaml:"hostedDomains,omitempty"`
-	Groups                     []string         `json:"groups,omitempty" yaml:"groups,omitempty"`
-	ServiceAccountJSONKey      string           `json:"serviceAccountJSONKey,omitempty" yaml:"serviceAccountJSONKey,omitempty"`
-	ServiceAccountFilePath     string           `json:"serviceAccountFilePath,omitempty" yaml:"serviceAccountFilePath,omitempty"`
-	AdminEmail                 string           `json:"adminEmail,omitempty" yaml:"adminEmail,omitempty"`
+	ClientID                         *secret.Secret   `yaml:"clientID"`
+	ExistingClientIDSecret           *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ClientSecret                     *secret.Secret   `yaml:"clientSecret"`
+	ExistingClientSecretSecret       *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
+	HostedDomains                    []string         `json:"hostedDomains,omitempty" yaml:"hostedDomains,omitempty"`
+	Groups                           []string         `json:"groups,omitempty" yaml:"groups,omitempty"`
+	ServiceAccountJSON               *secret.Secret   `yaml:"serviceAccountJSON"`
+	ExistingServiceAccountJSONSecret *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
+	ServiceAccountFilePath           string           `json:"serviceAccountFilePath,omitempty" yaml:"serviceAccountFilePath,omitempty"`
+	AdminEmail                       string           `json:"adminEmail,omitempty" yaml:"adminEmail,omitempty"`
 }

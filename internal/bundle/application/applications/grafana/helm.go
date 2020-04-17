@@ -1,6 +1,7 @@
 package grafana
 
 import (
+	"github.com/caos/boom/internal/bundle/application/applications/grafana/admin"
 	"path/filepath"
 	"sort"
 
@@ -47,6 +48,8 @@ func (g *Grafana) HelmPreApplySteps(monitor mntr.Monitor, spec *v1beta1.ToolsetS
 	for k, v := range outs {
 		ret[k] = v
 	}
+
+	ret = append(ret, admin.GetSecret(spec.Grafana.Admin))
 	return ret, nil
 }
 
@@ -118,11 +121,7 @@ func (g *Grafana) SpecToHelmValues(monitor mntr.Monitor, toolset *toolsetsv1beta
 	}
 
 	if toolset.Grafana.Admin != nil {
-		values.Grafana.Admin = &helm.Admin{
-			ExistingSecret: toolset.Grafana.Admin.ExistingSecret,
-			UserKey:        toolset.Grafana.Admin.UserKey,
-			PasswordKey:    toolset.Grafana.Admin.PasswordKey,
-		}
+		values.Grafana.Admin = admin.GetConfig(toolset.Grafana.Admin)
 	}
 
 	if toolset.Grafana.Storage != nil {

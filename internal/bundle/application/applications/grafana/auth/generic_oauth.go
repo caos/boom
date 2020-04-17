@@ -1,20 +1,23 @@
 package auth
 
 import (
+	"github.com/caos/boom/internal/helper"
 	"strings"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/clientgo"
 )
 
 func GetGenericOAuthConfig(spec *toolsetsv1beta1.GrafanaGenericOAuth) (map[string]string, error) {
-	secret, err := clientgo.GetSecret(spec.SecretName, "caos-system")
+	clientID, err := helper.GetSecretValue(spec.ClientID, spec.ExistingClientIDSecret)
 	if err != nil {
 		return nil, err
 	}
 
-	clientID := string(secret.Data[spec.ClientIDKey])
-	clientSecret := string(secret.Data[spec.ClientSecretKey])
+	clientSecret, err := helper.GetSecretValue(spec.ClientSecret, spec.ExistingClientSecretSecret)
+	if err != nil {
+		return nil, err
+	}
+
 	allowedDomains := strings.Join(spec.AllowedDomains, " ")
 	scopes := strings.Join(spec.Scopes, " ")
 

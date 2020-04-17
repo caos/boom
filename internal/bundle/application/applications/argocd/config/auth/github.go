@@ -2,7 +2,7 @@ package auth
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/helper"
 )
 
 type github struct {
@@ -20,13 +20,15 @@ type org struct {
 }
 
 func getGithub(spec *toolsetsv1beta1.ArgocdGithubConnector, redirect string) (interface{}, error) {
-	secret, err := clientgo.GetSecret(spec.Config.SecretName, "caos-system")
+	clientID, err := helper.GetSecretValue(spec.Config.ClientID, spec.Config.ExistingClientIDSecret)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	clientID := string(secret.Data[spec.Config.ClientIDKey])
-	clientSecret := string(secret.Data[spec.Config.ClientSecretKey])
+	clientSecret, err := helper.GetSecretValue(spec.Config.ClientSecret, spec.Config.ExistingClientSecretSecret)
+	if err != nil {
+		return nil, err
+	}
 
 	var orgs []*org
 	if len(spec.Config.Orgs) > 0 {

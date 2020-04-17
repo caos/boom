@@ -1,22 +1,24 @@
 package v1beta1
 
-import "github.com/caos/boom/api/v1beta1/secret"
+import (
+	"github.com/caos/boom/api/v1beta1/storage"
+	"github.com/caos/boom/internal/secret"
+)
 
 type Grafana struct {
 	Deploy             bool          `json:"deploy,omitempty" yaml:"deploy,omitempty"`
 	Admin              *Admin        `json:"admin,omitempty" yaml:"admin,omitempty"`
 	Datasources        []*Datasource `json:"datasources,omitempty" yaml:"datasources,omitempty"`
 	DashboardProviders []*Provider   `json:"dashboardproviders,omitempty" yaml:"dashboardproviders,omitempty"`
-	Storage            *StorageSpec  `json:"storage,omitempty" yaml:"storage,omitempty"`
+	Storage            *storage.Spec `json:"storage,omitempty" yaml:"storage,omitempty"`
 	Network            *Network      `json:"network,omitempty" yaml:"network,omitempty"`
 	Auth               *GrafanaAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 
 type Admin struct {
-	Username               *secret.Secret   `yaml:"username,omitempty"`
-	ExistingUsernameSecret *secret.Existing `json:"existingUsernameSecret,omitempty" yaml:"existingUsernameSecret,omitempty"`
-	Password               *secret.Secret   `yaml:"password,omitempty"`
-	ExistingPasswordSecret *secret.Existing `json:"existingPasswordSecret,omitempty" yaml:"existingPasswordSecret,omitempty"`
+	Username       *secret.Secret           `yaml:"username,omitempty"`
+	Password       *secret.Secret           `yaml:"password,omitempty"`
+	ExistingSecret *secret.ExistingIDSecret `json:"existingSecret,omitempty" yaml:"existingSecret,omitempty"`
 }
 
 type Datasource struct {

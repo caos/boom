@@ -2,7 +2,7 @@ package auth
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"github.com/caos/boom/internal/clientgo"
+	"github.com/caos/boom/internal/helper"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -20,22 +20,25 @@ type Claim struct {
 	Values    []string `yaml:"values,omitempty"`
 }
 
-func GetOIDC(spec *toolsetsv1beta1.Argocd) (string, error) {
-	if spec.Auth == nil || spec.Auth.OIDC == nil {
+func GetOIDC(spec *toolsetsv1beta1.ArgocdAuth) (string, error) {
+	if spec == nil || spec.OIDC == nil {
 		return "", nil
 	}
 
-	secret, err := clientgo.GetSecret(spec.Auth.OIDC.SecretName, "caos-system")
+	clientID, err := helper.GetSecretValue(spec.OIDC.ClientID, spec.OIDC.ExistingClientIDSecret)
 	if err != nil {
 		return "", err
 	}
-	clientID := string(secret.Data[spec.Auth.OIDC.ClientIDKey])
-	clientSecret := string(secret.Data[spec.Auth.OIDC.ClientSecretKey])
+
+	clientSecret, err := helper.GetSecretValue(spec.OIDC.ClientSecret, spec.OIDC.ExistingClientSecretSecret)
+	if err != nil {
+		return "", err
+	}
 
 	var claims map[string]*Claim
-	if len(spec.Auth.OIDC.RequestedIDTokenClaims) > 0 {
+	if len(spec.OIDC.RequestedIDTokenClaims) > 0 {
 		claims = make(map[string]*Claim, 0)
-		for k, v := range spec.Auth.OIDC.RequestedIDTokenClaims {
+		for k, v := range spec.OIDC.RequestedIDTokenClaims {
 			claims[k] = &Claim{
 				Essential: v.Essential,
 				Values:    v.Values,
@@ -44,11 +47,11 @@ func GetOIDC(spec *toolsetsv1beta1.Argocd) (string, error) {
 	}
 
 	oidc := &oidc{
-		Name:                   spec.Auth.OIDC.Name,
-		Issuer:                 spec.Auth.OIDC.Issuer,
+		Name:                   spec.OIDC.Name,
+		Issuer:                 spec.OIDC.Issuer,
 		ClientID:               clientID,
 		ClientSecret:           clientSecret,
-		RequestedScopes:        spec.Auth.OIDC.RequestedScopes,
+		RequestedScopes:        spec.OIDC.RequestedScopes,
 		RequestedIDTokenClaims: claims,
 	}
 
