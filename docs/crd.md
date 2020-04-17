@@ -43,10 +43,7 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `fluentdStorage`                   | Spec to define how the persistency should be handled                            | nil                               |
-| `fluentdStorage.size`              | Defined size of the PVC                                                         |                                   |
-| `fluentdStorage.storageClass`      | Storageclass used by the PVC                                                    |                                   |
-| `fluentdStorage.accessModes`       | Accessmodes used by the PVC                                                     |                                   |
+| `fluentdStorage`                   | Spec to define how the persistency should be handled [here](common/storage.md)  | nil                               |
 
 ### Prometheus-Node-Exporter
 
@@ -59,11 +56,7 @@
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `admin`                            | Spec for the definition of the admin account                                    | nil                               |
-| `admin.existingSecret`             | Name of the secret which contains the admin account                             |                                   |
-| `admin.userKey`                    | Key of the username in the secret                                               |                                   |
-| `admin.passwordKey`                | Key of the password in the secret                                               |                                   |
-| `admin`                            | Spec for the definition of the admin account                                    |                                   |
+| `admin`                            | Spec for the definition of the admin account [here](grafana/admin.md)            | nil                               |
 | `datasources`                      | Spec for additional datasources                                                 | nil                               |
 | `datasources.name`                 | Name of the datasource                                                          |                                   |
 | `datasources.type`                 | Type of the datasource (for example prometheus)                                 |                                   |
@@ -77,8 +70,8 @@
 | `storage.size`                     | Defined size of the PVC                                                         |                                   |
 | `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
 | `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
-| `network`                          | Network configuration, [here](network.md)                                       |                                   |
-| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md)  |                                   |
+| `network`                          | Network configuration, [here](common/network.md)                                |                                   |
+| `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md) |                                   |
 
 ### Ambassador
 
@@ -103,25 +96,10 @@
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
 | `customImage`                      | Custom argocd-image                                                             | nil                               |
-| `customImage.enabled`              | Flag if custom argocd-image should get used with gopass                         | false                             |
-| `customImage.imagePullSecret`      | Name of used imagePullSecret to pull customImage                                |                                   |
-| `customImage.gopassGPGKey`         | Config to mount gpg key into repo-server pod                                    |                                   |
-| `customImage.gopassGPGKey.name`    | Name of the existent secret which contains the gpg key                          |                                   |
-| `customImage.gopassGPGKey.key`     | Key in the existent secret which contains the gpg key                           |                                   |
-| `customImage.gopassGPGKey.internalName`    | Internal name used to mount the gpg key                                 |                                   |
-| `customImage.gopassSSHKey`         | Config to mount ssh key into repo-server pod                                    |                                   |
-| `customImage.gopassSSHKey.name`    | Name of the existent secret which contains the ssh key                          |                                   |
-| `customImage.gopassSSHKey.key`     | Key in the existent secret which contains the ssh key                           |                                   |
-| `customImage.gopassSSHKey.internalName`    | Internal name used to mount the ssh key                                 |                                   |
-| `customImage.gopassDirectory`      | SSH-URL to Repository which is used as gopass secret store                      |                                   |
-| `customImage.gopassStoreName`      | Name of the gopass secret store                                                 |                                   |
-| `rbacConfig`                       | Config for RBAC in argocd                                                       | nil                               |
-| `rbacConfig.policy.csv`            | Attribute policy.csv which goes into configmap argocd-rbac-cm                   |                                   |
-| `rbacConfig.policy.default`        | Attribute policy.default which goes into configmap argocd-rbac-cm               |                                   |
-| `rbacConfig.scopes`                | List of scopes which go into configmap argocd-rbac-cm                           |                                   |
-| `network`                          | Network configuration, [here](network.md)                                       | nil                               |
+| `rbacConfig`                       | Config for RBAC in argocd [here](argocd/rbacconfig.md)                          | nil                               |
+| `network`                          | Network configuration, [here](common/network.md)                                       | nil                               |
 | `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md) | nil                               |
-| `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
+| `repositories`                     | Repositories used by argocd, [here](argocd/repositories.md)              | nil                               |
 | `knownHosts`                       | List of known_hosts as strings for argocd                                       | nil                               |
 
 ### Prometheus
@@ -131,19 +109,8 @@ When the metrics spec is nil all metrics will get scraped.
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `metrics`                          | Spec to define which metrics should get scraped                                 | nil                               |
-| `metrics.ambassador`               | Bool if metrics should get scraped                                              | false                             |
-| `metrics.argocd`                   | Bool if metrics should get scraped                                              | false                             |
-| `metrics.kube-state-metrics`       | Bool if metrics should get scraped                                              | false                             |
-| `metrics.prometheus-node-exporter` | Bool if metrics should get scraped                                              | false                             |
-| `metrics.api-server`               | Bool if metrics should get scraped                                              | false                             |
-| `metrics.prometheus-operator`      | Bool if metrics should get scraped                                              | false                             |
-| `metrics.logging-operator`         | Bool if metrics should get scraped                                              | false                             |
-| `metrics.loki`                     | Bool if metrics should get scraped                                              | false                             |
-| `storage`                          | Spec to define how the persistency should be handled                            | nil                               |
-| `storage.size`                     | Defined size of the PVC                                                         |                                   |
-| `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
-| `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
+| `metrics`                          | Spec to define which metrics should get scraped [here](prometheus/metrics.md)   | nil                               |
+| `storage`                          | Spec to define how the persistency should be handled [here](common/storage.md)  | nil                               |
 
 ### Loki
 
@@ -152,16 +119,5 @@ When the logs spec is nil all logs will get persisted in loki.
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
 | `deploy`                           | Flag if tool should be deployed                                                 | false                             |
-| `logs`                             | Spec to define which logs will get persisted                                    | nil                               |
-| `logs.ambassador`                  | Bool if logs will get persisted                                                 | false                             |
-| `logs.argocd`                      | Bool if logs will get persisted                                                 | false                             |
-| `logs.kube-state-metrics`          | Bool if logs will get persisted                                                 | false                             |
-| `logs.prometheus-node-exporter`    | Bool if logs will get persisted                                                 | false                             |
-| `logs.grafana`                     | Bool if logs will get persisted                                                 | false                             |
-| `logs.prometheus-operator`         | Bool if logs will get persisted                                                 | false                             |
-| `logs.logging-operator`            | Bool if logs will get persisted                                                 | false                             |
-| `logs.loki`                        | Bool if logs will get persisted                                                 | false                             |
-| `storage`                          | Spec to define how the persistency should be handled                            | nil                               |
-| `storage.size`                     | Defined size of the PVC                                                         |                                   |
-| `storage.storageClass`             | Storageclass used by the PVC                                                    |                                   |
-| `storage.accessModes`              | Accessmodes used by the PVC                                                     |                                   |
+| `logs`                             | Spec to define which logs will get persisted [here](loki/logs.md)               | nil                               |
+| `storage`                          | Spec to define how the persistency should be handled [here](common/storage.md)  | nil                               |
