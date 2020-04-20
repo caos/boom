@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"github.com/caos/boom/internal/metrics"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"sync"
@@ -10,17 +11,15 @@ import (
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
+	crdconfig "github.com/caos/boom/internal/crd/config"
 	"github.com/caos/boom/internal/crd/v1beta1"
+	"github.com/caos/boom/internal/current"
+	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
-
-	crdconfig "github.com/caos/boom/internal/crd/config"
-	"github.com/caos/boom/internal/current"
-	"github.com/caos/boom/internal/git"
 )
 
 type GitCrd struct {

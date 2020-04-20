@@ -1,11 +1,11 @@
 package kubectl
 
 import (
+	"gopkg.in/yaml.v3"
 	"strings"
 
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 type Version struct {

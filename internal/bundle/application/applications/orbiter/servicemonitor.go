@@ -10,7 +10,12 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	var appName name.Application
 	appName = "orbiter"
 	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := map[string]string{
+		"app.kubernetes.io/component":  "orbiter",
+		"app.kubernetes.io/instance":   "orbiter",
+		"app.kubernetes.io/managed-by": "orbiter.caos.ch",
+		"app.kubernetes.io/part-of":    "orbos",
+	}
 
 	relabelings := []*servicemonitor.ConfigRelabeling{{
 		Action:       "replace",
@@ -22,7 +27,7 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 		Regex:  "(container|endpoint|namespace|pod)",
 	}}
 
-	metricRelabelings := []*servicemonitor.ConfigMetricRelabeling{{
+	metricRelabelings := []*servicemonitor.ConfigRelabeling{{
 		Action:       "keep",
 		Regex:        "probe",
 		SourceLabels: []string{"__name__"},
@@ -42,10 +47,6 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 		Relabelings:       relabelings,
 		MetricRelabelings: metricRelabelings,
 	}
-
-	ls["app.kubernetes.io/instance"] = "orbiter"
-	ls["app.kubernetes.io/part-of"] = "orbos"
-	ls["app.kubernetes.io/component"] = "orbiter"
 
 	return &servicemonitor.Config{
 		Name:                  "orbiter-servicemonitor",

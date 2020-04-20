@@ -1,11 +1,10 @@
 package orb
 
 import (
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 
 	"github.com/pkg/errors"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Orb struct {

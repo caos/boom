@@ -16,8 +16,8 @@ spec:
       targetPort: 2112
     - name: debug
       protocol: TCP
-      port: 5000
-      targetPort: 5000
+      port: 2345
+      targetPort: 2345
   selector:
     app.kubernetes.io/instance: boom
     app.kubernetes.io/part-of: boom

@@ -4,15 +4,15 @@ kind: Kustomization
 namespace: caos-system
 
 configMapGenerator:
-- name: grafana-dashboard-ambassador-envoy-global
+- name: grafana-dashboard-cluster-health
   files:
-  - json/ambassador-envoy-global.json
-- name: grafana-dashboard-ambassador-envoy-ingress
+  - json/cluster-health.json
+- name: grafana-dashboard-instance-health
   files:
-  - json/ambassador-envoy-ingress.json
-- name: grafana-dashboard-ambassador-envoy-service
+  - json/instance-health.json
+- name: grafana-dashboard-probes-health
   files:
-  - json/ambassador-envoy-service.json
+    - json/probes-health.json
 
 generatorOptions:
  disableNameSuffixHash: true

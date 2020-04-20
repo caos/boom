@@ -28,21 +28,38 @@ COPY api api
 COPY controllers controllers
 COPY internal internal
 
-# ####################################################################################################
-# Run debug
-# ####################################################################################################
-FROM dependencies AS debug
-
-RUN mv /artifacts/* /usr/local/bin/
-
-# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -gcflags 'all=-N -l' -o /boom cmd/boom/*.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o /gen cmd/gen-executable/*.go
+
+# ####################################################################################################
+# Create base runtime
+# ####################################################################################################
+FROM alpine:3.11 AS runtime
+
+RUN apk update && apk add bash ca-certificates
+COPY --from=dependencies /artifacts /usr/local/bin/
+COPY --from=dependencies /gen /
 
 COPY config/crd /crd
 COPY dashboards /dashboards
 
-ENTRYPOINT [ "dlv", "exec", "--api-version", "2", "--headless", "--accept-multiclient", "--listen", ":5000", "/boom", "--"]
+RUN /gen
+
+# ####################################################################################################
+# Build debug binary
+# ####################################################################################################
+FROM dependencies AS debug-build
+
+# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -gcflags 'all=-N -l' -o /boom cmd/boom/*.go
+
+# ####################################################################################################
+# Create debug runtime
+# ####################################################################################################
+FROM runtime AS debug
+COPY --from=dependencies /go/bin/dlv /usr/local/bin/
+COPY --from=debug-build /boom /
+
+ENTRYPOINT [ "dlv", "exec", "--api-version", "2", "--headless", "--accept-multiclient", "--listen", ":2345", "/boom", "--"]
 
 # ####################################################################################################
 # Run tests
@@ -60,21 +77,12 @@ FROM dependencies AS build
 
 # RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o boom main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o /boom cmd/boom/*.go
-RUN CGO_ENABLED=0 GOOS=linux go build -o /gen cmd/gen-executable/*.go
 
 # ####################################################################################################
-# Run binary
+# Create production runtime
 # ####################################################################################################
-FROM alpine:3.11
+FROM runtime
 
-RUN apk update && apk add bash ca-certificates
-COPY --from=dependencies /artifacts /usr/local/bin/
 COPY --from=build /boom /
-COPY --from=build /gen /
-
-COPY config/crd /crd
-COPY dashboards /dashboards
-
-RUN ./gen
 
 ENTRYPOINT ["/boom"]

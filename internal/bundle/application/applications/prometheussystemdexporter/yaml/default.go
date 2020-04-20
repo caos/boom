@@ -1,8 +1,15 @@
 package yaml
 
+import (
+	"fmt"
+
+	"gopkg.in/yaml.v3"
+)
+
 func GetDefault() interface{} {
-	return map[string]interface{}{
-		"kind":       "Deployment",
+
+	ds, err := yaml.Marshal(map[string]interface{}{
+		"kind":       "DaemonSet",
 		"apiVersion": "apps/v1",
 		"metadata": map[string]interface{}{
 			"name":      "systemd-exporter",
@@ -35,33 +42,32 @@ func GetDefault() interface{} {
 					},
 				},
 				"spec": map[string]interface{}{
-					"tolerations": []map[string]string{
-						{"key": "node-role.kubernetes.io/master"},
-						{"operator": "Equal"},
-						{"effect": "NoSchedule"},
-					},
+					"tolerations": []map[string]string{{
+						"effect":   "NoSchedule",
+						"operator": "Exists",
+					}},
 					"securityContext": map[string]uint8{
 						"runAsUser": 0,
 					},
 					"hostPID": true,
-					"containers": []map[string]interface{}{
-						{"name": "systemd-exporter"},
-						{"image": "quay.io/povilasv/systemd_exporter:v0.2.0"},
-						{"securityContext": map[string]bool{
+					"containers": []map[string]interface{}{{
+						"name":  "systemd-exporter",
+						"image": "quay.io/povilasv/systemd_exporter:v0.2.0",
+						"securityContext": map[string]bool{
 							"privileged": true,
-						}},
-						{"args": []string{
+						},
+						"args": []string{
 							"--log.level=info",
 							"--path.procfs=/host/proc",
 							"--web.disable-exporter-metrics",
 							"--collector.unit-whitelist=kubelet.service|docker.service|node-agentd.service|firewalld.service|keepalived.service|nginx.service|sshd.service",
+						},
+						"ports": []map[string]interface{}{{
+							"name":          "metrics",
+							"containerPort": 9558,
+							"hostPort":      9558,
 						}},
-						{"ports": []map[string]interface{}{
-							{"name": "metrics"},
-							{"containerPort": 9558},
-							{"hostPort": 9558},
-						}},
-						{"volumeMounts": []*volumeMount{{
+						"volumeMounts": []*volumeMount{{
 							Name:      "proc",
 							MountPath: "/host/proc",
 							ReadOnly:  true,
@@ -69,8 +75,8 @@ func GetDefault() interface{} {
 							Name:      "systemd",
 							MountPath: "/run/systemd",
 							ReadOnly:  true,
-						}}},
-						{"resources": map[string]*resourceList{
+						}},
+						"resources": map[string]*resourceList{
 							"limits": {
 								Memory: "100Mi",
 								Cpu:    "10m",
@@ -95,25 +101,61 @@ func GetDefault() interface{} {
 				},
 			},
 		},
+	})
+
+	if err != nil {
+		panic(err)
 	}
+
+	svc, err := yaml.Marshal(map[string]interface{}{
+		"kind":       "Service",
+		"apiVersion": "v1",
+		"metadata": map[string]interface{}{
+			"name": "systemd-exporter",
+			"labels": map[string]string{
+				"app.kubernetes.io/managed-by": "boom.caos.ch",
+				"boom.caos.ch/instance":        "boom",
+				"boom.caos.ch/part-of":         "boom",
+				"boom.caos.ch/prometheus":      "caos",
+			},
+		},
+		"spec": map[string]interface{}{
+			"ports": []map[string]interface{}{{
+				"name":       "metrics",
+				"port":       9558,
+				"protocol":   "TCP",
+				"targetPort": 9558,
+			}},
+			"selector": map[string]string{
+				"app": "systemd-exporter",
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf(`%s
+---
+%s`, string(ds), string(svc))
 }
 
 type volumeMount struct {
-	Name      string
-	MountPath string
-	ReadOnly  bool
+	Name      string `yaml:"name,omitempty"`
+	MountPath string `yaml:"mountPath,omitempty"`
+	ReadOnly  bool   `yaml:"readOnly,omitempty"`
 }
 
 type resourceList struct {
-	Memory string
-	Cpu    string
+	Memory string `yaml:"memory,omitempty"`
+	Cpu    string `yaml:"cpu,omitempty"`
 }
 
 type volume struct {
-	Name     string
-	HostPath hostPath
+	Name     string   `yaml:"name,omitempty"`
+	HostPath hostPath `yaml:"hostPath,omitempty"`
 }
 
 type hostPath struct {
-	Path string
+	Path string `yaml:"path,omitempty"`
 }

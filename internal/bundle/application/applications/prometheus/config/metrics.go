@@ -73,6 +73,7 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 		servicemonitors = append(servicemonitors, orbiter.GetServicemonitor(instanceName))
 	}
 
+
 	if len(servicemonitors) > 0 {
 
 		servicemonitors = append(servicemonitors, metrics.GetServicemonitor(instanceName))

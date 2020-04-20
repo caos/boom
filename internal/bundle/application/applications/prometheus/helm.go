@@ -2,6 +2,8 @@ package prometheus
 
 import (
 	"errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+
 
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
@@ -22,12 +24,12 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 		return nil
 	}
 
-	_, err = clientgo.GetSecret("grafana-cloud", "caos-system")
-	if err != nil && !errors.Is(err, clientgo.ErrNotFound{}) {
+	_, getSecretErr := clientgo.GetSecret("grafana-cloud", "caos-system")
+	ingestionSecretAbsent := k8serrors.IsNotFound(errors.Unwrap(getSecretErr))
+	if getSecretErr != nil && !ingestionSecretAbsent {
 		// TODO: Better error handling?
-		panic(err)
+		panic(getSecretErr)
 	}
-	ingestionSecretPresent := err == nil
 
 	config := config.ScrapeMetricsCrdsConfig(info.GetInstanceName(), toolsetCRDSpec)
 
@@ -71,7 +73,7 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 		values.Prometheus.PrometheusSpec.AdditionalScrapeConfigs = config.AdditionalScrapeConfigs
 	}
 
-	if ingestionSecretPresent {
+	if !ingestionSecretAbsent {
 		if values.Prometheus.PrometheusSpec.ExternalLabels == nil {
 			values.Prometheus.PrometheusSpec.ExternalLabels = make(map[string]string)
 		}

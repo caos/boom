@@ -6,6 +6,8 @@ import (
 	"github.com/caos/orbiter/mntr"
 )
 
+// var _ application.YAMLApplication = (*prometheusSystemdExporter)(nil)
+
 func (*prometheusSystemdExporter) GetYaml(_ mntr.Monitor, _ *v1beta1.ToolsetSpec) interface{} {
 	return yaml.GetDefault()
 }

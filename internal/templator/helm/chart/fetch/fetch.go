@@ -35,7 +35,7 @@ func All(monitor mntr.Monitor, basePath string) error {
 	monitor.Info("Preparing lists of indexes and charts")
 
 	for _, appName := range allApps {
-		app := application.New(monitor, appName, "", false)
+		app := application.New(monitor, appName, "")
 		temp, ok := app.(application.HelmApplication)
 		// if application doenst implement helm interface then no charts are defined
 		if ok {

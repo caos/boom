@@ -33,7 +33,7 @@ spec:
             containerPort: 2112
             protocol: TCP
           - name: debug
-            containerPort: 5000
+            containerPort: 2345
             protocol: TCP
 #        resources:
 #          limits:

@@ -130,7 +130,7 @@ func getEtcd() *helm.AdditionalScrapeConfig {
 
 	return &helm.AdditionalScrapeConfig{
 		JobName:              "caos_remote_etcd",
-		Scheme:               "https",
+		Scheme:               "http",
 		KubernetesSdConfigs:  []*helm.KubernetesSdConfig{sdconfig},
 		RelabelConfigs:       relabelings,
 		MetricRelabelConfigs: metricRelabelConfigs,

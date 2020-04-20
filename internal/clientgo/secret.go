@@ -7,12 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ErrNotFound struct{}
-
-func (e ErrNotFound) Error() string {
-	return "Not found"
-}
-
 func GetSecret(name, namespace string) (s *v1.Secret, err error) {
 	defer func() {
 		if err != nil {
@@ -33,9 +27,6 @@ func GetSecret(name, namespace string) (s *v1.Secret, err error) {
 	secret, err := clientset.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
-	}
-	if secret == nil {
-		return nil, ErrNotFound{}
 	}
 
 	return secret, nil

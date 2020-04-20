@@ -3,8 +3,8 @@ kind: Config
 build:
   artifacts:
   - image: eu.gcr.io/caos-ops/boom
-    docker:
-      target: debug
+    docker: {}
+#     target: debug
 deploy:
   kustomize: 
     path: ./build/k8s/overlay/with-orbiter

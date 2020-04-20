@@ -58,7 +58,7 @@ func getIngestionServiceMonitor(appName string, monitorMatchingLabels, serviceMa
 			"fstype",
 			"mountpoint",
 		},
-		Regex: "(node_cpu_seconds_total;idle;;;|(node_filesystem_avail_bytes|node_filesystem_size_bytes);;rootfs;rootfs;/|(node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes);;;;)",
+		Regex: "(node_cpu_seconds_total;idle;;;|(node_filesystem_avail_bytes|node_filesystem_size_bytes);;rootfs;rootfs;/|(node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_boot_time_seconds);;;;)",
 	}, {
 		Action: "labelkeep",
 		Regex:  "__.+|job|instance|cpu",

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
-	"github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
+	"github.com/caos/boom/internal/bundle/application/applications/prometheussystemdexporter/info"
 	"github.com/caos/boom/internal/labels"
 )
 
@@ -56,7 +56,7 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	}
 
 	return &servicemonitor.Config{
-		Name:                  "prometheus-ingestion-node-exporter-servicemonitor",
+		Name:                  "prometheus-ingestion-systemd-servicemonitor",
 		Endpoints:             []*servicemonitor.ConfigEndpoint{endpoint},
 		JobName:               fmt.Sprintf("ingestion-%s", appName),
 		MonitorMatchingLabels: monitorLabels,
