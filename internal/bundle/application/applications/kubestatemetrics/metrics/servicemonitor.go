@@ -56,6 +56,11 @@ func getIngestionServiceMonitor(monitorMatchingLabels, serviceMatchingLabels map
 		Regex:       "(.*);(.*);(.*)",
 		Replacement: "${1}${2}${3}",
 	}, {
+		Action:       "replace",
+		SourceLabels: []string{"__name__"},
+		TargetLabel:  "__name__",
+		Replacement:  "dist_${1}",
+	}, {
 		Action: "labelkeep",
 		Regex:  "__.+|job|node|controller",
 	}}

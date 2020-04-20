@@ -116,7 +116,9 @@ groups:
        / min by (instance) (dist_node_filesystem_size_bytes)
        * 100)
      record: caos_node_disk_utilisation
-   - expr: min_over_time(dist_kube_node_status_condition[5m])
+   - expr: dist_kube_node_status_condition
+     record: caos_node_ready
+   - expr: min_over_time(caos_node_ready[5m])
      record: caos_k8s_node_ryg
    - expr: avg_over_time(caos_etcd_server_has_leader[5m])
      record: caos_etcd_ryg
@@ -166,6 +168,8 @@ groups:
          1
        )          
      record: caos_scheduled_pods_ryg
+   - expr: min(caos_node_cpu_ryg) * min(caos_systemd_ryg) * min(caos_vip_probe_ryg) * min(caos_upstream_probe_ryg) * min(caos_node_memory_ryg) * min(caos_k8s_node_ryg) * avg(caos_etcd_ryg) * min(caos_ready_pods_ryg) * min(caos_scheduled_pods_ryg)
+     record: caos_orb_ryg
 `
 
 	struc := &AdditionalPrometheusRules{

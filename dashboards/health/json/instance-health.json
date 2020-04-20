@@ -1407,7 +1407,7 @@
           "value": "master03"
         },
         "datasource": "caos-prometheus",
-        "definition": "label_values(up{job=~\"node-exporter|caos-system/systemd-monitor\"}, instance)",
+        "definition": "label_values(up{job=~\"caos_remote_(node-exporter|systemd-exporter)\"}, instance)",
         "hide": 0,
         "includeAll": false,
         "index": -1,
@@ -1415,7 +1415,7 @@
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "label_values(up{job=~\"node-exporter|caos-system/systemd-monitor\"}, instance)",
+        "query": "label_values(up{job=~\"caos_remote_(node-exporter|systemd-exporter)\"}, instance)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

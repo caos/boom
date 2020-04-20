@@ -2,8 +2,8 @@ package prometheus
 
 import (
 	"errors"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/config"
@@ -90,7 +90,7 @@ func (p *Prometheus) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *v1be
 					Key:  "password",
 				},
 			},
-			WriteRelabelConfigs: []*helm.RelabelConfig{{
+			WriteRelabelConfigs: []*helm.ValuesRelabelConfig{{
 				Action: "keep",
 				SourceLabels: []string{
 					"__name__",

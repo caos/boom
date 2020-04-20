@@ -1,11 +1,12 @@
 package v1beta1
 
 import (
-	"github.com/caos/boom/internal/metrics"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/caos/boom/internal/metrics"
+	"gopkg.in/yaml.v3"
 
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -99,6 +100,7 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 		BundleName:        conf.BundleName,
 		BaseDirectoryPath: conf.BaseDirectoryPath,
 		Templator:         conf.Templator,
+		Orb:               conf.Orb,
 	}
 
 	c.crd.SetBundle(bundleConf)

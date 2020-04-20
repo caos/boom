@@ -99,11 +99,6 @@
           "selected": false,
           "text": "httpsingress",
           "value": "httpsingress"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
         }
       },
       "sparkline": {
@@ -308,11 +303,6 @@
           "selected": false,
           "text": "httpsingress",
           "value": "httpsingress"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
         }
       },
       "sparkline": {
@@ -416,11 +406,6 @@
           "selected": false,
           "text": "kubeapi",
           "value": "kubeapi"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
         }
       },
       "sparkline": {
@@ -467,15 +452,9 @@
       },
       "id": 2,
       "panels": [],
-      "repeat": "orb",
-      "scopedVars": {
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
-      "title": "Instances $orb",
+      "repeat": null,
+      "scopedVars": {},
+      "title": "Instances",
       "type": "row"
     },
     {
@@ -539,18 +518,7 @@
       ],
       "repeat": "instance",
       "repeatDirection": "h",
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master01",
-          "value": "master01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -647,18 +615,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 34,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master02",
-          "value": "master02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -755,18 +712,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 34,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master03",
-          "value": "master03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -863,18 +809,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 34,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker01",
-          "value": "worker01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -971,18 +906,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 34,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker02",
-          "value": "worker02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1079,18 +1003,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 34,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker03",
-          "value": "worker03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1185,18 +1098,7 @@
       ],
       "repeat": "instance",
       "repeatDirection": "h",
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master01",
-          "value": "master01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1293,18 +1195,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 65,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master02",
-          "value": "master02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1401,18 +1292,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 65,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master03",
-          "value": "master03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1509,18 +1389,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 65,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker01",
-          "value": "worker01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1617,18 +1486,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 65,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker02",
-          "value": "worker02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1725,18 +1583,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 65,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker03",
-          "value": "worker03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1831,18 +1678,7 @@
       ],
       "repeat": "instance",
       "repeatDirection": "h",
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master01",
-          "value": "master01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -1939,18 +1775,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 106,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master02",
-          "value": "master02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2047,18 +1872,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 106,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master03",
-          "value": "master03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2155,18 +1969,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 106,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker01",
-          "value": "worker01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2263,18 +2066,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 106,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker02",
-          "value": "worker02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2371,18 +2163,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 106,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker03",
-          "value": "worker03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2477,18 +2258,7 @@
       ],
       "repeat": "instance",
       "repeatDirection": "h",
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master01",
-          "value": "master01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2585,18 +2355,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 86,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master02",
-          "value": "master02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2693,18 +2452,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 86,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "master03",
-          "value": "master03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2801,18 +2549,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 86,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker01",
-          "value": "worker01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -2909,18 +2646,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 86,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker02",
-          "value": "worker02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -3017,13 +2743,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 86,
-      "scopedVars": {
-        "instance": {
-          "selected": false,
-          "text": "worker03",
-          "value": "worker03"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -3119,18 +2839,7 @@
       ],
       "repeat": "master",
       "repeatDirection": "h",
-      "scopedVars": {
-        "master": {
-          "selected": false,
-          "text": "master01",
-          "value": "master01"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -3228,18 +2937,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 129,
-      "scopedVars": {
-        "master": {
-          "selected": false,
-          "text": "master02",
-          "value": "master02"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -3337,18 +3035,7 @@
       "repeatDirection": "h",
       "repeatIteration": 1586347763611,
       "repeatPanelId": 129,
-      "scopedVars": {
-        "master": {
-          "selected": false,
-          "text": "master03",
-          "value": "master03"
-        },
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
@@ -3417,20 +3104,14 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "scopedVars": {
-        "orb": {
-          "selected": true,
-          "text": "t01",
-          "value": "t01"
-        }
-      },
+      "scopedVars": {},
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "caos_cluster_cpu_utilisation_5m{orb=\"$orb\"}",
+          "expr": "caos_cluster_cpu_utilisation_5m",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -3486,40 +3167,13 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "t01",
-          "value": "t01"
-        },
-        "datasource": "caos-prometheus",
-        "definition": "label_values(up,orb)",
-        "hide": 0,
-        "includeAll": false,
-        "index": -1,
-        "label": null,
-        "multi": false,
-        "name": "orb",
-        "options": [],
-        "query": "label_values(up,orb)",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {
           "text": "All",
           "value": [
             "$__all"
           ]
         },
         "datasource": "caos-prometheus",
-        "definition": "label_values(up{container=~\"node-exporter|systemd-exporter\"}, instance)",
+        "definition": "label_values(up{job=~\"caos_remote_(node-exporter|systemd-exporter)\"}, instance)",
         "hide": 2,
         "includeAll": true,
         "index": -1,
@@ -3527,7 +3181,7 @@
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": "label_values(up{container=~\"node-exporter|systemd-exporter\"}, instance)",
+        "query": "label_values(up{job=~\"caos_remote_(node-exporter|systemd-exporter)\"}, instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -3547,7 +3201,7 @@
           ]
         },
         "datasource": "caos-prometheus",
-        "definition": "label_values(up{job=~\"node-exporter|caos-system/systemd-monitor\", instance=~\"master[0-9]+\"}, instance)",
+        "definition": "label_values(caos_etcd_server_has_leader, instance)",
         "hide": 2,
         "includeAll": true,
         "index": -1,
@@ -3555,7 +3209,7 @@
         "multi": true,
         "name": "master",
         "options": [],
-        "query": "label_values(up{job=~\"node-exporter|caos-system/systemd-monitor\", instance=~\"master[0-9]+\"}, instance)",
+        "query": "label_values(caos_etcd_server_has_leader, instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

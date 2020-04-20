@@ -128,6 +128,14 @@ type RelabelConfig struct {
 	Replacement  string   `yaml:"replacement,omitempty"`
 }
 
+type ValuesRelabelConfig struct {
+	Action       string   `yaml:"action,omitempty"`
+	Regex        string   `yaml:"regex,omitempty"`
+	SourceLabels []string `yaml:"sourceLabels,omitempty"`
+	TargetLabel  string   `yaml:"targetLabel,omitempty"`
+	Replacement  string   `yaml:"replacement,omitempty"`
+}
+
 type AdditionalScrapeConfig struct {
 	JobName              string                `yaml:"job_name,omitempty"`
 	KubernetesSdConfigs  []*KubernetesSdConfig `yaml:"kubernetes_sd_configs,omitempty"`
@@ -193,9 +201,9 @@ type PrometheusSpec struct {
 }
 
 type RemoteWrite struct {
-	URL                 string           `yaml:"url,omitempty"`
-	BasicAuth           *BasicAuth       `yaml:"basicAuth,omitempty"`
-	WriteRelabelConfigs []*RelabelConfig `yaml:"writeRelabelConfigs,omitempty"`
+	URL                 string                 `yaml:"url,omitempty"`
+	BasicAuth           *BasicAuth             `yaml:"basicAuth,omitempty"`
+	WriteRelabelConfigs []*ValuesRelabelConfig `yaml:"writeRelabelConfigs,omitempty"`
 }
 
 type BasicAuth struct {
