@@ -1,8 +1,11 @@
 package bundle
 
 import (
-	"github.com/caos/boom/internal/metrics"
+	"errors"
+	"fmt"
 	"sync"
+
+	"github.com/caos/boom/internal/metrics"
 
 	"github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle/application"
@@ -16,7 +19,6 @@ import (
 	helperTemp "github.com/caos/boom/internal/templator/helper"
 	"github.com/caos/boom/internal/templator/yaml"
 	"github.com/caos/orbiter/mntr"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -27,6 +29,7 @@ type Bundle struct {
 	baseDirectoryPath string
 	crdName           string
 	predefinedBundle  name.Bundle
+	orb               string
 	Applications      map[name.Application]application.Application
 	HelmTemplator     templator.Templator
 	YamlTemplator     templator.Templator
@@ -38,8 +41,9 @@ func New(conf *config.Config) *Bundle {
 	helmTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, helm.GetName())
 	yamlTemplator := helperTemp.NewTemplator(conf.Monitor, conf.CrdName, conf.BaseDirectoryPath, yaml.GetName())
 
-	b := &Bundle{
+	return &Bundle{
 		crdName:           conf.CrdName,
+		orb:               conf.Orb,
 		baseDirectoryPath: conf.BaseDirectoryPath,
 		monitor:           conf.Monitor,
 		HelmTemplator:     helmTemplator,
@@ -47,7 +51,6 @@ func New(conf *config.Config) *Bundle {
 		Applications:      apps,
 		predefinedBundle:  "",
 	}
-	return b
 }
 
 func (b *Bundle) GetPredefinedBundle() string {
@@ -72,7 +75,7 @@ func (b *Bundle) AddApplicationsByBundleName(name name.Bundle) error {
 
 	appNames := bundles.Get(name)
 	if appNames == nil {
-		return errors.Errorf("No bundle known with name %s", name)
+		return fmt.Errorf("No bundle known with name %s", name)
 	}
 	b.predefinedBundle = name
 
@@ -86,7 +89,7 @@ func (b *Bundle) AddApplicationsByBundleName(name name.Bundle) error {
 
 func (b *Bundle) AddApplicationByName(appName name.Application) error {
 
-	app := application.New(b.monitor, appName)
+	app := application.New(b.monitor, appName, b.orb)
 	return b.AddApplication(app)
 }
 
@@ -120,7 +123,7 @@ func (b *Bundle) Reconcile(currentResourceList []*clientgo.Resource, spec *v1bet
 		}
 		for appName, errChan := range errList {
 			if err := <-errChan; err != nil {
-				return errors.Wrapf(err, "Error while reconciling application %s", appName.String())
+				return fmt.Errorf("Error while reconciling application %s: %w", appName.String(), err)
 			}
 		}
 		wg.Wait()

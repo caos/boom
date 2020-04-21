@@ -36,7 +36,7 @@ func (y *YAML) Template(appInterface interface{}, spec *v1beta1.ToolsetSpec, res
 			return err
 		}
 	} else {
-		err = helper.AddStringObjectToYaml(resultAbsFilePath, yamlStr)
+		err = helper.AddStructToYaml(resultAbsFilePath, yamlInterface)
 		if err != nil {
 			return err
 		}

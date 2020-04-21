@@ -83,7 +83,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_crd_format_gyr) * avg(caos_boom_current_state_write_gyr) * avg(caos_boom_git_gyr) * avg(caos_boom_current_state_read_gyr)",
+          "expr": "avg(boom_crd_format_gyr) * avg(boom_current_state_write_gyr) * avg(boom_git_gyr) * avg(boom_current_state_read_gyr)",
           "refId": "A"
         }
       ],
@@ -180,7 +180,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_git_gyr)",
+          "expr": "avg(boom_git_gyr)",
           "refId": "A"
         }
       ],
@@ -263,7 +263,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_git_clone)",
+          "expr": "sum(boom_git_clone)",
           "refId": "A"
         }
       ],
@@ -325,7 +325,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_git_clone{result=\"success\"}[1m])",
+          "expr": "delta(boom_git_clone{result=\"success\"}[1m])",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 10,
@@ -415,7 +415,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_git_clone{result=\"failure\"}[1m])",
+          "expr": "delta(boom_git_clone{result=\"failure\"}[1m])",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"
@@ -540,7 +540,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_crd_format_gyr)",
+          "expr": "avg(boom_crd_format_gyr)",
           "refId": "A"
         }
       ],
@@ -623,7 +623,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_crd_format)",
+          "expr": "sum(boom_crd_format)",
           "refId": "A"
         }
       ],
@@ -683,7 +683,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_crd_format{result=\"success\"}[1m])",
+          "expr": "delta(boom_crd_format{result=\"success\"}[1m])",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"
@@ -771,7 +771,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_crd_format{result=\"failure\"}[1m])",
+          "expr": "delta(boom_crd_format{result=\"failure\"}[1m])",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"
@@ -897,7 +897,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_current_state_read_gyr)",
+          "expr": "avg(boom_current_state_read_gyr)",
           "refId": "A"
         }
       ],
@@ -980,7 +980,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_current_state_read)",
+          "expr": "sum(boom_current_state_read)",
           "refId": "A"
         }
       ],
@@ -1040,7 +1040,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_current_state_read{result=\"success\"}[1m])",
+          "expr": "delta(boom_current_state_read{result=\"success\"}[1m])",
           "intervalFactor": 10,
           "legendFormat": "Success",
           "refId": "A"
@@ -1130,7 +1130,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "clamp_min(delta(caos_boom_current_state_write{result=\"failure\"}[1m]),0)",
+          "expr": "clamp_min(delta(boom_current_state_write{result=\"failure\"}[1m]),0)",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"
@@ -1255,7 +1255,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_current_state_write_gyr)",
+          "expr": "avg(boom_current_state_write_gyr)",
           "refId": "A"
         }
       ],
@@ -1338,7 +1338,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_current_state_write)",
+          "expr": "sum(boom_current_state_write)",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -1399,7 +1399,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "delta(caos_boom_current_state_write{result=\"success\"}[1m])",
+          "expr": "delta(boom_current_state_write{result=\"success\"}[1m])",
           "intervalFactor": 10,
           "legendFormat": "Success",
           "refId": "A"
@@ -1489,7 +1489,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "clamp_min(delta(caos_boom_current_state_read{result=\"failure\"}[1m]),0)",
+          "expr": "clamp_min(delta(boom_current_state_read{result=\"failure\"}[1m]),0)",
           "intervalFactor": 10,
           "refId": "A"
         }
@@ -1613,7 +1613,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(caos_boom_reconciling_application)",
+          "expr": "avg(boom_reconciling_application)",
           "refId": "A"
         }
       ],
@@ -1696,7 +1696,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_reconciling_bundle)",
+          "expr": "sum(boom_reconciling_bundle)",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -1757,7 +1757,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(delta(caos_boom_reconciling_bundle{result=\"success\"}[1m]))",
+          "expr": "sum(delta(boom_reconciling_bundle{result=\"success\"}[1m]))",
           "intervalFactor": 10,
           "legendFormat": "Success",
           "refId": "A"
@@ -1845,7 +1845,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "clamp_min(sum(delta(caos_boom_reconciling_bundle{result=\"failure\"}[1m])),0)",
+          "expr": "clamp_min(sum(delta(boom_reconciling_bundle{result=\"failure\"}[1m])),0)",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"
@@ -1956,7 +1956,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(caos_boom_reconciling_application)",
+          "expr": "sum(boom_reconciling_application)",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -2017,7 +2017,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(delta(caos_boom_reconciling_application{result=\"success\"}[1m]))",
+          "expr": "sum(delta(boom_reconciling_application{result=\"success\"}[1m]))",
           "intervalFactor": 10,
           "legendFormat": "Success",
           "refId": "A"
@@ -2105,7 +2105,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "clamp_min(sum(delta(caos_boom_reconciling_application{result=\"failure\"}[1m])),0)",
+          "expr": "clamp_min(sum(delta(boom_reconciling_application{result=\"failure\"}[1m])),0)",
           "intervalFactor": 10,
           "legendFormat": "Failure",
           "refId": "A"

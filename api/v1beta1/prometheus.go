@@ -14,15 +14,17 @@ type StorageSpec struct {
 }
 
 type Metrics struct {
-	Ambassador             bool `json:"ambassador"`
-	Argocd                 bool `json:"argocd"`
-	KubeStateMetrics       bool `json:"kube-state-metrics" yaml:"kube-state-metrics"`
-	PrometheusNodeExporter bool `json:"prometheus-node-exporter" yaml:"prometheus-node-exporter"`
-	APIServer              bool `json:"api-server" yaml:"api-server"`
-	PrometheusOperator     bool `json:"prometheus-operator" yaml:"prometheus-operator"`
-	LoggingOperator        bool `json:"logging-operator" yaml:"logging-operator"`
-	Loki                   bool `json:"loki"`
-	Boom                   bool `json:"boom" yaml:"boom"`
+	Ambassador                bool `json:"ambassador"`
+	Argocd                    bool `json:"argocd"`
+	KubeStateMetrics          bool `json:"kube-state-metrics" yaml:"kube-state-metrics"`
+	PrometheusNodeExporter    bool `json:"prometheus-node-exporter" yaml:"prometheus-node-exporter"`
+	PrometheusSystemdExporter bool `json:"prometheus-systemd-exporter" yaml:"prometheus-systemd-exporter"`
+	APIServer                 bool `json:"api-server" yaml:"api-server"`
+	PrometheusOperator        bool `json:"prometheus-operator" yaml:"prometheus-operator"`
+	LoggingOperator           bool `json:"logging-operator" yaml:"logging-operator"`
+	Loki                      bool `json:"loki"`
+	Boom                      bool `json:"boom" yaml:"boom"`
+	Orbiter                   bool `json:"orbiter" yaml:"orbiter"`
 }
 
 type RemoteWrite struct {

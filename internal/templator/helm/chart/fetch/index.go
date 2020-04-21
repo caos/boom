@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/orbiter/mntr"
-	"gopkg.in/yaml.v3"
 )
 
 type index struct {

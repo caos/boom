@@ -1,6 +1,7 @@
 package desired
 
 import (
+	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/caos/boom/internal/name"
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 func Apply(monitor mntr.Monitor, resultFilePath, namespace string, appName name.Application, force bool) error {

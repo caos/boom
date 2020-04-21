@@ -9,10 +9,12 @@ import (
 	kubestatemetrics "github.com/caos/boom/internal/bundle/application/applications/kubestatemetrics/metrics"
 	lometrics "github.com/caos/boom/internal/bundle/application/applications/loggingoperator/metrics"
 	lokimetrics "github.com/caos/boom/internal/bundle/application/applications/loki/metrics"
+	"github.com/caos/boom/internal/bundle/application/applications/orbiter"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/metrics"
 	"github.com/caos/boom/internal/bundle/application/applications/prometheus/servicemonitor"
 	pnemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/metrics"
 	pometrics "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/metrics"
+	psemetrics "github.com/caos/boom/internal/bundle/application/applications/prometheussystemdexporter/metrics"
 	"github.com/caos/boom/internal/labels"
 )
 
@@ -31,12 +33,17 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 
 	if toolsetCRDSpec.PrometheusNodeExporter != nil && toolsetCRDSpec.PrometheusNodeExporter.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusNodeExporter) {
-		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitor(instanceName))
+		servicemonitors = append(servicemonitors, pnemetrics.GetServicemonitors(instanceName)...)
+	}
+
+	if toolsetCRDSpec.PrometheusSystemdExporter != nil && toolsetCRDSpec.PrometheusSystemdExporter.Deploy &&
+		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.PrometheusSystemdExporter) {
+		servicemonitors = append(servicemonitors, psemetrics.GetServicemonitor(instanceName))
 	}
 
 	if toolsetCRDSpec.KubeStateMetrics != nil && toolsetCRDSpec.KubeStateMetrics.Deploy &&
 		(toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.KubeStateMetrics) {
-		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitor(instanceName))
+		servicemonitors = append(servicemonitors, kubestatemetrics.GetServicemonitors(instanceName)...)
 	}
 
 	if toolsetCRDSpec.Argocd != nil && toolsetCRDSpec.Argocd.Deploy &&
@@ -61,6 +68,11 @@ func ScrapeMetricsCrdsConfig(instanceName string, toolsetCRDSpec *toolsetsv1beta
 	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Boom {
 		servicemonitors = append(servicemonitors, boom.GetServicemonitor(instanceName))
 	}
+
+	if toolsetCRDSpec.Prometheus.Metrics == nil || toolsetCRDSpec.Prometheus.Metrics.Orbiter {
+		servicemonitors = append(servicemonitors, orbiter.GetServicemonitor(instanceName))
+	}
+
 
 	if len(servicemonitors) > 0 {
 

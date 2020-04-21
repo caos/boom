@@ -1,11 +1,11 @@
 package helper
 
 import (
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"strings"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 func readFile(path string) ([]byte, error) {

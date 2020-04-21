@@ -10,16 +10,17 @@ func GetServicemonitor(instanceName string) *servicemonitor.Config {
 	var appName name.Application
 	appName = "boom"
 	monitorlabels := labels.GetMonitorLabels(instanceName, appName)
-	ls := labels.GetApplicationLabels(appName)
+	ls := map[string]string{
+		"app.kubernetes.io/instance": "boom",
+		"app.kubernetes.io/part-of": "orbos",
+		"app.kubernetes.io/component": "boom",
+	}
 
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port: "metrics",
 		Path: "/metrics",
 	}
 
-	ls["app.kubernetes.io/instance"] = "boom"
-	ls["app.kubernetes.io/part-of"] = "boom"
-	ls["app.kubernetes.io/component"] = "boom"
 
 	return &servicemonitor.Config{
 		Name:                  "boom-servicemonitor",
