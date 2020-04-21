@@ -29,7 +29,7 @@ func getSMServer(instanceName string) *servicemonitor.Config {
 	}
 
 	ls["app.kubernetes.io/instance"] = "argocd"
-	ls["app.kubernetes.io/part-of"] = "orbos"
+	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "server"
 
 	return &servicemonitor.Config{
@@ -53,7 +53,7 @@ func getSMRepoServer(instanceName string) *servicemonitor.Config {
 	}
 
 	ls["app.kubernetes.io/instance"] = "argocd"
-	ls["app.kubernetes.io/part-of"] = "orbos"
+	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "repo-server"
 
 	return &servicemonitor.Config{
@@ -78,7 +78,7 @@ func getSMApplicationController(instanceName string) *servicemonitor.Config {
 	}
 
 	ls["app.kubernetes.io/instance"] = "argocd"
-	ls["app.kubernetes.io/part-of"] = "orbos"
+	ls["app.kubernetes.io/part-of"] = "argocd"
 	ls["app.kubernetes.io/component"] = "application-controller"
 
 	return &servicemonitor.Config{

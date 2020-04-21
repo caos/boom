@@ -22,18 +22,18 @@ type metricsStruct struct {
 
 var (
 	metrics = &metricsStruct{
-		gitClone:               newCounterVec("caos_boom_git_clone", "Counter how many times git repositories were cloned", "result", "url"),
-		crdFormat:              newCounterVec("caos_boom_crd_format", "Counter how many failures there were with the crd unmarshalling", "result", "url", "path", "reason"),
-		currentStateWrite:      newCounterVec("caos_boom_current_state_write", "Counter how many times the current state was written", "result", "url", "path"),
-		currentStateRead:       newCounterVec("caos_boom_current_state_read", "Counter how many times the current state was read", "result"),
-		reconcilingBundle:      newCounterVec("caos_boom_reconciling_bundle", "Counter how many times the bundle was reconciled", "result", "bundle"),
-		reconcilingApplication: newCounterVec("caos_boom_reconciling_application", "Counter how many times a application was reconciled", "result", "application", "templator", "deploy"),
-		gyrBoom:                newGauge("caos_boom_gyr", "Status of Boom in GreenYellowRed"),
-		gyrGit:                 newGauge("caos_boom_git_gyr", "Status of git connection in GreenYellowRed"),
-		gyrCurrentStateWrite:   newGauge("caos_boom_current_state_write_gyr", "Status of current state write in GreenYellowRed"),
-		gyrCurrentStateRead:    newGauge("caos_boom_current_state_read_gyr", "Status of current state read in GreenYellowRed"),
-		gyrReconciling:         newGauge("caos_boom_reconciling_gyr", "Status of reconciling in GreenYellowRed"),
-		gyrFormat:              newGauge("caos_boom_crd_format_gyr", "Status of format unmarshalin in GreenYellowRed"),
+		gitClone:               newCounterVec("boom_git_clone", "Counter how many times git repositories were cloned", "result", "url"),
+		crdFormat:              newCounterVec("boom_crd_format", "Counter how many failures there were with the crd unmarshalling", "result", "url", "path", "reason"),
+		currentStateWrite:      newCounterVec("boom_current_state_write", "Counter how many times the current state was written", "result", "url", "path"),
+		currentStateRead:       newCounterVec("boom_current_state_read", "Counter how many times the current state was read", "result"),
+		reconcilingBundle:      newCounterVec("boom_reconciling_bundle", "Counter how many times the bundle was reconciled", "result", "bundle"),
+		reconcilingApplication: newCounterVec("boom_reconciling_application", "Counter how many times a application was reconciled", "result", "application", "templator", "deploy"),
+		gyrBoom:                newGauge("boom_gyr", "Status of Boom in GreenYellowRed"),
+		gyrGit:                 newGauge("boom_git_gyr", "Status of git connection in GreenYellowRed"),
+		gyrCurrentStateWrite:   newGauge("boom_current_state_write_gyr", "Status of current state write in GreenYellowRed"),
+		gyrCurrentStateRead:    newGauge("boom_current_state_read_gyr", "Status of current state read in GreenYellowRed"),
+		gyrReconciling:         newGauge("boom_reconciling_gyr", "Status of reconciling in GreenYellowRed"),
+		gyrFormat:              newGauge("boom_crd_format_gyr", "Status of format unmarshalin in GreenYellowRed"),
 	}
 	failed  float64 = 0
 	success float64 = 1

@@ -9,13 +9,11 @@ spec:
       containers:
       - name: boom
         args:
-        - --metrics-addr
-        - 127.0.0.1:2112
+        - --metrics=true
+        - --metricsport=2112
         - --enable-leader-election
-        - --git-orbconfig
-        - /secrets/orbconfig
-        - --git-crd-path
-        - boom.yml
+        - --git-orbconfig=/secrets/orbconfig
+        - --git-crd-path=boom.yml
         volumeMounts:
         - mountPath: /secrets
           name: orbconfig
