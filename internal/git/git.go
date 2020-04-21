@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"gopkg.in/src-d/go-billy.v4"
+	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"os"
@@ -15,13 +17,11 @@ import (
 
 	"github.com/caos/orbiter/mntr"
 	"golang.org/x/crypto/ssh"
-	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"gopkg.in/src-d/go-git.v4/storage/memory"
-	"gopkg.in/yaml.v3"
 )
 
 type Client struct {
@@ -49,6 +49,10 @@ func New(ctx context.Context, monitor mntr.Monitor, committer, email, repoURL st
 		newClient.progress = os.Stdout
 	}
 	return newClient
+}
+
+func (g *Client) GetURL() string {
+	return g.repoURL
 }
 
 func (g *Client) Init(deploykey []byte) error {

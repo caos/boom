@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: boom
+    app.kubernetes.io/part-of: orbos
+    app.kubernetes.io/component: boom
+  name: boom-metrics
+  namespace: caos-system
+spec:
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 2112
+      targetPort: 2112
+    - name: debug
+      protocol: TCP
+      port: 2345
+      targetPort: 2345
+  selector:
+    app.kubernetes.io/instance: boom
+    app.kubernetes.io/part-of: orbos
+    app.kubernetes.io/component: boom

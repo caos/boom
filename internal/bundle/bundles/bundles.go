@@ -10,6 +10,7 @@ import (
 	prometheusinfo "github.com/caos/boom/internal/bundle/application/applications/prometheus/info"
 	prometheusnodeexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusnodeexporter/info"
 	prometheusoperatorinfo "github.com/caos/boom/internal/bundle/application/applications/prometheusoperator/info"
+	prometheussystemdexporterinfo "github.com/caos/boom/internal/bundle/application/applications/prometheussystemdexporter/info"
 	"github.com/caos/boom/internal/name"
 )
 
@@ -43,6 +44,7 @@ func GetCaos() []name.Application {
 	apps = append(apps, prometheusoperatorinfo.GetName())
 	apps = append(apps, kubestatemetricsinfo.GetName())
 	apps = append(apps, prometheusnodeexporterinfo.GetName())
+	apps = append(apps, prometheussystemdexporterinfo.GetName())
 	apps = append(apps, grafanainfo.GetName())
 	apps = append(apps, prometheusinfo.GetName())
 	apps = append(apps, loggingoperatorinfo.GetName())

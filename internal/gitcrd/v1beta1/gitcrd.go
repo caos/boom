@@ -5,21 +5,22 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/caos/boom/internal/metrics"
+	"gopkg.in/yaml.v3"
+
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
+	crdconfig "github.com/caos/boom/internal/crd/config"
 	"github.com/caos/boom/internal/crd/v1beta1"
+	"github.com/caos/boom/internal/current"
+	"github.com/caos/boom/internal/git"
 	"github.com/caos/boom/internal/gitcrd/v1beta1/config"
 	"github.com/caos/boom/internal/helper"
 	"github.com/caos/boom/internal/kubectl"
 	"github.com/caos/orbiter/mntr"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
-
-	crdconfig "github.com/caos/boom/internal/crd/config"
-	"github.com/caos/boom/internal/current"
-	"github.com/caos/boom/internal/git"
 )
 
 type GitCrd struct {
@@ -71,6 +72,13 @@ func (c *GitCrd) SetBackStatus() {
 	c.status = nil
 }
 
+func (c *GitCrd) GetRepoURL() string {
+	return c.git.GetURL()
+}
+func (c *GitCrd) GetRepoCRDPath() string {
+	return c.crdPath
+}
+
 func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 	if c.status != nil {
 		return
@@ -92,6 +100,7 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 		BundleName:        conf.BundleName,
 		BaseDirectoryPath: conf.BaseDirectoryPath,
 		Templator:         conf.Templator,
+		Orb:               conf.Orb,
 	}
 
 	c.crd.SetBundle(bundleConf)
@@ -112,7 +121,7 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	}
 
 	monitor := c.monitor.WithFields(map[string]interface{}{
-		"action": "reconiling",
+		"action": "reconciling",
 	})
 
 	toolsetCRD, err := c.getCrdContent()
@@ -187,16 +196,21 @@ func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()
 
+	repoURL := c.git.GetURL()
 	if err := c.git.Clone(); err != nil {
+		metrics.FailedGitClone(repoURL)
 		return nil, err
 	}
+	metrics.SuccessfulGitClone(repoURL)
 
 	toolsetCRD := &toolsetsv1beta1.Toolset{}
 	err := c.git.ReadYamlIntoStruct(c.crdPath, toolsetCRD)
 	if err != nil {
+		metrics.WrongCRDFormat(repoURL, c.crdPath)
 		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
 	}
 
+	metrics.SuccessfulUnmarshalCRD(repoURL, c.crdPath)
 	return toolsetCRD, nil
 }
 
@@ -229,6 +243,7 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()
+
 	c.status = c.git.UpdateRemote("current state changed", file)
 }
 

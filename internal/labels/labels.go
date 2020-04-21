@@ -9,7 +9,7 @@ var (
 func GetGlobalLabels() map[string]string {
 	labels := make(map[string]string, 0)
 	labels["app.kubernetes.io/managed-by"] = "boom.caos.ch"
-	labels["boom.caos.ch/part-of"] = "boom"
+	labels["boom.caos.ch/part-of"] = "orbos"
 	labels["boom.caos.ch/instance"] = instanceName
 
 	return labels

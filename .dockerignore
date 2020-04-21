@@ -1,0 +1,9 @@
+*
+!cmd
+!api
+!controllers
+!internal
+!go.mod
+!go.sum
+!config
+!dashboards

@@ -1,12 +1,15 @@
 package app
 
 import (
+	"strings"
+
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/crd"
 	"github.com/caos/boom/internal/current"
 	"github.com/caos/boom/internal/gitcrd"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
+	"github.com/caos/boom/internal/metrics"
 
 	"github.com/caos/boom/internal/bundle/bundles"
 	"github.com/caos/boom/internal/templator/helm"
@@ -62,6 +65,7 @@ func (a *App) AddGitCrd(gitCrdConf *gitcrdconfig.Config) error {
 	}
 
 	bundleConf := &bundleconfig.Config{
+		Orb:               strings.TrimSuffix(strings.TrimPrefix(gitCrdConf.CrdUrl, "git@"), ".git"),
 		BundleName:        bundles.Caos,
 		BaseDirectoryPath: a.ToolsDirectoryPath,
 		Templator:         helm.GetName(),
@@ -83,8 +87,10 @@ func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 	resourceInfoList, err := clientgo.GetGroupVersionsResources([]string{})
 	if err != nil {
 		monitor.Error(err)
+		metrics.FailedReadingCurrentState()
 		return nil, err
 	}
+	metrics.SuccessfulReadingCurrentState()
 
 	return current.Get(a.monitor, resourceInfoList), nil
 }
@@ -128,8 +134,10 @@ func (a *App) WriteBackCurrentState() error {
 
 		crdGit.WriteBackCurrentState(currentResourceList)
 		if err := crdGit.GetStatus(); err != nil {
+			metrics.FailedWritingCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 			return err
 		}
+		metrics.SuccessfulWriteCurrentState(crdGit.GetRepoURL(), crdGit.GetRepoCRDPath())
 	}
 	return nil
 }

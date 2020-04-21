@@ -2,6 +2,7 @@ package gitcrd
 
 import (
 	"context"
+	"github.com/caos/boom/internal/metrics"
 	"strings"
 
 	toolsetv1beta1 "github.com/caos/boom/api/v1beta1"
@@ -22,27 +23,32 @@ type GitCrd interface {
 	CleanUp()
 	GetStatus() error
 	SetBackStatus()
+	GetRepoURL() string
+	GetRepoCRDPath() string
 }
 
 func New(conf *config.Config) (GitCrd, error) {
 
 	conf.Monitor.Info("New GitCRD")
 
-	git := git.New(context.Background(), conf.Monitor, conf.User, conf.Email, conf.CrdUrl)
-	err := git.Init(conf.PrivateKey)
+	gitInternal := git.New(context.Background(), conf.Monitor, conf.User, conf.Email, conf.CrdUrl)
+	err := gitInternal.Init(conf.PrivateKey)
 	if err != nil {
 		conf.Monitor.Error(err)
 		return nil, err
 	}
 
-	err = git.Clone()
+	err = gitInternal.Clone()
 	if err != nil {
+		metrics.FailedGitClone(conf.CrdUrl)
 		conf.Monitor.Error(err)
 		return nil, err
 	}
+	metrics.SuccessfulGitClone(conf.CrdUrl)
 
 	crdFileStruct := &helper.Resource{}
-	if err := git.ReadYamlIntoStruct(conf.CrdPath, crdFileStruct); err != nil {
+	if err := gitInternal.ReadYamlIntoStruct(conf.CrdPath, crdFileStruct); err != nil {
+		metrics.WrongCRDFormat(conf.CrdUrl, conf.CrdPath)
 		conf.Monitor.Error(err)
 		return nil, err
 	}
@@ -52,22 +58,25 @@ func New(conf *config.Config) (GitCrd, error) {
 	if parts[0] != "boom.caos.ch" {
 		err := errors.Errorf("Unknown CRD apiGroup %s", parts[0])
 		conf.Monitor.Error(err)
+		metrics.UnsupportedAPIGroup(conf.CrdUrl, conf.CrdPath)
 		return nil, err
 	}
 
 	if parts[1] != groupVersion.Version {
 		err := errors.Errorf("Unknown CRD version %s", parts[1])
 		conf.Monitor.Error(err)
+		metrics.UnsupportedVersion(conf.CrdUrl, conf.CrdPath)
 		return nil, err
 	}
 
+	metrics.SuccessfulUnmarshalCRD(conf.CrdUrl, conf.CrdPath)
 	monitor := conf.Monitor.WithFields(map[string]interface{}{
 		"type": "gitcrd",
 	})
 
 	v1beta1conf := &v1beta1config.Config{
 		Monitor:          monitor,
-		Git:              git,
+		Git:              gitInternal,
 		CrdDirectoryPath: conf.CrdDirectoryPath,
 		CrdPath:          conf.CrdPath,
 	}
