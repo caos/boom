@@ -125,7 +125,7 @@ func getEtcd() *helm.AdditionalScrapeConfig {
 		SourceLabels: []string{"__name__"},
 		TargetLabel:  "__name__",
 		Regex:        "etcd_server_has_leader",
-		Replacement:  "caos_etcd_server_has_leader",
+		Replacement:  "dist_etcd_server_has_leader",
 	}}
 
 	return &helm.AdditionalScrapeConfig{

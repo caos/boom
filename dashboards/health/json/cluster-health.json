@@ -2861,7 +2861,7 @@
       "thresholds": "0.001,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "etcd $master has a leader",
+      "title": "etcd $master",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
