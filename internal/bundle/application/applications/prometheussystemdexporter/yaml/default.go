@@ -79,7 +79,7 @@ func GetDefault() interface{} {
 						"resources": map[string]*resourceList{
 							"limits": {
 								Memory: "100Mi",
-								Cpu:    "10m",
+								Cpu:    "250m",
 							},
 							"requests": {
 								Memory: "100Mi",
