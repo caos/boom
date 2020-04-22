@@ -120,7 +120,9 @@ groups:
      record: caos_node_ready
    - expr: min_over_time(caos_node_ready[5m])
      record: caos_k8s_node_ryg
-   - expr: avg_over_time(caos_etcd_server_has_leader[5m])
+   - expr: dist_etcd_server_has_leader or on(instance) up{job="caos_remote_etcd"}
+     record: caos_etcd_server_has_leader_and_is_up
+   - expr: min_over_time(caos_etcd_server_has_leader_and_is_up[5m])
      record: caos_etcd_ryg
    - expr: |-
        clamp_max(

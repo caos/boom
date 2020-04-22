@@ -1022,7 +1022,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "caos_etcd_server_has_leader{ instance=\"$instance\"}",
+          "expr": "caos_etcd_server_has_leader_and_is_up{ instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1042,7 +1042,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "etcd has a leader",
+      "title": "etcd is up and has a leader",
       "tooltip": {
         "shared": true,
         "sort": 0,
