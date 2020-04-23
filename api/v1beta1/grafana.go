@@ -42,34 +42,34 @@ type GrafanaAuth struct {
 }
 
 type GrafanaGoogleAuth struct {
-	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ClientID                   *secret.Secret   `yaml:"clientID,omitempty"`
 	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
-	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret,omitempty"`
 	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
 	AllowedDomains             []string         `json:"allowedDomains,omitempty" yaml:"allowedDomains,omitempty"`
 }
 
 type GrafanaGithubAuth struct {
-	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ClientID                   *secret.Secret   `yaml:"clientID,omitempty"`
 	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
-	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret,omitempty"`
 	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
 	AllowedOrganizations       []string         `json:"allowedOrganizations,omitempty" yaml:"allowedOrganizations,omitempty"`
 	TeamIDs                    []string         `json:"teamIDs,omitempty" yaml:"teamIDs,omitempty"`
 }
 
 type GrafanaGitlabAuth struct {
-	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ClientID                   *secret.Secret   `yaml:"clientID,omitempty"`
 	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
-	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret,omitempty"`
 	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
 	AllowedGroups              []string         `json:"allowedGroups,omitempty" yaml:"allowedGroups,omitempty"`
 }
 
 type GrafanaGenericOAuth struct {
-	ClientID                   *secret.Secret   `yaml:"clientID"`
+	ClientID                   *secret.Secret   `yaml:"clientID,omitempty"`
 	ExistingClientIDSecret     *secret.Existing `json:"existingClientIDSecret,omitempty" yaml:"existingClientIDSecret,omitempty"`
-	ClientSecret               *secret.Secret   `yaml:"clientSecret"`
+	ClientSecret               *secret.Secret   `yaml:"clientSecret,omitempty"`
 	ExistingClientSecretSecret *secret.Existing `json:"existingClientSecretSecret,omitempty" yaml:"existingClientSecretSecret,omitempty"`
 	Scopes                     []string         `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 	AuthURL                    string           `json:"authURL,omitempty" yaml:"authURL,omitempty"`
