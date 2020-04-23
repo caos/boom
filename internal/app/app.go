@@ -89,7 +89,7 @@ func (a *App) getCurrent(monitor mntr.Monitor) ([]*clientgo.Resource, error) {
 	return current.Get(a.monitor, resourceInfoList), nil
 }
 
-func (a *App) ReconcileGitCrds() error {
+func (a *App) ReconcileGitCrds(masterkey string) error {
 	monitor := a.monitor.WithFields(map[string]interface{}{
 		"action": "reconciling",
 	})
@@ -103,7 +103,7 @@ func (a *App) ReconcileGitCrds() error {
 			return err
 		}
 
-		crdGit.Reconcile(currentResourceList)
+		crdGit.Reconcile(currentResourceList, masterkey)
 		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func (a *App) ReconcileGitCrds() error {
 	return nil
 }
 
-func (a *App) WriteBackCurrentState() error {
+func (a *App) WriteBackCurrentState(masterkey string) error {
 
 	monitor := a.monitor.WithFields(map[string]interface{}{
 		"action": "current",
@@ -126,7 +126,7 @@ func (a *App) WriteBackCurrentState() error {
 			return err
 		}
 
-		crdGit.WriteBackCurrentState(currentResourceList)
+		crdGit.WriteBackCurrentState(currentResourceList, masterkey)
 		if err := crdGit.GetStatus(); err != nil {
 			return err
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -14,8 +13,6 @@ import (
 	"github.com/caos/boom/internal/app"
 	"github.com/caos/boom/internal/clientgo"
 	gitcrdconfig "github.com/caos/boom/internal/gitcrd/config"
-	"github.com/caos/boom/internal/helper"
-	"github.com/caos/boom/internal/kustomize"
 	"github.com/caos/boom/internal/orb"
 
 	gconfig "github.com/caos/boom/internal/bundle/application/applications/grafana/config"
@@ -31,7 +28,8 @@ func main() {
 
 	var metricsAddr string
 	var toolsDirectoryPath, dashboardsDirectoryPath string
-	var gitOrbConfig, gitCrdPath, gitCrdURL, gitCrdPrivateKey, gitCrdDirectoryPath string
+	var gitCrdURL string
+	var gitOrbConfig, gitCrdPath, gitCrdDirectoryPath string
 	var enableLeaderElection, localMode bool
 	var intervalSeconds int
 	var gitCrdEmail, gitCrdUser string
@@ -46,10 +44,10 @@ func main() {
 
 	flag.StringVar(&gitOrbConfig, "git-orbconfig", "", "The orbconfig path. If not provided, --git-crd-url and --git-crd-secret are used")
 
-	flag.StringVar(&gitCrdURL, "git-crd-url", "https://github.com/stebenz/boom-crd.git", "The url for the git-repo to clone for the CRD")
-	flag.StringVar(&gitCrdPrivateKey, "git-crd-private-key", "", "Path to private key required to clone the git-repo for the CRD")
+	//flag.StringVar(&gitCrdURL, "git-crd-url", "https://github.com/stebenz/boom-crd.git", "The url for the git-repo to clone for the CRD")
+	//flag.StringVar(&gitCrdPrivateKey, "git-crd-private-key", "", "Path to private key required to clone the git-repo for the CRD")
 	flag.StringVar(&gitCrdDirectoryPath, "git-crd-directory-path", "/tmp/crd", "Local path where the CRD git-repo will be cloned into")
-	flag.StringVar(&gitCrdPath, "git-crd-path", "crd-test.yaml", "The path to the CRD in the cloned git-repo ")
+	flag.StringVar(&gitCrdPath, "git-crd-path", "boom.yml", "The path to the CRD in the cloned git-repo ")
 	flag.StringVar(&gitCrdUser, "git-crd-user", "boom", "The name of the user used for pushing the current state in git")
 	flag.StringVar(&gitCrdEmail, "git-crd-email", "boom@caos.ch", "The email of the user used for pushing the current state in git")
 
@@ -74,27 +72,14 @@ func main() {
 		clientgo.Limit = limitResources
 	}
 
-	if gitOrbConfig != "" {
-		orbconfig, err := orb.ParseOrbConfig(gitOrbConfig)
-		if err != nil {
-			monitor.Error(err)
-			os.Exit(1)
-		}
-
-		gitCrdPrivateKeyBytes = []byte(orbconfig.Repokey)
-		gitCrdURL = orbconfig.URL
+	orbconfig, err := orb.ParseOrbConfig(gitOrbConfig)
+	if err != nil {
+		monitor.Error(err)
+		os.Exit(1)
 	}
 
-	if gitCrdPrivateKeyBytes == nil && gitCrdPrivateKey != "" {
-		var err error
-		gitCrdPrivateKeyBytes, err = ioutil.ReadFile(gitCrdPrivateKey)
-		if err != nil {
-			monitor.Error(errors.Wrap(err, "unable to read git crd private key"))
-			os.Exit(1)
-		}
-	}
-
-	// ctrl.SetLogger(monitor)
+	gitCrdPrivateKeyBytes = []byte(orbconfig.Repokey)
+	gitCrdURL = orbconfig.URL
 
 	appStruct := app.New(monitor, toolsDirectoryPath)
 
@@ -121,7 +106,7 @@ func main() {
 			// TODO: use a function scoped error variable
 			for {
 				started := time.Now()
-				goErr := appStruct.ReconcileGitCrds()
+				goErr := appStruct.ReconcileGitCrds(orbconfig.Masterkey)
 				recMonitor := monitor.WithFields(map[string]interface{}{
 					"took": time.Since(started),
 				})
@@ -136,7 +121,7 @@ func main() {
 		go func() {
 			for {
 				started := time.Now()
-				goErr := appStruct.WriteBackCurrentState()
+				goErr := appStruct.WriteBackCurrentState(orbconfig.Masterkey)
 				recMonitor := monitor.WithFields(map[string]interface{}{
 					"took": time.Since(started),
 				})
@@ -147,18 +132,6 @@ func main() {
 				time.Sleep(time.Duration(intervalSeconds) * time.Second)
 			}
 		}()
-	}
-
-	cmd, err := kustomize.New("../../config/crd", true, false)
-	if err != nil {
-		monitor.Error(errors.Wrap(err, "unable to locate crd"))
-		os.Exit(1)
-	}
-
-	err = errors.Wrapf(helper.Run(monitor, cmd.Build()), "Failed to apply crd")
-	if err != nil {
-		monitor.Error(errors.Wrap(err, "unable to apply crd"))
-		os.Exit(1)
 	}
 	<-gitCrdError
 }

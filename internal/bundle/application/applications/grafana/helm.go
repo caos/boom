@@ -49,7 +49,7 @@ func (g *Grafana) HelmPreApplySteps(monitor mntr.Monitor, spec *v1beta1.ToolsetS
 		ret[k] = v
 	}
 
-	ret = append(ret, admin.GetSecret(spec.Grafana.Admin))
+	ret = append(ret, admin.GetSecrets(spec.Grafana.Admin)...)
 	return ret, nil
 }
 

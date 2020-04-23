@@ -63,8 +63,12 @@ func getInternalName(store string, ty string) string {
 
 func GetSecrets(spec *toolsetsv1beta1.Argocd) []interface{} {
 	namespace := "caos-system"
-
 	secrets := make([]interface{}, 0)
+
+	if spec.CustomImage == nil || spec.CustomImage.GopassStores == nil {
+		return secrets
+	}
+
 	for _, store := range spec.CustomImage.GopassStores {
 		if helper.IsCrdSecret(store.GPGKey, store.ExistingGPGKeySecret) {
 			ty := "gpg"

@@ -27,3 +27,9 @@ type Toolset struct {
 	Metadata   *Metadata    `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 	Spec       *ToolsetSpec `json:"spec,omitempty" yaml:"spec,omitempty"`
 }
+
+type ToolsetMetadata struct {
+	APIVersion string    `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
+	Kind       string    `json:"kind,omitempty" yaml:"kind,omitempty"`
+	Metadata   *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+}

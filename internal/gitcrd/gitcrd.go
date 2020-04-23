@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	toolsetv1beta1 "github.com/caos/boom/api/v1beta1"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
 	"github.com/caos/boom/internal/git"
@@ -17,8 +16,8 @@ import (
 
 type GitCrd interface {
 	SetBundle(*bundleconfig.Config)
-	Reconcile([]*clientgo.Resource)
-	WriteBackCurrentState([]*clientgo.Resource)
+	Reconcile([]*clientgo.Resource, string)
+	WriteBackCurrentState([]*clientgo.Resource, string)
 	CleanUp()
 	GetStatus() error
 	SetBackStatus()
@@ -47,15 +46,17 @@ func New(conf *config.Config) (GitCrd, error) {
 		return nil, err
 	}
 
-	groupVersion := toolsetv1beta1.GroupVersion
+	group := "boom.caos.ch"
+	version := "v1beta1"
+
 	parts := strings.Split(crdFileStruct.ApiVersion, "/")
-	if parts[0] != "boom.caos.ch" {
+	if parts[0] != group {
 		err := errors.Errorf("Unknown CRD apiGroup %s", parts[0])
 		conf.Monitor.Error(err)
 		return nil, err
 	}
 
-	if parts[1] != groupVersion.Version {
+	if parts[1] != version {
 		err := errors.Errorf("Unknown CRD version %s", parts[1])
 		conf.Monitor.Error(err)
 		return nil, err

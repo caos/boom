@@ -1,6 +1,8 @@
 package v1beta1
 
 import (
+	"github.com/caos/boom/api"
+	"github.com/caos/boom/internal/tree"
 	"os"
 	"path/filepath"
 	"sync"
@@ -76,7 +78,7 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 		return
 	}
 
-	toolsetCRD, err := c.getCrdContent()
+	toolsetCRD, err := c.getCrdMetadata()
 	if err != nil {
 		c.status = err
 		return
@@ -106,7 +108,7 @@ func (c *GitCrd) CleanUp() {
 	c.status = os.RemoveAll(c.crdDirectoryPath)
 }
 
-func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
+func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource, masterkey string) {
 	if c.status != nil {
 		return
 	}
@@ -115,7 +117,7 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 		"action": "reconiling",
 	})
 
-	toolsetCRD, err := c.getCrdContent()
+	toolsetCRD, err := c.getCrdContent(masterkey)
 	if err != nil {
 		c.status = err
 		return
@@ -183,7 +185,7 @@ func (c *GitCrd) Reconcile(currentResourceList []*clientgo.Resource) {
 	}
 }
 
-func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
+func (c *GitCrd) getCrdMetadata() (*toolsetsv1beta1.ToolsetMetadata, error) {
 	c.gitMutex.Lock()
 	defer c.gitMutex.Unlock()
 
@@ -191,16 +193,46 @@ func (c *GitCrd) getCrdContent() (*toolsetsv1beta1.Toolset, error) {
 		return nil, err
 	}
 
-	toolsetCRD := &toolsetsv1beta1.Toolset{}
+	toolsetCRD := &toolsetsv1beta1.ToolsetMetadata{}
 	err := c.git.ReadYamlIntoStruct(c.crdPath, toolsetCRD)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
 	}
 
 	return toolsetCRD, nil
+
 }
 
-func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource) {
+func (c *GitCrd) getCrdContent(masterkey string) (*toolsetsv1beta1.Toolset, error) {
+	c.gitMutex.Lock()
+	defer c.gitMutex.Unlock()
+
+	if err := c.git.Clone(); err != nil {
+		return nil, err
+	}
+	raw, err := c.git.Read(c.crdPath)
+	if err != nil {
+		return nil, err
+	}
+
+	tree := &tree.Tree{}
+	if err := yaml.Unmarshal([]byte(raw), tree); err != nil {
+		return nil, err
+	}
+
+	toolsetCRD := api.NewV1beta1Toolset(masterkey)
+	if err := tree.Original.Decode(toolsetCRD); err != nil {
+		return nil, err
+	}
+	/*err := c.git.ReadYamlIntoStruct(c.crdPath, toolsetCRD)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error while unmarshaling yaml %s to struct", c.crdPath)
+	}*/
+
+	return toolsetCRD, nil
+}
+
+func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource, masterkey string) {
 	if c.status != nil {
 		return
 	}
@@ -211,7 +243,7 @@ func (c *GitCrd) WriteBackCurrentState(currentResourceList []*clientgo.Resource)
 		return
 	}
 
-	toolsetCRD, err := c.getCrdContent()
+	toolsetCRD, err := c.getCrdContent(masterkey)
 	if err != nil {
 		c.status = err
 		return

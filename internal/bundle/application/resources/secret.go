@@ -1,5 +1,7 @@
 package resources
 
+import "encoding/base64"
+
 type SecretConfig struct {
 	Name      string
 	Namespace string
@@ -16,6 +18,11 @@ type Secret struct {
 }
 
 func NewSecret(conf *SecretConfig) *Secret {
+	encodedData := make(map[string]string, 0)
+	for k, v := range conf.Data {
+		encodedData[k] = base64.StdEncoding.EncodeToString([]byte(v))
+	}
+
 	return &Secret{
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -24,6 +31,7 @@ func NewSecret(conf *SecretConfig) *Secret {
 			Namespace: conf.Namespace,
 			Labels:    conf.Labels,
 		},
-		Data: conf.Data,
+		Type: "Opaque",
+		Data: encodedData,
 	}
 }

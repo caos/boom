@@ -22,7 +22,7 @@ func getPasswordKey() string {
 	return "password"
 }
 
-func GetSecret(adminSpec *toolsetsv1beta1.Admin) []interface{} {
+func GetSecrets(adminSpec *toolsetsv1beta1.Admin) []interface{} {
 	namespace := "caos-system"
 
 	secrets := make([]interface{}, 0)
@@ -42,7 +42,7 @@ func GetSecret(adminSpec *toolsetsv1beta1.Admin) []interface{} {
 		secretRes := resources.NewSecret(conf)
 		secrets = append(secrets, secretRes)
 	}
-	return nil
+	return secrets
 }
 
 func GetConfig(adminSpec *toolsetsv1beta1.Admin) *helm.Admin {

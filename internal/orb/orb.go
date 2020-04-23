@@ -9,8 +9,9 @@ import (
 )
 
 type Orb struct {
-	URL     string
-	Repokey string
+	URL       string
+	Repokey   string
+	Masterkey string
 }
 
 func ParseOrbConfig(orbConfig string) (*Orb, error) {
