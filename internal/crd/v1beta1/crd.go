@@ -3,8 +3,6 @@ package v1beta1
 import (
 	"errors"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
 	"github.com/caos/boom/internal/bundle"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
@@ -74,25 +72,26 @@ func (c *Crd) GetBundle() *bundle.Bundle {
 	return c.bundle
 }
 
-func (c *Crd) ReconcileWithFunc(currentResourceList []*clientgo.Resource, getToolsetCRD func(instance runtime.Object) error) {
-	if c.GetStatus() != nil {
-		return
-	}
-
-	if getToolsetCRD == nil {
-		c.status = errors.New("ToolsetCRDFunc is nil")
-		c.monitor.Error(c.status)
-		return
-	}
-
-	var toolsetCRD *toolsetsv1beta1.Toolset
-	if err := getToolsetCRD(toolsetCRD); err != nil {
-		c.status = err
-		return
-	}
-
-	c.Reconcile(currentResourceList, toolsetCRD)
-}
+//
+//func (c *Crd) ReconcileWithFunc(currentResourceList []*clientgo.Resource, getToolsetCRD func(instance runtime.Object) error) {
+//	if c.GetStatus() != nil {
+//		return
+//	}
+//
+//	if getToolsetCRD == nil {
+//		c.status = errors.New("ToolsetCRDFunc is nil")
+//		c.monitor.Error(c.status)
+//		return
+//	}
+//
+//	var toolsetCRD *toolsetsv1beta1.Toolset
+//	if err := getToolsetCRD(toolsetCRD); err != nil {
+//		c.status = err
+//		return
+//	}
+//
+//	c.Reconcile(currentResourceList, toolsetCRD)
+//}
 
 func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *toolsetsv1beta1.Toolset) {
 	if c.GetStatus() != nil {
@@ -100,7 +99,7 @@ func (c *Crd) Reconcile(currentResourceList []*clientgo.Resource, toolsetCRD *to
 	}
 
 	logFields := map[string]interface{}{
-		"CRD":    toolsetCRD.Name,
+		"CRD":    toolsetCRD.Metadata.Name,
 		"action": "reconciling",
 	}
 	monitor := c.monitor.WithFields(logFields)

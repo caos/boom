@@ -83,12 +83,12 @@ func (c *GitCrd) SetBundle(conf *bundleconfig.Config) {
 	}
 
 	monitor := c.monitor.WithFields(map[string]interface{}{
-		"CRD": toolsetCRD.GetName(),
+		"CRD": toolsetCRD.Metadata.Name,
 	})
 
 	bundleConf := &bundleconfig.Config{
 		Monitor:           monitor,
-		CrdName:           toolsetCRD.GetName(),
+		CrdName:           toolsetCRD.Metadata.Name,
 		BundleName:        conf.BundleName,
 		BaseDirectoryPath: conf.BaseDirectoryPath,
 		Templator:         conf.Templator,

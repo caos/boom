@@ -2,8 +2,6 @@ package crd
 
 import (
 	toolsetsv1beta1 "github.com/caos/boom/api/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	"github.com/caos/boom/internal/bundle"
 	bundleconfig "github.com/caos/boom/internal/bundle/config"
 	"github.com/caos/boom/internal/clientgo"
@@ -18,7 +16,7 @@ import (
 type Crd interface {
 	SetBundle(*bundleconfig.Config)
 	GetBundle() *bundle.Bundle
-	ReconcileWithFunc([]*clientgo.Resource, func(instance runtime.Object) error)
+	//ReconcileWithFunc([]*clientgo.Resource, func(instance runtime.Object) error)
 	Reconcile([]*clientgo.Resource, *toolsetsv1beta1.Toolset)
 	CleanUp()
 	GetStatus() error

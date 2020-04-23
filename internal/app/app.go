@@ -20,7 +20,7 @@ type App struct {
 	monitor            mntr.Monitor
 }
 
-func New(monitor mntr.Monitor, toolsDirectoryPath, dashboardsDirectoryPath string) (*App, error) {
+func New(monitor mntr.Monitor, toolsDirectoryPath string) *App {
 
 	app := &App{
 		ToolsDirectoryPath: toolsDirectoryPath,
@@ -30,7 +30,7 @@ func New(monitor mntr.Monitor, toolsDirectoryPath, dashboardsDirectoryPath strin
 	app.Crds = make(map[string]crd.Crd, 0)
 	app.GitCrds = make([]gitcrd.GitCrd, 0)
 
-	return app, nil
+	return app
 }
 
 func (a *App) CleanUp() error {

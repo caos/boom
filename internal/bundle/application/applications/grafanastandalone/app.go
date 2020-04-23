@@ -151,12 +151,6 @@ func specToValues(imageTags map[string]string, spec *toolsetsv1beta1.Grafana) *V
 		},
 	}
 
-	if spec.Admin != nil {
-		values.Admin.ExistingSecret = spec.Admin.ExistingSecret
-		values.Admin.UserKey = spec.Admin.UserKey
-		values.Admin.PasswordKey = spec.Admin.PasswordKey
-	}
-
 	if spec.Datasources != nil {
 		datasources := make([]*Datasource, 0)
 		for _, datasource := range spec.Datasources {
