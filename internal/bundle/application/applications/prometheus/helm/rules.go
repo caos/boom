@@ -156,7 +156,7 @@ groups:
          1
        )          
      record: caos_scheduled_pods_ryg
-   - expr: min(caos_node_cpu_ryg) * min(caos_systemd_ryg) * min(caos_vip_probe_ryg) * min(caos_upstream_probe_ryg) * min(caos_node_memory_ryg) * min(caos_k8s_node_ryg) * avg(caos_etcd_ryg) * min(caos_ready_pods_ryg{namespace="caos-system"}) * min(caos_scheduled_pods_ryg{namespace="caos-system"})
+   - expr: min(caos_node_cpu_ryg) * min(caos_systemd_ryg) * min(caos_vip_probe_ryg) * min(caos_upstream_probe_ryg) * min(caos_node_memory_ryg) * min(caos_k8s_node_ryg) * avg(caos_etcd_ryg) * min(caos_ready_pods_ryg{namespace=~"(caos|kube)-system"}) * min(caos_scheduled_pods_ryg{namespace=~"(caos|kube)-system"})
      record: caos_orb_ryg
 `
 
