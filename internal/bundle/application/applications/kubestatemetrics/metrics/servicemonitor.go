@@ -33,8 +33,8 @@ func getLocalServiceMonitor(monitorMatchingLabels, serviceMatchingLabels map[str
 func getIngestionServiceMonitor(monitorMatchingLabels, serviceMatchingLabels map[string]string) *servicemonitor.Config {
 
 	relabelings := []*servicemonitor.ConfigRelabeling{{
-		Action: "labeldrop",
-		Regex:  "(container|endpoint|namespace|pod)",
+		Action: "labelkeep",
+		Regex:  "(__.+|job|node|namespace|daemonset|statefulset|deployment|condition|status)",
 	}}
 
 	metricRelabelings := []*servicemonitor.ConfigRelabeling{{
@@ -62,7 +62,7 @@ func getIngestionServiceMonitor(monitorMatchingLabels, serviceMatchingLabels map
 		Replacement:  "dist_${1}",
 	}, {
 		Action: "labelkeep",
-		Regex:  "__.+|job|node|controller",
+		Regex:  "(__.+|job|node|namespace|controller)",
 	}}
 
 	endpoint := &servicemonitor.ConfigEndpoint{
