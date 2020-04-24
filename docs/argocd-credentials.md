@@ -1,10 +1,8 @@
-# Repositories
-
-For a repository there are two types, with ssh-connection where an url and a certifacte have to be provided and an https-connection where an URL, username and password have to be provided.
+# Credentials
 
 | Parameter                          | Description                                                                     | Default                           |
 | ---------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
-| `url`                              | Prefix where the credential should be used (starting "git@" or "https://" )                   |                                   |
+| `url`                              | Used URL for the repository, (starting "git@" or "https://" )                   |                                   |
 | `usernameSecret`                   | Attributes for username in a secret                                             |                                   |
 | `usernameSecret.name`              | Name of the secret                                                              |                                   |
 | `usernameSecret.key`               | Key in the secret which contains the username                                   |                                   |

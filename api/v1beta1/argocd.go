@@ -7,6 +7,7 @@ type Argocd struct {
 	Auth         *ArgocdAuth         `json:"auth,omitempty" yaml:"auth,omitempty"`
 	Rbac         *Rbac               `json:"rbacConfig,omitempty" yaml:"rbacConfig,omitempty"`
 	Repositories []*ArgocdRepository `json:"repositories,omitempty" yaml:"repositories,omitempty"`
+	Credentials  []*ArgocdRepository `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 	KnownHosts   []string            `json:"knownHosts,omitempty" yaml:"knownHosts,omitempty"`
 }
 
