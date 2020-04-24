@@ -68,7 +68,7 @@ func getIngestionServiceMonitor(monitorMatchingLabels, serviceMatchingLabels map
 	endpoint := &servicemonitor.ConfigEndpoint{
 		Port:              "http",
 		Path:              "/metrics",
-		HonorLabels:       false,
+		HonorLabels:       true,
 		Relabelings:       relabelings,
 		MetricRelabelings: metricRelabelings,
 	}
