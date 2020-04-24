@@ -122,6 +122,7 @@
 | `network`                          | Network configuration, [here](network.md)                                       | nil                               |
 | `auth`                             | Authorization and Authentication configuration for SSO, [here](sso-examples.md) | nil                               |
 | `repositories`                     | Repositories used by argocd, [here](argocd-repositories.md)                     | nil                               |
+| `credentials`                      | Credentials used by argocd, [here](argocd-credentials.md)                       | nil                               |
 | `knownHosts`                       | List of known_hosts as strings for argocd                                       | nil                               |
 
 ### Prometheus
