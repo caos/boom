@@ -74,6 +74,9 @@ func (a *Argocd) SpecToHelmValues(monitor mntr.Monitor, toolsetCRDSpec *toolsets
 	if conf.Repositories != "" && conf.Repositories != "[]\n" {
 		values.Server.Config.Repositories = conf.Repositories
 	}
+	if conf.Credentials != "" && conf.Repositories != "[]\n" {
+		values.Server.Config.RepositoryCredentials = conf.Credentials
+	}
 
 	if conf.ConfigManagementPlugins != "" {
 		values.Server.Config.ConfigManagementPlugins = conf.ConfigManagementPlugins
